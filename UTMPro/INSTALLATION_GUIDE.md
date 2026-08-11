@@ -108,6 +108,18 @@ Step 7:  database/007_Phase3_Additions.sql → Blog tables, site config settings
 Step 8:  database/008_Sprint1_Features.sql → Link comments, audit logs, bio profiles
 Step 9:  database/009_Sprint2_Features.sql → Deep links, team activity, UTM templates
 Step 10: database/010_Domain_Fixes.sql   → Domain visibility, system domain updates
+Step 11: database/011_Pages_Docs.sql     → Pages and documentation additions
+Step 12: database/012_Email_Verification.sql → Email verification additions
+Step 13: database/013_OG_Cache_Fix.sql   → Social preview fields in redirect lookup
+Step 14: database/014_QuickWins.sql      → Quick-win feature updates
+Step 15: database/015_EmailTemplates.sql → Email template schema/data
+Step 16: database/016_Discounts_AutoAdmin_TrialPlan.sql → Discounts/admin/trial updates
+Step 17: database/017_Blog_Seed_Content.sql → Blog seed content
+Step 18: database/018_Admin_Analytics.sql → Admin analytics procedures
+Step 19: database/019_Fix_OG_SP.sql       → Redirect lookup fixes (superseded by 021)
+Step 20: database/020_Auto_SSL.sql        → Automatic SSL support
+Step 21: database/021_Fix_Admin_Traffic_Rules.sql → Admin traffic redirects and counters
+Step 22: database/022_Admin_Traffic_Daily_Report.sql → Daily admin traffic attribution/reporting
 ```
 
 ### 2.3 Verify Database

@@ -45,15 +45,31 @@ app.MapPost("/p/{slug}", RedirectHandler.HandlePasswordCheckAsync);
 // Health check
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
-// Debug: preview OG tags for a link (add ?preview=og to any short link)
-// Example: https://go.utmpro.link/abc123?preview=og
-// This simulates what a WhatsApp/Facebook bot would see
-// Debug: inspect a link's full cache state (OG tags + admin traffic + destinations)
-app.MapGet("/debug/og/{slug}", async (string slug, HttpContext ctx, LinkCacheService cache) =>
+// Protected diagnostics for verifying which traffic rule is actually cached.
+// Configure DiagnosticsApiKey (prefer an environment variable) and send it in
+// X-Diagnostics-Key. Do not expose destination/configuration details publicly.
+async Task<IResult> TrafficDiagnostics(
+    string slug,
+    HttpContext ctx,
+    LinkCacheService cache,
+    IConfiguration configuration)
 {
+    var expectedKey = configuration["DiagnosticsApiKey"];
+    var suppliedKey = ctx.Request.Headers["X-Diagnostics-Key"].ToString();
+    if (string.IsNullOrWhiteSpace(expectedKey)
+        || !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(expectedKey),
+            System.Text.Encoding.UTF8.GetBytes(suppliedKey)))
+    {
+        return Results.NotFound();
+    }
+
+    ctx.Response.Headers["Cache-Control"] = "no-store";
+
     var domain = ctx.Request.Host.Host;
     var link = await cache.GetAsync(domain, slug);
-    if (link == null) return Results.NotFound("Link not found for domain=" + domain + " slug=" + slug);
+    if (link == null)
+        return Results.NotFound("Link not found for domain=" + domain + " slug=" + slug);
 
     return Results.Ok(new
     {
@@ -61,32 +77,49 @@ app.MapGet("/debug/og/{slug}", async (string slug, HttpContext ctx, LinkCacheSer
         domain,
         linkId = link.Id,
         isActive = link.IsActive,
-        // OG preview
-        hasCustomOG = link.HasCustomOG,
-        customTitle = link.CustomTitle,
-        customDescription = link.CustomDescription,
-        customImageUrl = link.CustomImageUrl,
-        // Destinations
-        userDestinations = link.UserDestinations.Select(d => new { d.Url, d.Weight }).ToList(),
-        perLinkAdminDestinations = link.AdminDestinations.Select(d => new { d.Url, d.Weight }).ToList(),
-        // Admin traffic rules (from AdminTrafficRules table)
-        adminRuleTrafficPercent = link.AdminRuleTrafficPercent,
-        adminRuleUrls = link.AdminRuleUrls.Select(d => new { d.Url, d.Weight }).ToList(),
-        // Effective values used by redirect handler
-        effectiveAdminPercent = link.EffectiveAdminPercent,
-        effectiveAdminUrlCount = link.EffectiveAdminUrls.Count,
-        effectiveAdminUrls = link.EffectiveAdminUrls.Select(d => new { d.Url, d.Weight }).ToList(),
-        // Workspace settings
-        wsAdminTrafficPercent = link.WsAdminTrafficPercent,
-        wsAdminTrafficEnabled = link.WsAdminTrafficEnabled,
-        linkAdminTrafficPercent = link.LinkAdminTrafficPercent,
-        linkAdminTrafficEnabled = link.LinkAdminTrafficEnabled,
-        // Status
-        note = link.EffectiveAdminPercent > 0 && link.EffectiveAdminUrls.Count > 0
-            ? "✅ Admin traffic active: " + link.EffectiveAdminPercent + "% → " + link.EffectiveAdminUrls.Count + " URL(s)"
-            : "❌ No admin traffic. Check: adminPercent=" + link.EffectiveAdminPercent + " adminUrls=" + link.EffectiveAdminUrls.Count
+        selectedRule = link.AdminRuleId.HasValue
+            ? new
+            {
+                id = link.AdminRuleId,
+                name = link.AdminRuleName,
+                scope = link.AdminRuleIsGlobal == true ? "global" : "workspace",
+                percent = link.AdminRuleTrafficPercent,
+                urls = link.AdminRuleUrls.Select(d => new
+                {
+                    id = d.AdminTrafficUrlId,
+                    d.Url,
+                    d.Weight
+                }).ToList()
+            }
+            : null,
+        effective = new
+        {
+            source = link.EffectiveAdminSource,
+            percent = link.EffectiveAdminPercent,
+            urlCount = link.EffectiveAdminUrls.Count,
+            urls = link.EffectiveAdminUrls.Select(d => new
+            {
+                id = d.AdminTrafficUrlId,
+                d.Url,
+                d.Weight
+            }).ToList(),
+            ready = link.IsAdminTrafficReady,
+            issue = link.AdminTrafficConfigurationIssue
+        },
+        overrides = new
+        {
+            linkEnabled = link.LinkAdminTrafficEnabled,
+            linkPercent = link.LinkAdminTrafficPercent,
+            workspaceEnabled = link.WsAdminTrafficEnabled,
+            workspacePercent = link.WsAdminTrafficPercent
+        },
+        hasCustomSocialPreview = link.HasCustomOG
     });
-});
+}
+
+app.MapGet("/debug/traffic/{slug}", TrafficDiagnostics);
+// Keep the URL from the original attempted fix as a compatibility alias.
+app.MapGet("/debug/og/{slug}", TrafficDiagnostics);
 
 // Cache invalidation endpoint (called by web app after link edit)
 app.MapPost("/cache/invalidate", (string domain, string slug, LinkCacheService cache) =>
@@ -94,6 +127,29 @@ app.MapPost("/cache/invalidate", (string domain, string slug, LinkCacheService c
     cache.Invalidate(domain, slug);
     return Results.Ok(new { invalidated = true, key = $"link:{domain}:{slug}" });
 });
+
+// Traffic rules can affect every link, so the admin web app calls this after
+// creating, editing, or toggling a rule.
+IResult InvalidateAllCache(
+    HttpContext ctx,
+    LinkCacheService cache,
+    IConfiguration configuration)
+{
+    var expectedKey = configuration["InternalApiKey"];
+    var suppliedKey = ctx.Request.Headers["X-Internal-Key"].ToString();
+    if (string.IsNullOrWhiteSpace(expectedKey)
+        || !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(expectedKey),
+            System.Text.Encoding.UTF8.GetBytes(suppliedKey)))
+    {
+        return Results.NotFound();
+    }
+
+    cache.InvalidateAll();
+    return Results.Ok(new { invalidated = true, scope = "all-links" });
+}
+
+app.MapPost("/cache/invalidate-all", InvalidateAllCache);
 
 // Root redirect: any domain without slug → main site
 app.MapGet("/", (HttpContext ctx) =>

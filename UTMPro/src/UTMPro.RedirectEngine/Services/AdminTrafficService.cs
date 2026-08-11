@@ -19,12 +19,21 @@ public class AdminTrafficService
     public async Task<List<DestinationModel>> GetAdminUrlsForWorkspaceAsync(long workspaceId)
     {
         const string sql = @"
-            SELECT atu.Url, atu.Weight
+            ;WITH SelectedRule AS (
+                SELECT TOP (1) atr.Id
+                FROM AdminTrafficRules atr
+                WHERE atr.IsActive = 1
+                  AND ((atr.IsGlobal = 0 AND atr.WorkspaceId = @WorkspaceId)
+                       OR atr.IsGlobal = 1)
+                ORDER BY CASE WHEN atr.IsGlobal = 0 THEN 0 ELSE 1 END,
+                         atr.UpdatedAt DESC,
+                         atr.Id DESC
+            )
+            SELECT atu.Id, atu.Url, atu.Weight
             FROM AdminTrafficUrls atu
-            INNER JOIN AdminTrafficRules atr ON atu.RuleId = atr.Id
-            WHERE atr.IsActive = 1 AND atu.IsActive = 1
-              AND (atr.IsGlobal = 1 OR atr.WorkspaceId = @WorkspaceId)
-            ORDER BY atr.IsGlobal ASC, atu.Weight DESC";
+            INNER JOIN SelectedRule selected ON atu.RuleId = selected.Id
+            WHERE atu.IsActive = 1
+            ORDER BY atu.Weight DESC, atu.Id ASC";
 
         await using var conn = await _db.CreateOpenConnectionAsync();
         await using var cmd = new SqlCommand(sql, conn);
@@ -34,10 +43,13 @@ public class AdminTrafficService
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
+            var urlId = reader.GetInt64(0);
             urls.Add(new DestinationModel
             {
-                Url = reader.GetString(0),
-                Weight = reader.GetInt32(1),
+                Id = urlId,
+                AdminTrafficUrlId = urlId,
+                Url = reader.GetString(1),
+                Weight = reader.GetInt32(2),
                 IsAdminUrl = true
             });
         }

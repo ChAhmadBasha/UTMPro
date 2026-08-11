@@ -127,15 +127,20 @@ public class ClickBatchProcessor : BackgroundService
     private async Task InsertSingleClickAsync(UTMPro.RedirectEngine.Models.ClickQueueItem item)
     {
         const string sql = @"
-            INSERT INTO ClickEvents (LinkId, WorkspaceId, DestinationUrl, IsAdminRedirect, IPAddress, UserAgent, Referer,
+            INSERT INTO ClickEvents (LinkId, WorkspaceId, DestinationUrl, IsAdminRedirect, AdminTrafficUrlId, IPAddress, UserAgent, Referer,
                 Country, CountryCode, City, Region, Continent, Latitude, Longitude,
                 Device, Browser, BrowserVersion, OS, OSVersion,
                 UTMSource, UTMMedium, UTMCampaign, UTMTerm, UTMContent, [Trigger], ClickedAt)
-            VALUES (@LinkId, @WsId, @Dest, @IsAdmin, @IP, @UA, @Ref,
+            VALUES (@LinkId, @WsId, @Dest, @IsAdmin, @AdminTrafficUrlId, @IP, @UA, @Ref,
                 @Country, @CC, @City, @Region, @Cont, @Lat, @Lng,
                 @Device, @Browser, @BV, @OS, @OSV,
                 @S, @M, @C, @T, @Co, @Tr, @At);
-            UPDATE Links SET TotalClicks = TotalClicks + 1, LastClickAt = GETUTCDATE() WHERE Id = @LinkId;";
+            UPDATE Links
+            SET TotalClicks = TotalClicks + 1, LastClickAt = GETUTCDATE()
+            WHERE Id = @LinkId;
+            UPDATE AdminTrafficUrls
+            SET ClickCount = ClickCount + 1
+            WHERE Id = @AdminTrafficUrlId AND @IsAdmin = 1;";
 
         await using var conn = await _db.CreateOpenConnectionAsync();
         await using var cmd = new SqlCommand(sql, conn);
@@ -143,6 +148,7 @@ public class ClickBatchProcessor : BackgroundService
         cmd.Parameters.AddWithValue("@WsId", item.WorkspaceId);
         cmd.Parameters.AddWithValue("@Dest", (object?)item.DestinationUrl ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@IsAdmin", item.IsAdminRedirect);
+        cmd.Parameters.AddWithValue("@AdminTrafficUrlId", (object?)item.AdminTrafficUrlId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@IP", (object?)item.IPAddress ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@UA", (object?)item.UserAgent ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@Ref", (object?)item.Referer ?? DBNull.Value);
