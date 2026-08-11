@@ -119,6 +119,7 @@ Step 18: database/018_Admin_Analytics.sql → Admin analytics procedures
 Step 19: database/019_Fix_OG_SP.sql       → Redirect lookup fixes (superseded by 021)
 Step 20: database/020_Auto_SSL.sql        → Automatic SSL support
 Step 21: database/021_Fix_Admin_Traffic_Rules.sql → Admin traffic redirects and counters
+Step 22: database/022_Admin_Traffic_Daily_Report.sql → Daily admin traffic attribution/reporting
 ```
 
 ### 2.3 Verify Database

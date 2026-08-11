@@ -5,7 +5,10 @@
 }
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">Admin Traffic Rules</h1>
-    <a href="/admin/traffic-rules/create" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">+ New Rule</a>
+    <div class="flex items-center gap-2">
+        <a href="/admin/traffic-rules/report" class="bg-orange-100 text-orange-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-200">Daily Report</a>
+        <a href="/admin/traffic-rules/create" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">+ New Rule</a>
+    </div>
 </div>
 <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
     Workspace rules override global rules. If multiple active rules exist at the same scope, the most recently updated rule is used.
@@ -43,6 +46,10 @@ else
     </td>
     <td class="px-4 py-3 text-right">
         <div class="inline-flex items-center gap-3">
+            @if (rule.Urls.Any(url => url.IsActive))
+            {
+                <a href="/admin/traffic-rules/@rule.Id/test" target="_blank" rel="noopener" class="text-sm text-orange-600 hover:underline" title="Always open a configured admin URL; does not count in analytics">Test</a>
+            }
             <a href="/admin/traffic-rules/@rule.Id" class="text-sm text-gray-500 hover:text-black">Edit</a>
             <form method="post" action="/admin/traffic-rules/@rule.Id/toggle" class="inline">
                 @Html.AntiForgeryToken()

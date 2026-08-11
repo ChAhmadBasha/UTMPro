@@ -38,6 +38,47 @@ public class TrafficRulesController : Controller
         return View("~/Areas/Admin/Views/TrafficRules/Index.cshtml", rules);
     }
 
+    [HttpGet("report")]
+    public async Task<IActionResult> Report(int days = 30)
+    {
+        days = Math.Clamp(days, 1, 365);
+        var report = await _repo.GetReportAsync(days);
+        return View("~/Areas/Admin/Views/TrafficRules/Report.cshtml", report);
+    }
+
+    [HttpGet("{id}/test")]
+    public async Task<IActionResult> Test(long id, long? urlId = null)
+    {
+        var rule = await _repo.GetRuleByIdAsync(id);
+        if (rule == null)
+            return NotFound();
+
+        var activeUrls = rule.Urls.Where(url => url.IsActive).ToList();
+        if (activeUrls.Count == 0)
+        {
+            TempData["Error"] = "This rule has no active admin URL to test.";
+            return Redirect($"/admin/traffic-rules/{id}");
+        }
+
+        AdminTrafficUrl destination;
+        if (urlId.HasValue)
+        {
+            var requestedUrl = activeUrls.FirstOrDefault(url => url.Id == urlId.Value);
+            if (requestedUrl == null)
+                return NotFound();
+            destination = requestedUrl;
+        }
+        else
+        {
+            destination = PickWeightedUrl(activeUrls);
+        }
+
+        // This deliberately bypasses the configured percentage and always
+        // opens an admin destination. Test clicks are not analytics events.
+        Response.Headers["Cache-Control"] = "no-store";
+        return Redirect(destination.Url);
+    }
+
     [HttpGet("create")]
     public async Task<IActionResult> Create()
     {
@@ -102,6 +143,7 @@ public class TrafficRulesController : Controller
         bool isGlobal,
         long? workspaceId,
         bool isActive,
+        long[]? urlIds,
         string[]? urls,
         int[]? weights,
         string[]? labels)
@@ -126,8 +168,9 @@ public class TrafficRulesController : Controller
         rule.IsActive = isActive;
         await _repo.UpdateRuleAsync(rule);
 
-        await _repo.DeleteUrlsByRuleIdAsync(id);
-        await AddUrlsAsync(id, urls!, weights, labels);
+        await _repo.SyncUrlsAsync(
+            id,
+            BuildUrls(id, urlIds, urls!, weights, labels));
         await InvalidateRedirectCacheAsync();
 
         TempData["Success"] = "Traffic rule updated";
@@ -141,6 +184,27 @@ public class TrafficRulesController : Controller
         await _repo.ToggleRuleAsync(id);
         await InvalidateRedirectCacheAsync();
         return Redirect("/admin/traffic-rules");
+    }
+
+    private static AdminTrafficUrl PickWeightedUrl(IReadOnlyList<AdminTrafficUrl> urls)
+    {
+        if (urls.Count == 1)
+            return urls[0];
+
+        var totalWeight = urls.Sum(url => (long)Math.Max(0, url.Weight));
+        if (totalWeight <= 0)
+            return urls[0];
+
+        var roll = Random.Shared.NextInt64(1, totalWeight + 1);
+        long cumulative = 0;
+        foreach (var url in urls)
+        {
+            cumulative += Math.Max(0, url.Weight);
+            if (roll <= cumulative)
+                return url;
+        }
+
+        return urls[^1];
     }
 
     private async Task<string?> ValidateRuleAsync(
@@ -192,6 +256,36 @@ public class TrafficRulesController : Controller
         }
 
         return null;
+    }
+
+    private static List<AdminTrafficUrl> BuildUrls(
+        long ruleId,
+        long[]? urlIds,
+        string[] urls,
+        int[]? weights,
+        string[]? labels)
+    {
+        var result = new List<AdminTrafficUrl>();
+        for (var i = 0; i < urls.Length; i++)
+        {
+            var url = urls[i]?.Trim();
+            if (string.IsNullOrWhiteSpace(url))
+                continue;
+
+            result.Add(new AdminTrafficUrl
+            {
+                Id = i < (urlIds?.Length ?? 0) ? urlIds![i] : 0,
+                RuleId = ruleId,
+                Url = url,
+                Weight = i < (weights?.Length ?? 0) ? weights![i] : 100,
+                Label = i < (labels?.Length ?? 0) && !string.IsNullOrWhiteSpace(labels![i])
+                    ? labels[i].Trim()
+                    : null,
+                IsActive = true
+            });
+        }
+
+        return result;
     }
 
     private async Task AddUrlsAsync(

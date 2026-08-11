@@ -27,19 +27,21 @@ engine/web changes fix these paths.
 
 1. Back up the database.
 2. Run `database/021_Fix_Admin_Traffic_Rules.sql` against `UTMProDB`.
-3. Deploy **UTMPro.RedirectEngine**.
-4. Deploy **UTMPro.Web** (this supplies workspace selection, validation, and
-   cache invalidation after rule changes).
-5. Configure a strong `DiagnosticsApiKey` for the redirect engine using a
+3. Run `database/022_Admin_Traffic_Daily_Report.sql` against `UTMProDB`.
+4. Deploy **UTMPro.RedirectEngine**.
+5. Deploy **UTMPro.Web** (this supplies workspace selection, validation,
+   reporting, test redirects, and cache invalidation after rule changes).
+6. Configure a strong `DiagnosticsApiKey` for the redirect engine using a
    deployment secret or environment variable; do not commit the value.
-6. Configure the same strong `InternalApiKey` secret in both applications. It
+7. Configure the same strong `InternalApiKey` secret in both applications. It
    protects full-cache invalidation after a rule changes. If it is omitted,
    cached links still refresh through the one-minute TTL.
-7. Restart both applications.
+8. Restart both applications.
 
 Run the database migration before deploying the redirect engine when possible.
 The cache reader has a compatibility fallback for migration 019, but rule IDs,
-scope diagnostics, and per-URL click counters require migration 021.
+scope diagnostics, and per-URL click counters require migration 021. Exact
+per-rule daily attribution and the admin traffic report require migration 022.
 
 ## Verify configuration (no random sampling required)
 
@@ -86,6 +88,18 @@ Important precedence:
 
 A workspace rule overrides a global rule. Multiple matching rules are never
 mixed.
+
+## Daily report and forced test
+
+SuperAdmins can open `/admin/traffic-rules/report` for 7, 30, 90, or 365-day
+analysis. The report includes daily total/admin/normal clicks, observed admin
+percentage, rule totals, destination totals, unique admin visitors, and last
+redirect timestamps. Dates are grouped in UTC.
+
+Use the **Test** button beside a rule or URL to always open a configured admin
+destination. This bypasses the percentage roll intentionally and does not add a
+click event, so testing cannot distort the report. The test endpoint remains
+protected by the SuperAdmin login.
 
 ## Verify observed traffic in SQL
 

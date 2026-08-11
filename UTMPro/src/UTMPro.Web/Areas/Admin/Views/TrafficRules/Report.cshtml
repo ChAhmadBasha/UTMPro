@@ -1,0 +1,212 @@
+@model AdminTrafficReport
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Admin Traffic Report";
+    var attributedClicks = Model.Rules.Sum(rule => rule.AdminClicks);
+}
+
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div>
+        <a href="/admin/traffic-rules" class="text-sm text-gray-500 hover:text-black">&larr; Traffic rules</a>
+        <h1 class="text-2xl font-bold mt-1">Daily Admin Traffic Analysis</h1>
+        <p class="text-sm text-gray-500">@Model.StartDate.ToString("MMM d, yyyy") – @Model.EndDate.AddDays(-1).ToString("MMM d, yyyy") (UTC)</p>
+    </div>
+    <div class="flex items-center gap-2">
+        @foreach (var period in new[] { 7, 30, 90, 365 })
+        {
+            <a href="/admin/traffic-rules/report?days=@period"
+               class="px-3 py-1.5 rounded-lg text-xs font-medium @(Model.Days == period ? "bg-black text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700")">
+                @(period == 365 ? "1y" : $"{period}d")
+            </a>
+        }
+    </div>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+    <div class="bg-white p-5 rounded-xl border">
+        <p class="text-xs text-gray-400 mb-1">Total Traffic</p>
+        <p class="text-3xl font-bold">@Model.TotalClicks.ToString("N0")</p>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-orange-200">
+        <p class="text-xs text-orange-500 mb-1">Admin Redirects</p>
+        <p class="text-3xl font-bold text-orange-600">@Model.AdminClicks.ToString("N0")</p>
+    </div>
+    <div class="bg-white p-5 rounded-xl border">
+        <p class="text-xs text-gray-400 mb-1">Normal Redirects</p>
+        <p class="text-3xl font-bold text-blue-600">@Model.UserClicks.ToString("N0")</p>
+    </div>
+    <div class="bg-white p-5 rounded-xl border">
+        <p class="text-xs text-gray-400 mb-1">Observed Admin %</p>
+        <p class="text-3xl font-bold text-purple-600">@Model.ObservedAdminPercent.ToString("F2")%</p>
+    </div>
+    <div class="bg-white p-5 rounded-xl border">
+        <p class="text-xs text-gray-400 mb-1">Unique Admin Visitors</p>
+        <p class="text-3xl font-bold text-green-600">@Model.UniqueAdminVisitors.ToString("N0")</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border p-5 mb-6">
+    <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold text-sm">Daily admin vs normal traffic</h2>
+        <span class="text-xs text-gray-400">Based on recorded click events</span>
+    </div>
+    <canvas id="adminTrafficChart" height="85"></canvas>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white rounded-xl border overflow-hidden">
+        <div class="px-5 py-4 border-b">
+            <h2 class="font-semibold text-sm">Daily breakdown</h2>
+        </div>
+        <div class="max-h-[520px] overflow-y-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 sticky top-0"><tr>
+                    <th class="text-left px-4 py-2 text-xs text-gray-500">Date (UTC)</th>
+                    <th class="text-right px-4 py-2 text-xs text-gray-500">Total</th>
+                    <th class="text-right px-4 py-2 text-xs text-gray-500">Admin</th>
+                    <th class="text-right px-4 py-2 text-xs text-gray-500">Normal</th>
+                    <th class="text-right px-4 py-2 text-xs text-gray-500">Admin %</th>
+                </tr></thead>
+                <tbody class="divide-y">
+                @foreach (var day in Model.Daily.OrderByDescending(day => day.Date))
+                {
+                    <tr class="text-sm hover:bg-gray-50">
+                        <td class="px-4 py-2.5 font-medium">@day.Date.ToString("ddd, MMM d")</td>
+                        <td class="px-4 py-2.5 text-right">@day.TotalClicks.ToString("N0")</td>
+                        <td class="px-4 py-2.5 text-right font-semibold text-orange-600">@day.AdminClicks.ToString("N0")</td>
+                        <td class="px-4 py-2.5 text-right text-blue-600">@day.UserClicks.ToString("N0")</td>
+                        <td class="px-4 py-2.5 text-right">@day.AdminPercent.ToString("F2")%</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border overflow-hidden">
+        <div class="px-5 py-4 border-b flex items-center justify-between">
+            <div>
+                <h2 class="font-semibold text-sm">Rule performance</h2>
+                <p class="text-xs text-gray-400">Test always opens an admin URL and is not counted.</p>
+            </div>
+        </div>
+        <div class="max-h-[520px] overflow-y-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 sticky top-0"><tr>
+                    <th class="text-left px-4 py-2 text-xs text-gray-500">Rule</th>
+                    <th class="text-right px-4 py-2 text-xs text-gray-500">Set %</th>
+                    <th class="text-right px-4 py-2 text-xs text-gray-500">Clicks</th>
+                    <th class="px-4 py-2"></th>
+                </tr></thead>
+                <tbody class="divide-y">
+                @foreach (var rule in Model.Rules)
+                {
+                    <tr class="text-sm hover:bg-gray-50">
+                        <td class="px-4 py-2.5">
+                            <a href="/admin/traffic-rules/@rule.RuleId" class="font-medium text-blue-600 hover:underline">@rule.RuleName</a>
+                            <div class="text-[11px] text-gray-400">
+                                @(rule.IsGlobal ? "Global" : $"Workspace #{rule.WorkspaceId}") · @rule.ActiveUrlCount active URL(s)
+                                @if (!rule.IsActive) { <span class="text-red-500"> · Disabled</span> }
+                            </div>
+                        </td>
+                        <td class="px-4 py-2.5 text-right">@rule.ConfiguredPercent.ToString("F2")%</td>
+                        <td class="px-4 py-2.5 text-right font-bold text-orange-600">@rule.AdminClicks.ToString("N0")</td>
+                        <td class="px-4 py-2.5 text-right">
+                            @if (rule.ActiveUrlCount > 0)
+                            {
+                                <a href="/admin/traffic-rules/@rule.RuleId/test" target="_blank" rel="noopener" class="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 hover:bg-orange-200">Test</a>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border overflow-hidden mb-6">
+    <div class="px-5 py-4 border-b">
+        <h2 class="font-semibold text-sm">Admin destination performance</h2>
+        <p class="text-xs text-gray-400">Period clicks are exact for events recorded after migration 022.</p>
+    </div>
+    <div class="table-wrap">
+        <table class="w-full min-w-[850px]">
+            <thead class="bg-gray-50"><tr>
+                <th class="text-left px-4 py-2 text-xs text-gray-500">Rule / Destination</th>
+                <th class="text-right px-4 py-2 text-xs text-gray-500">Weight</th>
+                <th class="text-right px-4 py-2 text-xs text-gray-500">Period</th>
+                <th class="text-right px-4 py-2 text-xs text-gray-500">All-time</th>
+                <th class="text-left px-4 py-2 text-xs text-gray-500">Last redirect (UTC)</th>
+                <th class="px-4 py-2"></th>
+            </tr></thead>
+            <tbody class="divide-y">
+            @foreach (var url in Model.Urls)
+            {
+                <tr class="text-sm hover:bg-gray-50">
+                    <td class="px-4 py-2.5 max-w-[430px]">
+                        <div class="font-medium">@url.RuleName @if (!string.IsNullOrWhiteSpace(url.Label)) { <span class="text-gray-400">· @url.Label</span> }</div>
+                        <div class="text-xs text-gray-500 truncate" title="@url.Url">@url.Url</div>
+                        @if (!url.IsActive) { <span class="text-[11px] text-red-500">Inactive URL</span> }
+                    </td>
+                    <td class="px-4 py-2.5 text-right">@url.Weight</td>
+                    <td class="px-4 py-2.5 text-right font-bold text-orange-600">@url.PeriodClicks.ToString("N0")</td>
+                    <td class="px-4 py-2.5 text-right">@url.AllTimeClicks.ToString("N0")</td>
+                    <td class="px-4 py-2.5 text-xs text-gray-500">@(url.LastAdminRedirectAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                    <td class="px-4 py-2.5 text-right">
+                        @if (url.IsActive)
+                        {
+                            <a href="/admin/traffic-rules/@url.RuleId/test?urlId=@url.UrlId" target="_blank" rel="noopener" class="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 hover:bg-orange-200">Test URL</a>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (attributedClicks < Model.AdminClicks)
+{
+    <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 mb-6">
+        @(Model.AdminClicks - attributedClicks) admin redirect(s) in this period are not tied to a current rule URL. This includes older events recorded before migration 022 and per-link admin destinations.
+    </div>
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('adminTrafficChart'), {
+    type: 'line',
+    data: {
+        labels: [@Html.Raw(string.Join(",", Model.Daily.Select(day => $"'{day.Date:MMM d}'")))],
+        datasets: [
+            {
+                label: 'Admin redirects',
+                data: [@string.Join(",", Model.Daily.Select(day => day.AdminClicks))],
+                borderColor: '#ea580c',
+                backgroundColor: 'rgba(234,88,12,0.10)',
+                fill: true,
+                tension: 0.3,
+                borderWidth: 2,
+                pointRadius: 1.5
+            },
+            {
+                label: 'Normal redirects',
+                data: [@string.Join(",", Model.Daily.Select(day => day.UserClicks))],
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37,99,235,0.05)',
+                fill: false,
+                tension: 0.3,
+                borderWidth: 2,
+                pointRadius: 1.5
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true }, x: { ticks: { maxTicksLimit: 16, maxRotation: 0 } } }
+    }
+});
+</script>

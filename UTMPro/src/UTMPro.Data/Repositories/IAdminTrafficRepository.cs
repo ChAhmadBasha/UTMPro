@@ -11,7 +11,9 @@ public interface IAdminTrafficRepository
     Task UpdateRuleAsync(AdminTrafficRule rule);
     Task ToggleRuleAsync(long id);
     Task DeleteRuleAsync(long id);
+    Task<AdminTrafficReport> GetReportAsync(int days);
     // URLs
     Task AddUrlAsync(AdminTrafficUrl url);
+    Task SyncUrlsAsync(long ruleId, IReadOnlyList<AdminTrafficUrl> urls);
     Task DeleteUrlsByRuleIdAsync(long ruleId);
 }

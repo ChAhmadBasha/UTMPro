@@ -122,6 +122,7 @@ public class AnalyticsRepository : IAnalyticsRepository
                 WorkspaceId = r.GetInt64(r.GetOrdinal("WorkspaceId")),
                 DestinationUrl = r.IsDBNull(r.GetOrdinal("DestinationUrl")) ? null : r.GetString(r.GetOrdinal("DestinationUrl")),
                 IsAdminRedirect = r.GetBoolean(r.GetOrdinal("IsAdminRedirect")),
+                AdminTrafficUrlId = r.IsDBNull(r.GetOrdinal("AdminTrafficUrlId")) ? null : r.GetInt64(r.GetOrdinal("AdminTrafficUrlId")),
                 IPAddress = r.IsDBNull(r.GetOrdinal("IPAddress")) ? null : r.GetString(r.GetOrdinal("IPAddress")),
                 Country = r.IsDBNull(r.GetOrdinal("Country")) ? null : r.GetString(r.GetOrdinal("Country")),
                 CountryCode = r.IsDBNull(r.GetOrdinal("CountryCode")) ? null : r.GetString(r.GetOrdinal("CountryCode")),

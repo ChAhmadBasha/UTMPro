@@ -7,6 +7,7 @@ public class ClickEvent
     public long WorkspaceId { get; set; }
     public string? DestinationUrl { get; set; }
     public bool IsAdminRedirect { get; set; }
+    public long? AdminTrafficUrlId { get; set; }
     public string? IPAddress { get; set; }
     public string? UserAgent { get; set; }
     public string? Referer { get; set; }

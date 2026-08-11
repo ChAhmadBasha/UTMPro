@@ -127,11 +127,11 @@ public class ClickBatchProcessor : BackgroundService
     private async Task InsertSingleClickAsync(UTMPro.RedirectEngine.Models.ClickQueueItem item)
     {
         const string sql = @"
-            INSERT INTO ClickEvents (LinkId, WorkspaceId, DestinationUrl, IsAdminRedirect, IPAddress, UserAgent, Referer,
+            INSERT INTO ClickEvents (LinkId, WorkspaceId, DestinationUrl, IsAdminRedirect, AdminTrafficUrlId, IPAddress, UserAgent, Referer,
                 Country, CountryCode, City, Region, Continent, Latitude, Longitude,
                 Device, Browser, BrowserVersion, OS, OSVersion,
                 UTMSource, UTMMedium, UTMCampaign, UTMTerm, UTMContent, [Trigger], ClickedAt)
-            VALUES (@LinkId, @WsId, @Dest, @IsAdmin, @IP, @UA, @Ref,
+            VALUES (@LinkId, @WsId, @Dest, @IsAdmin, @AdminTrafficUrlId, @IP, @UA, @Ref,
                 @Country, @CC, @City, @Region, @Cont, @Lat, @Lng,
                 @Device, @Browser, @BV, @OS, @OSV,
                 @S, @M, @C, @T, @Co, @Tr, @At);
