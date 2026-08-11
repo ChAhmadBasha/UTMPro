@@ -24,7 +24,8 @@ public class PublicStatsController : Controller
         // For now, show basic public view
         var end = DateTime.UtcNow;
         var start = end.AddDays(-30);
-        var analytics = await _analyticsRepo.GetSummaryAsync(link.WorkspaceId, start, end, link.Id);
+        // Public stats are viewable by anyone, so always hide admin-traffic clicks.
+        var analytics = await _analyticsRepo.GetSummaryAsync(link.WorkspaceId, start, end, link.Id, includeAdmin: false);
 
         ViewBag.Link = link;
         return View("~/Views/PublicStats/Index.cshtml", analytics);

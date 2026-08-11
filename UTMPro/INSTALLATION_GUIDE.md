@@ -145,13 +145,15 @@ SELECT COUNT(*) FROM SystemSettings;
 
 ```sql
 -- IMPORTANT: Update these to match your actual server
-UPDATE SystemSettings SET SettingValue = 'YOUR_SERVER_IP' WHERE SettingKey = 'ServerIP';
+-- CustomDomainTarget is the hostname users point their CNAME records at
+-- (e.g. links.utmpro.link). Point it at your redirect engine host.
+UPDATE SystemSettings SET SettingValue = 'links.utmpro.link' WHERE SettingKey = 'CustomDomainTarget';
 UPDATE SystemSettings SET SettingValue = 'https://utmpro.link' WHERE SettingKey = 'SiteUrl';
 UPDATE SystemSettings SET SettingValue = 'https://app.utmpro.link' WHERE SettingKey = 'AppUrl';
 UPDATE SystemSettings SET SettingValue = 'https://go.utmpro.link' WHERE SettingKey = 'RedirectEngineUrl';
 
--- Update system domain DNS values
-UPDATE Domains SET DNSValue = 'YOUR_SERVER_IP' WHERE IsSystemDomain = 1;
+-- Update system domain DNS values to the CNAME target hostname
+UPDATE Domains SET DNSValue = 'links.utmpro.link', DNSType = 'CNAME' WHERE IsSystemDomain = 1;
 ```
 
 ---
@@ -430,7 +432,7 @@ Edit `C:\inetpub\utmpro\web\appsettings.json`:
     "AppUrl": "https://app.utmpro.link",
     "AdminUrl": "https://app.utmpro.link/admin",
     "RedirectEngineUrl": "https://go.utmpro.link",
-    "ServerIP": "YOUR_SERVER_IP"
+    "CustomDomainTarget": "links.utmpro.link"
   },
   "SMTP": {
     "Host": "smtp.gmail.com",

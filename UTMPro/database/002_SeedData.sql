@@ -25,8 +25,8 @@ INSERT INTO Domains
 (WorkspaceId,Domain,IsSystemDomain,IsPrimary,IsVerified,
  IsActive,DNSValue,Description,BrandedFor)
 VALUES
-(NULL,'utmpro.link',    1,0,1,1,'76.76.21.21','Main system domain','utmpro.link'),
-(NULL,'go.utmpro.link', 1,1,1,1,'76.76.21.21','Default redirect domain','go.utmpro.link');
+(NULL,'utmpro.link',    1,0,1,1,'links.utmpro.link','Main system domain','utmpro.link'),
+(NULL,'go.utmpro.link', 1,1,1,1,'links.utmpro.link','Default redirect domain','go.utmpro.link');
 
 -- System Settings
 INSERT INTO SystemSettings (SettingKey, SettingValue, Description)
@@ -48,8 +48,8 @@ VALUES
 ('GeoLite2DbPath',
  'C:\GeoLite2\GeoLite2-City.mmdb',
  'Path to MaxMind GeoLite2 City database file'),
-('ServerIP',                   '76.76.21.21',
- 'Server IP shown in DNS instructions'),
+('CustomDomainTarget',         'links.utmpro.link',
+ 'CNAME target hostname shown in DNS instructions'),
 ('SMTPHost',                   'smtp.gmail.com',
  'SMTP mail server hostname'),
 ('SMTPPort',                   '587',

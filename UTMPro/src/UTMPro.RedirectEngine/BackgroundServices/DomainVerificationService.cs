@@ -53,14 +53,14 @@ public class DomainVerificationService : BackgroundService
     private async Task VerifyDomainsAsync(CancellationToken ct)
     {
         const string sql = @"
-            SELECT Id, Domain, DNSValue 
+            SELECT Id, Domain, DNSType, DNSValue 
             FROM Domains 
             WHERE IsVerified = 0 AND IsSystemDomain = 0 AND IsActive = 1 AND IsArchived = 0";
 
         await using var conn = await _db.CreateOpenConnectionAsync();
         await using var cmd = new SqlCommand(sql, conn);
 
-        var domainsToCheck = new List<(long Id, string Domain, string ExpectedIp)>();
+        var domainsToCheck = new List<(long Id, string Domain, string DnsType, string DnsValue)>();
         await using (var reader = await cmd.ExecuteReaderAsync(ct))
         {
             while (await reader.ReadAsync(ct))
@@ -68,16 +68,18 @@ public class DomainVerificationService : BackgroundService
                 domainsToCheck.Add((
                     reader.GetInt64(0),
                     reader.GetString(1),
-                    reader.GetString(2)));
+                    reader.GetString(2),
+                    reader.GetString(3)));
             }
         }
 
-        foreach (var (id, domain, expectedIp) in domainsToCheck)
+        foreach (var (id, domain, dnsType, dnsValue) in domainsToCheck)
         {
             try
             {
-                var addresses = await Dns.GetHostAddressesAsync(domain, ct);
-                var matched = addresses.Any(a => a.ToString() == expectedIp);
+                var matched = IsIpAddress(dnsValue)
+                    ? await IpMatchesAsync(domain, dnsValue, ct)
+                    : await CnameMatchesAsync(domain, dnsValue, ct);
 
                 if (matched)
                 {
@@ -85,7 +87,7 @@ public class DomainVerificationService : BackgroundService
                         "UPDATE Domains SET IsVerified = 1, VerifiedAt = GETUTCDATE(), UpdatedAt = GETUTCDATE() WHERE Id = @Id", conn);
                     updateCmd.Parameters.AddWithValue("@Id", id);
                     await updateCmd.ExecuteNonQueryAsync(ct);
-                    _logger.LogInformation("Domain DNS verified: {Domain}", domain);
+                    _logger.LogInformation("Domain DNS verified: {Domain} ({DnsType} -> {Value})", domain, dnsType, dnsValue);
                 }
             }
             catch (Exception ex)
@@ -94,6 +96,53 @@ public class DomainVerificationService : BackgroundService
             }
         }
     }
+
+    // A-record verification: the domain's resolved IP addresses must contain
+    // the expected address.
+    private static async Task<bool> IpMatchesAsync(string domain, string expectedIp, CancellationToken ct)
+    {
+        var addresses = await Dns.GetHostAddressesAsync(domain, ct);
+        return addresses.Any(a => a.ToString() == expectedIp);
+    }
+
+    // CNAME verification: the domain must resolve to the expected target
+    // hostname (canonical CNAME target), or its resolved addresses must match
+    // the target's resolved addresses. The origin server IP is never required.
+    private static async Task<bool> CnameMatchesAsync(string domain, string expectedTarget, CancellationToken ct)
+    {
+        expectedTarget = expectedTarget.Trim().TrimEnd('.');
+
+        try
+        {
+            var entry = await Dns.GetHostEntryAsync(domain, ct);
+            var canonical = (entry.HostName ?? "").Trim().TrimEnd('.');
+
+            if (string.Equals(canonical, expectedTarget, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (entry.Aliases.Any(a => string.Equals((a ?? "").Trim().TrimEnd('.'), expectedTarget, StringComparison.OrdinalIgnoreCase)))
+                return true;
+        }
+        catch
+        {
+            // Fall through to address comparison below.
+        }
+
+        // Fallback: the domain and the target must resolve to the same IPs.
+        try
+        {
+            var domainAddresses = await Dns.GetHostAddressesAsync(domain, ct);
+            var targetAddresses = await Dns.GetHostAddressesAsync(expectedTarget, ct);
+            var targetSet = targetAddresses.Select(a => a.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            return domainAddresses.Any(a => targetSet.Contains(a.ToString()));
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsIpAddress(string value)
+        => IPAddress.TryParse(value?.Trim(), out _);
 
     // ═══════════════════════════════════════════════════
     // STEP 2: Auto SSL Certificate Issuance

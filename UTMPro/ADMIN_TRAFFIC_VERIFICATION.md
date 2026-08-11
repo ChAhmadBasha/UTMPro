@@ -28,7 +28,9 @@ engine/web changes fix these paths.
 1. Back up the database.
 2. Run `database/021_Fix_Admin_Traffic_Rules.sql` against `UTMProDB`.
 3. Run `database/022_Admin_Traffic_Daily_Report.sql` against `UTMProDB`.
-4. Deploy **UTMPro.RedirectEngine**.
+4. Run `database/023_Admin_Traffic_Hide_From_User_Stats.sql` against `UTMProDB`
+   so admin-traffic redirects no longer count toward a link's user statistics.
+5. Deploy **UTMPro.RedirectEngine**.
 5. Deploy **UTMPro.Web** (this supplies workspace selection, validation,
    reporting, test redirects, and cache invalidation after rule changes).
 6. Configure a strong `DiagnosticsApiKey` for the redirect engine using a
@@ -88,6 +90,22 @@ Important precedence:
 
 A workspace rule overrides a global rule. Multiple matching rules are never
 mixed.
+
+## Admin traffic does not pollute the original link's stats
+
+Since migration `023`, clicks that are redirected to an admin link (via
+`AdminTrafficRules`) are **not** shown in the statistics of the original short
+link for ordinary users:
+
+- They no longer increment `Links.TotalClicks`.
+- The analytics summary, time series, geo/device/browser/OS/referrer charts, and
+  the events list all filter out `IsAdminRedirect = 1` unless the viewer is a
+  platform **SuperAdmin** (`IncludeAdmin = 1`).
+
+Admin clicks are still recorded in `ClickEvents` (marked `IsAdminRedirect = 1`),
+still increment the exact `AdminTrafficUrls.ClickCount`, and remain visible to
+SuperAdmins both in the original link analytics and in the dedicated Admin
+Traffic report. Public stats and the public API always hide admin traffic.
 
 ## Daily report and forced test
 

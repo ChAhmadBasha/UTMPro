@@ -12,8 +12,8 @@ public class Domain
     public bool IsArchived { get; set; }
     public string? DefaultRedirectUrl { get; set; }
     public string? ExpirationUrl { get; set; }
-    public string DNSType { get; set; } = "A";
-    public string DNSValue { get; set; } = "76.76.21.21";
+    public string DNSType { get; set; } = "CNAME";
+    public string DNSValue { get; set; } = "links.utmpro.link";
     public DateTime? VerifiedAt { get; set; }
     public string? Description { get; set; }
     public string? BrandedFor { get; set; }

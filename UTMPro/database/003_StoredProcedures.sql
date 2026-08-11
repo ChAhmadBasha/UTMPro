@@ -120,6 +120,8 @@ BEGIN
         ClickedAt       DATETIME2      '$.ClickedAt'
     );
     
+    -- Admin-traffic redirects never increment the original link's user-facing
+    -- TotalClicks; they are attributed only to AdminTrafficUrls.ClickCount.
     UPDATE l
     SET l.TotalClicks = l.TotalClicks + counts.ClickCount,
         l.LastClickAt = GETUTCDATE()
@@ -127,7 +129,11 @@ BEGIN
     INNER JOIN (
         SELECT LinkId, COUNT(*) AS ClickCount
         FROM OPENJSON(@Events) 
-        WITH (LinkId BIGINT '$.LinkId')
+        WITH (
+            LinkId BIGINT '$.LinkId',
+            IsAdminRedirect BIT '$.IsAdminRedirect'
+        )
+        WHERE IsAdminRedirect = 0
         GROUP BY LinkId
     ) counts ON l.Id = counts.LinkId;
 END
@@ -138,7 +144,8 @@ CREATE OR ALTER PROCEDURE sp_GetAnalyticsSummary
     @WorkspaceId  BIGINT,
     @StartDate    DATETIME2,
     @EndDate      DATETIME2,
-    @LinkId       BIGINT = NULL
+    @LinkId       BIGINT = NULL,
+    @IncludeAdmin BIT    = 0
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -161,7 +168,8 @@ BEGIN
     FROM ClickEvents ce
     WHERE ce.WorkspaceId = @WorkspaceId
       AND (@LinkId IS NULL OR ce.LinkId = @LinkId)
-      AND ce.ClickedAt BETWEEN @StartDate AND @EndDate;
+      AND ce.ClickedAt BETWEEN @StartDate AND @EndDate
+      AND (@IncludeAdmin = 1 OR ce.IsAdminRedirect = 0);
     
     SELECT
         CAST(ClickedAt AS DATE) AS ClickDate,
@@ -170,6 +178,7 @@ BEGIN
     WHERE WorkspaceId = @WorkspaceId
       AND (@LinkId IS NULL OR LinkId = @LinkId)
       AND ClickedAt BETWEEN @StartDate AND @EndDate
+      AND (@IncludeAdmin = 1 OR IsAdminRedirect = 0)
     GROUP BY CAST(ClickedAt AS DATE)
     ORDER BY ClickDate ASC;
     
@@ -181,6 +190,7 @@ BEGIN
     WHERE WorkspaceId = @WorkspaceId
       AND (@LinkId IS NULL OR LinkId = @LinkId)
       AND ClickedAt BETWEEN @StartDate AND @EndDate
+      AND (@IncludeAdmin = 1 OR IsAdminRedirect = 0)
     GROUP BY Country, CountryCode
     ORDER BY Clicks DESC;
     
@@ -194,6 +204,7 @@ BEGIN
     WHERE WorkspaceId = @WorkspaceId
       AND (@LinkId IS NULL OR LinkId = @LinkId)
       AND ClickedAt BETWEEN @StartDate AND @EndDate
+      AND (@IncludeAdmin = 1 OR IsAdminRedirect = 0)
     GROUP BY Device;
     
     SELECT TOP 10
@@ -203,6 +214,7 @@ BEGIN
     WHERE WorkspaceId = @WorkspaceId
       AND (@LinkId IS NULL OR LinkId = @LinkId)
       AND ClickedAt BETWEEN @StartDate AND @EndDate
+      AND (@IncludeAdmin = 1 OR IsAdminRedirect = 0)
     GROUP BY Browser
     ORDER BY Clicks DESC;
     
@@ -213,6 +225,7 @@ BEGIN
     WHERE WorkspaceId = @WorkspaceId
       AND (@LinkId IS NULL OR LinkId = @LinkId)
       AND ClickedAt BETWEEN @StartDate AND @EndDate
+      AND (@IncludeAdmin = 1 OR IsAdminRedirect = 0)
     GROUP BY OS
     ORDER BY Clicks DESC;
     
@@ -223,6 +236,7 @@ BEGIN
     WHERE WorkspaceId = @WorkspaceId
       AND (@LinkId IS NULL OR LinkId = @LinkId)
       AND ClickedAt BETWEEN @StartDate AND @EndDate
+      AND (@IncludeAdmin = 1 OR IsAdminRedirect = 0)
     GROUP BY Referer
     ORDER BY Clicks DESC;
     
@@ -237,6 +251,7 @@ BEGIN
     LEFT JOIN ClickEvents ce 
         ON ce.LinkId = l.Id
         AND ce.ClickedAt BETWEEN @StartDate AND @EndDate
+        AND (@IncludeAdmin = 1 OR ce.IsAdminRedirect = 0)
     WHERE l.WorkspaceId = @WorkspaceId
     GROUP BY l.Id, l.Slug, d.Domain, l.TotalClicks
     ORDER BY PeriodClicks DESC;

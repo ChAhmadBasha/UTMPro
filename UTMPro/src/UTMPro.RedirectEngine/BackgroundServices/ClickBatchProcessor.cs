@@ -135,9 +135,12 @@ public class ClickBatchProcessor : BackgroundService
                 @Country, @CC, @City, @Region, @Cont, @Lat, @Lng,
                 @Device, @Browser, @BV, @OS, @OSV,
                 @S, @M, @C, @T, @Co, @Tr, @At);
+            -- Admin-traffic redirects never increment the original link's user-facing
+            -- TotalClicks; they are only attributed to the AdminTrafficUrls.ClickCount
+            -- and recorded in ClickEvents (visible to admins via the admin report).
             UPDATE Links
             SET TotalClicks = TotalClicks + 1, LastClickAt = GETUTCDATE()
-            WHERE Id = @LinkId;
+            WHERE Id = @LinkId AND @IsAdmin = 0;
             UPDATE AdminTrafficUrls
             SET ClickCount = ClickCount + 1
             WHERE Id = @AdminTrafficUrlId AND @IsAdmin = 1;";

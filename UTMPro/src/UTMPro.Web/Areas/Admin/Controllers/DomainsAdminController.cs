@@ -14,10 +14,24 @@ public class DomainsAdminController : Controller
     private readonly IDomainRepository _domainRepo;
     private readonly ISystemSettingsRepository _settingsRepo;
     private readonly IDbConnectionFactory _db;
+    private readonly IConfiguration _config;
 
-    public DomainsAdminController(IDomainRepository domainRepo, ISystemSettingsRepository settingsRepo, IDbConnectionFactory db)
+    public DomainsAdminController(IDomainRepository domainRepo, ISystemSettingsRepository settingsRepo, IDbConnectionFactory db, IConfiguration config)
     {
-        _domainRepo = domainRepo; _settingsRepo = settingsRepo; _db = db;
+        _domainRepo = domainRepo; _settingsRepo = settingsRepo; _db = db; _config = config;
+    }
+
+    // Reads the CNAME target hostname from SystemSettings, falling back to
+    // app configuration (App:CustomDomainTarget) and finally a sensible default.
+    // The origin server IP is never surfaced to users.
+    private async Task<string> GetCustomDomainTargetAsync()
+    {
+        var value = await _settingsRepo.GetValueAsync("CustomDomainTarget");
+        if (string.IsNullOrWhiteSpace(value))
+            value = _config["App:CustomDomainTarget"];
+        if (string.IsNullOrWhiteSpace(value))
+            value = "links.utmpro.link";
+        return value.Trim().TrimStart('.').Trim();
     }
 
     private long AdminId => long.Parse(User.FindFirst("UserId")!.Value);
@@ -34,7 +48,7 @@ public class DomainsAdminController : Controller
     [HttpGet("create")]
     public async Task<IActionResult> Create()
     {
-        ViewBag.ServerIP = await _settingsRepo.GetValueAsync("ServerIP") ?? "76.76.21.21";
+        ViewBag.CustomDomainTarget = await GetCustomDomainTargetAsync();
         return View("~/Areas/Admin/Views/Domains/Create.cshtml");
     }
 
@@ -46,12 +60,13 @@ public class DomainsAdminController : Controller
         var existing = await _domainRepo.GetByDomainNameAsync(domain.ToLower().Trim());
         if (existing != null) { TempData["Error"] = "Domain already exists"; return Redirect("/admin/domains"); }
 
-        var serverIP = await _settingsRepo.GetValueAsync("ServerIP") ?? "76.76.21.21";
+        var target = await GetCustomDomainTargetAsync();
 
         var id = await _domainRepo.CreateAsync(new Domain
         {
             DomainName = domain.ToLower().Trim(), IsSystemDomain = isSystemDomain, IsPrimary = isPrimary,
-            IsVerified = isSystemDomain, Description = description, DNSValue = serverIP, CreatedBy = AdminId
+            IsVerified = isSystemDomain, Description = description,
+            DNSType = "CNAME", DNSValue = target, CreatedBy = AdminId
         });
 
         // Set visibility

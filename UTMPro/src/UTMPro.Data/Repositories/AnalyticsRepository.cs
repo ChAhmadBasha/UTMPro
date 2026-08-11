@@ -9,7 +9,7 @@ public class AnalyticsRepository : IAnalyticsRepository
     private readonly IDbConnectionFactory _db;
     public AnalyticsRepository(IDbConnectionFactory db) => _db = db;
 
-    public async Task<AnalyticsSummary> GetSummaryAsync(long workspaceId, DateTime startDate, DateTime endDate, long? linkId = null)
+    public async Task<AnalyticsSummary> GetSummaryAsync(long workspaceId, DateTime startDate, DateTime endDate, long? linkId = null, bool includeAdmin = false)
     {
         await using var conn = await _db.CreateOpenConnectionAsync();
         await using var cmd = new SqlCommand("sp_GetAnalyticsSummary", conn);
@@ -19,6 +19,7 @@ public class AnalyticsRepository : IAnalyticsRepository
         cmd.Parameters.AddWithValue("@StartDate", startDate);
         cmd.Parameters.AddWithValue("@EndDate", endDate);
         cmd.Parameters.AddWithValue("@LinkId", (object?)linkId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@IncludeAdmin", includeAdmin);
 
         var summary = new AnalyticsSummary();
 
@@ -95,12 +96,13 @@ public class AnalyticsRepository : IAnalyticsRepository
         return summary;
     }
 
-    public async Task<List<ClickEvent>> GetEventsAsync(long workspaceId, int page, int pageSize, long? linkId = null)
+    public async Task<List<ClickEvent>> GetEventsAsync(long workspaceId, int page, int pageSize, long? linkId = null, bool includeAdmin = false)
     {
         const string sql = @"
             SELECT * FROM ClickEvents 
             WHERE WorkspaceId = @WorkspaceId
             AND (@LinkId IS NULL OR LinkId = @LinkId)
+            AND (@IncludeAdmin = 1 OR IsAdminRedirect = 0)
             ORDER BY ClickedAt DESC
             OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
@@ -108,6 +110,7 @@ public class AnalyticsRepository : IAnalyticsRepository
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@WorkspaceId", workspaceId);
         cmd.Parameters.AddWithValue("@LinkId", (object?)linkId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@IncludeAdmin", includeAdmin);
         cmd.Parameters.AddWithValue("@Offset", (page - 1) * pageSize);
         cmd.Parameters.AddWithValue("@PageSize", pageSize);
 
@@ -135,16 +138,18 @@ public class AnalyticsRepository : IAnalyticsRepository
         return events;
     }
 
-    public async Task<int> GetEventsCountAsync(long workspaceId, long? linkId = null)
+    public async Task<int> GetEventsCountAsync(long workspaceId, long? linkId = null, bool includeAdmin = false)
     {
         const string sql = @"
             SELECT COUNT(*) FROM ClickEvents 
             WHERE WorkspaceId = @WorkspaceId
-            AND (@LinkId IS NULL OR LinkId = @LinkId)";
+            AND (@LinkId IS NULL OR LinkId = @LinkId)
+            AND (@IncludeAdmin = 1 OR IsAdminRedirect = 0)";
         await using var conn = await _db.CreateOpenConnectionAsync();
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@WorkspaceId", workspaceId);
         cmd.Parameters.AddWithValue("@LinkId", (object?)linkId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@IncludeAdmin", includeAdmin);
         return (int)(await cmd.ExecuteScalarAsync())!;
     }
 }

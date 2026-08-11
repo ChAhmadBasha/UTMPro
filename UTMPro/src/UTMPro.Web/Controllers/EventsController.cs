@@ -20,8 +20,8 @@ public class EventsController : BaseWorkspaceController
     {
         if (!await LoadWorkspaceAsync(workspaceSlug, _wsRepo)) return NotFound();
 
-        var events = await _analyticsRepo.GetEventsAsync(CurrentWorkspace!.Id, page, 50, linkId);
-        var total = await _analyticsRepo.GetEventsCountAsync(CurrentWorkspace.Id, linkId);
+        var events = await _analyticsRepo.GetEventsAsync(CurrentWorkspace!.Id, page, 50, linkId, IsSuperAdmin);
+        var total = await _analyticsRepo.GetEventsCountAsync(CurrentWorkspace.Id, linkId, IsSuperAdmin);
 
         ViewBag.TotalCount = total;
         ViewBag.CurrentPage = page;
