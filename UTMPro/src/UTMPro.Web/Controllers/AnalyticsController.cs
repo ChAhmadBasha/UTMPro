@@ -62,10 +62,10 @@ public class AnalyticsController : BaseWorkspaceController
         if (hasFilters)
         {
             // Use filtered SP
-            return Ok(await GetFilteredAnalyticsAsync(CurrentWorkspace.Id, start, end, linkId, country, device, browser, os, trigger, referrer));
+            return Ok(await GetFilteredAnalyticsAsync(CurrentWorkspace.Id, start, end, linkId, country, device, browser, os, trigger, referrer, IsSuperAdmin));
         }
 
-        var data = await _analyticsRepo.GetSummaryAsync(CurrentWorkspace.Id, start, end, linkId);
+        var data = await _analyticsRepo.GetSummaryAsync(CurrentWorkspace.Id, start, end, linkId, IsSuperAdmin);
         return Ok(data);
     }
 
@@ -82,6 +82,7 @@ public class AnalyticsController : BaseWorkspaceController
         cmd.Parameters.AddWithValue("@WorkspaceId", CurrentWorkspace!.Id);
         cmd.Parameters.AddWithValue("@StartDate", start);
         cmd.Parameters.AddWithValue("@EndDate", end);
+        cmd.Parameters.AddWithValue("@IncludeAdmin", IsSuperAdmin);
 
         var countries = new List<string>();
         var devices = new List<string>();
@@ -101,7 +102,7 @@ public class AnalyticsController : BaseWorkspaceController
     }
 
     private async Task<AnalyticsSummary> GetFilteredAnalyticsAsync(long wsId, DateTime start, DateTime end,
-        long? linkId, string? country, string? device, string? browser, string? os, string? trigger, string? referrer)
+        long? linkId, string? country, string? device, string? browser, string? os, string? trigger, string? referrer, bool includeAdmin)
     {
         await using var conn = await _db.CreateOpenConnectionAsync();
         await using var cmd = new SqlCommand("sp_GetFilteredAnalytics", conn);
@@ -111,6 +112,7 @@ public class AnalyticsController : BaseWorkspaceController
         cmd.Parameters.AddWithValue("@StartDate", start);
         cmd.Parameters.AddWithValue("@EndDate", end);
         cmd.Parameters.AddWithValue("@LinkId", (object?)linkId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@IncludeAdmin", includeAdmin);
         cmd.Parameters.AddWithValue("@Country", (object?)country ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@Device", (object?)device ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@Browser", (object?)browser ?? DBNull.Value);

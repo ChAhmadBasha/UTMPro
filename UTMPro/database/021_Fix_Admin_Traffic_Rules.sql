@@ -159,6 +159,8 @@ BEGIN
         ClickedAt       DATETIME2      '$.ClickedAt'
     );
 
+    -- Admin-traffic redirects never increment the original link's user-facing
+    -- TotalClicks; they are attributed only to AdminTrafficUrls.ClickCount.
     UPDATE l
     SET l.TotalClicks = l.TotalClicks + counts.ClickCount,
         l.LastClickAt = GETUTCDATE()
@@ -166,7 +168,11 @@ BEGIN
     INNER JOIN (
         SELECT LinkId, COUNT_BIG(*) AS ClickCount
         FROM OPENJSON(@Events)
-        WITH (LinkId BIGINT '$.LinkId')
+        WITH (
+            LinkId BIGINT '$.LinkId',
+            IsAdminRedirect BIT '$.IsAdminRedirect'
+        )
+        WHERE IsAdminRedirect = 0
         GROUP BY LinkId
     ) counts ON l.Id = counts.LinkId;
 
