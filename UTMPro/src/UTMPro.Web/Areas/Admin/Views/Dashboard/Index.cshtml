@@ -1,0 +1,270 @@
+@model AdminDashboardViewModel
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Dashboard"; }
+
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+    <span class="text-xs text-gray-400">Last 30 days · Updated now</span>
+</div>
+
+<!-- ═══ ROW 1: Key Metric Cards ═══ -->
+<div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+    <div class="bg-white p-4 rounded-xl border">
+        <p class="text-[10px] text-gray-400 uppercase font-medium">Users</p>
+        <p class="text-2xl font-bold mt-1">@Model.TotalUsers.ToString("N0")</p>
+        <p class="text-[11px] text-green-600 mt-0.5">+@Model.NewUsersToday today · +@Model.NewUsersWeek week</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border">
+        <p class="text-[10px] text-gray-400 uppercase font-medium">Workspaces</p>
+        <p class="text-2xl font-bold mt-1">@Model.TotalWorkspaces.ToString("N0")</p>
+        <p class="text-[11px] text-gray-500 mt-0.5">@Model.ActiveWorkspaces active</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border">
+        <p class="text-[10px] text-gray-400 uppercase font-medium">Links</p>
+        <p class="text-2xl font-bold mt-1">@Model.TotalLinks.ToString("N0")</p>
+        <p class="text-[11px] text-green-600 mt-0.5">+@Model.LinksCreatedToday today</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border bg-gradient-to-br from-white to-blue-50">
+        <p class="text-[10px] text-blue-500 uppercase font-medium">Clicks Today</p>
+        <p class="text-2xl font-bold mt-1 text-blue-700">@Model.ClicksToday.ToString("N0")</p>
+        <p class="text-[11px] text-blue-500 mt-0.5">@Model.ClicksLastHour last hour</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border">
+        <p class="text-[10px] text-gray-400 uppercase font-medium">Clicks Week</p>
+        <p class="text-2xl font-bold mt-1">@Model.ClicksWeek.ToString("N0")</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border">
+        <p class="text-[10px] text-gray-400 uppercase font-medium">Clicks Month</p>
+        <p class="text-2xl font-bold mt-1">@Model.ClicksMonth.ToString("N0")</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border">
+        <p class="text-[10px] text-gray-400 uppercase font-medium">Domains</p>
+        <p class="text-2xl font-bold mt-1">@Model.VerifiedDomains</p>
+        <p class="text-[11px] text-gray-500 mt-0.5">+@Model.SystemDomains system</p>
+    </div>
+</div>
+
+<!-- ═══ ROW 2: Click Trend + Hourly Chart ═══ -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+    <div class="lg:col-span-2 bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-3">📈 Clicks (Last 30 Days)</h2>
+        <canvas id="clicksChart" height="100"></canvas>
+    </div>
+    <div class="bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-3">⏰ Today's Clicks by Hour</h2>
+        <canvas id="hourlyChart" height="140"></canvas>
+    </div>
+</div>
+
+<!-- ═══ ROW 3: Signups + Device + Plan Distribution ═══ -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-3">👤 New Users (30 Days)</h2>
+        <canvas id="signupsChart" height="130"></canvas>
+    </div>
+    <div class="bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-3">📱 Device Split</h2>
+        <canvas id="deviceChart" height="130"></canvas>
+    </div>
+    <div class="bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-3">💎 Plan Distribution</h2>
+        <canvas id="planChart" height="130"></canvas>
+    </div>
+</div>
+
+<!-- ═══ ROW 4: Browser + OS + Referrers ═══ -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-3">🌐 Browsers</h2>
+        <canvas id="browserChart" height="130"></canvas>
+    </div>
+    <div class="bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-3">💻 Operating Systems</h2>
+        <canvas id="osChart" height="130"></canvas>
+    </div>
+    <div class="bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-3">🔗 Top Referrers</h2>
+        <div class="space-y-2 mt-2">
+            @foreach (var r in Model.TopReferrers) {
+                var barW = Model.TopReferrers.Count > 0 ? (int)(r.Count * 100.0 / Math.Max(1, Model.TopReferrers[0].Count)) : 0;
+            <div class="flex items-center justify-between text-sm">
+                <span class="truncate">@r.Name</span>
+                <div class="flex items-center gap-2">
+                    <div class="w-24 h-2 bg-gray-100 rounded-full"><div class="h-full bg-blue-500 rounded-full" style="width:@(barW)%"></div></div>
+                    <span class="text-xs font-medium text-gray-500 w-12 text-right">@r.Count.ToString("N0")</span>
+                </div>
+            </div>}
+        </div>
+    </div>
+</div>
+
+<!-- ═══ ROW 5: Top Countries ═══ -->
+<div class="bg-white rounded-xl border p-5 mb-6">
+    <h2 class="font-semibold text-sm mb-4">🌍 Top Countries (Last 30 Days)</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        @foreach (var c in Model.TopCountries) {
+            var pct = Model.ClicksMonth > 0 ? (int)(c.Count * 100.0 / Model.ClicksMonth) : 0;
+        <div class="bg-gray-50 rounded-lg p-3 text-center">
+            <p class="text-2xl mb-1">@CountryFlag(c.Code ?? "--")</p>
+            <p class="text-sm font-semibold">@c.Name</p>
+            <p class="text-lg font-bold text-blue-600">@c.Count.ToString("N0")</p>
+            <p class="text-[10px] text-gray-400">@pct% of traffic</p>
+        </div>}
+    </div>
+</div>
+
+<!-- ═══ ROW 6: Top Performing Links ═══ -->
+<div class="bg-white rounded-xl border overflow-hidden mb-6">
+    <div class="px-5 py-4 border-b"><h2 class="font-semibold text-sm">🔥 Top Performing Links (Last 30 Days)</h2></div>
+    @if (Model.TopLinks.Count > 0) {
+    <div class="table-wrap">
+    <table class="w-full min-w-[700px]"><thead class="bg-gray-50 border-b"><tr>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Rank</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Short Link</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Destination</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Workspace</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">30d Clicks</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">All-Time</th>
+    </tr></thead><tbody class="divide-y">
+    @{ var linkRank = 0; }
+    @foreach (var l in Model.TopLinks) { linkRank++;
+        var rankClass = linkRank <= 3 ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500";
+        var destTrunc = l.PrimaryUrl != null && l.PrimaryUrl.Length > 45 ? l.PrimaryUrl.Substring(0, 45) + "…" : l.PrimaryUrl;
+    <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-sm"><span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-xs font-bold @rankClass">@linkRank</span></td>
+        <td class="px-4 py-3 text-sm font-medium"><a href="/@l.WorkspaceSlug/links/@l.LinkId" target="_blank" class="text-blue-600 hover:underline">@l.Domain/@l.Slug</a></td>
+        <td class="px-4 py-3 text-xs text-gray-500 max-w-[200px] truncate" title="@l.PrimaryUrl">@destTrunc</td>
+        <td class="px-4 py-3 text-sm">@l.WorkspaceName</td>
+        <td class="px-4 py-3 text-sm text-right font-bold text-blue-600">@l.Clicks30d.ToString("N0")</td>
+        <td class="px-4 py-3 text-sm text-right text-gray-500">@l.AllTimeClicks.ToString("N0")</td>
+    </tr>}
+    </tbody></table>
+    </div>
+    } else {
+    <div class="text-center py-8 text-gray-400 text-sm">No click data yet</div>
+    }
+</div>
+
+<!-- ═══ ROW 7: Top Performing Workspaces ═══ -->
+<div class="bg-white rounded-xl border overflow-hidden mb-6">
+    <div class="px-5 py-4 border-b"><h2 class="font-semibold text-sm">🏆 Top Performing Workspaces (Last 30 Days)</h2></div>
+    @if (Model.TopWorkspaces.Count > 0) {
+    <div class="table-wrap">
+    <table class="w-full min-w-[700px]"><thead class="bg-gray-50 border-b"><tr>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Rank</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Workspace</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Plan</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Links</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Members</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">30d Clicks</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Links Used</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Events Used</th>
+        <th class="px-4 py-2"></th>
+    </tr></thead><tbody class="divide-y">
+    @{ var wsRank = 0; }
+    @foreach (var w in Model.TopWorkspaces) { wsRank++;
+        var wRankClass = wsRank <= 3 ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500";
+    <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-sm"><span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-xs font-bold @wRankClass">@wsRank</span></td>
+        <td class="px-4 py-3"><a href="/admin/workspaces/@w.WorkspaceId" class="text-sm font-medium text-blue-600 hover:underline">@w.Name</a><p class="text-[10px] text-gray-400">/@w.Slug</p></td>
+        <td class="px-4 py-3"><span class="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium">@w.PlanName</span></td>
+        <td class="px-4 py-3 text-sm text-right">@w.LinkCount</td>
+        <td class="px-4 py-3 text-sm text-right">@w.MemberCount</td>
+        <td class="px-4 py-3 text-sm text-right font-bold text-green-600">@w.Clicks30d.ToString("N0")</td>
+        <td class="px-4 py-3 text-sm text-right">@w.LinksUsed</td>
+        <td class="px-4 py-3 text-sm text-right">@w.EventsUsed.ToString("N0")</td>
+        <td class="px-4 py-3"><a href="/@w.Slug/links" target="_blank" class="text-xs text-blue-500 hover:underline">Open ↗</a></td>
+    </tr>}
+    </tbody></table>
+    </div>
+    } else {
+    <div class="text-center py-8 text-gray-400 text-sm">No workspace data yet</div>
+    }
+</div>
+
+<!-- ═══ Chart.js Scripts ═══ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ── Prepare data from Razor (safe JSON arrays) ──
+var clickLabels = [@Html.Raw(string.Join(",", Model.ClicksByDay.Select(d => "'" + d.Date.ToString("MMM d") + "'")))];
+var clickData = [@string.Join(",", Model.ClicksByDay.Select(d => d.Count))];
+var signupLabels = [@Html.Raw(string.Join(",", Model.SignupsByDay.Select(d => "'" + d.Date.ToString("MMM d") + "'")))];
+var signupData = [@string.Join(",", Model.SignupsByDay.Select(d => d.Count))];
+var deviceLabels = [@Html.Raw(string.Join(",", Model.DeviceBreakdown.Select(d => "'" + d.Name.Replace("'", "\\'") + "'")))];
+var deviceData = [@string.Join(",", Model.DeviceBreakdown.Select(d => d.Count))];
+var planLabels = [@Html.Raw(string.Join(",", Model.PlanDistribution.Select(d => "'" + d.Name.Replace("'", "\\'") + "'")))];
+var planData = [@string.Join(",", Model.PlanDistribution.Select(d => d.Count))];
+var browserLabels = [@Html.Raw(string.Join(",", Model.BrowserBreakdown.Select(d => "'" + d.Name.Replace("'", "\\'") + "'")))];
+var browserData = [@string.Join(",", Model.BrowserBreakdown.Select(d => d.Count))];
+var osLabels = [@Html.Raw(string.Join(",", Model.OSBreakdown.Select(d => "'" + d.Name.Replace("'", "\\'") + "'")))];
+var osData = [@string.Join(",", Model.OSBreakdown.Select(d => d.Count))];
+
+// Build hourly data array (24 slots, fill from Razor)
+var hourlyData = new Array(24).fill(0);
+@foreach (var h in Model.ClicksByHour) {
+    @:hourlyData[@h.Hour] = @h.Count;
+}
+var hourlyLabels = [];
+for (var i = 0; i < 24; i++) hourlyLabels.push(i + ':00');
+
+var colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1'];
+var planColors = ['#e5e7eb','#3b82f6','#10b981','#f59e0b','#8b5cf6'];
+var noLegend = { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } };
+
+// ── Clicks 30-Day Line Chart ──
+new Chart(document.getElementById('clicksChart'), {
+    type: 'line',
+    data: { labels: clickLabels, datasets: [{ label: 'Clicks', data: clickData, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: 1 }] },
+    options: Object.assign({}, noLegend, { scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 }, maxRotation: 0, maxTicksLimit: 10 } } } })
+});
+
+// ── Hourly Bar Chart ──
+new Chart(document.getElementById('hourlyChart'), {
+    type: 'bar',
+    data: { labels: hourlyLabels, datasets: [{ data: hourlyData, backgroundColor: '#3b82f6', borderRadius: 3 }] },
+    options: Object.assign({}, noLegend, { scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 8 }, maxRotation: 0, maxTicksLimit: 12 } } } })
+});
+
+// ── Signups Line Chart ──
+new Chart(document.getElementById('signupsChart'), {
+    type: 'line',
+    data: { labels: signupLabels, datasets: [{ label: 'Signups', data: signupData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: 1 }] },
+    options: Object.assign({}, noLegend, { scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 9 } } }, x: { ticks: { font: { size: 8 }, maxRotation: 0, maxTicksLimit: 8 } } } })
+});
+
+// ── Device Doughnut ──
+new Chart(document.getElementById('deviceChart'), {
+    type: 'doughnut',
+    data: { labels: deviceLabels, datasets: [{ data: deviceData, backgroundColor: colors, borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: true, cutout: '60%', plugins: { legend: { display: true, position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } } } }
+});
+
+// ── Plan Distribution Doughnut ──
+new Chart(document.getElementById('planChart'), {
+    type: 'doughnut',
+    data: { labels: planLabels, datasets: [{ data: planData, backgroundColor: planColors, borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: true, cutout: '60%', plugins: { legend: { display: true, position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } } } }
+});
+
+// ── Browser Horizontal Bar ──
+new Chart(document.getElementById('browserChart'), {
+    type: 'bar',
+    data: { labels: browserLabels, datasets: [{ data: browserData, backgroundColor: colors, borderRadius: 3 }] },
+    options: Object.assign({}, noLegend, { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 10 } } } } })
+});
+
+// ── OS Horizontal Bar ──
+new Chart(document.getElementById('osChart'), {
+    type: 'bar',
+    data: { labels: osLabels, datasets: [{ data: osData, backgroundColor: colors.slice().reverse(), borderRadius: 3 }] },
+    options: Object.assign({}, noLegend, { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 10 } } } } })
+});
+</script>
+
+@functions {
+    static string CountryFlag(string code)
+    {
+        if (string.IsNullOrEmpty(code) || code.Length != 2 || code == "--") return "🌐";
+        code = code.ToUpper();
+        return string.Concat(code.Select(c => char.ConvertFromUtf32(0x1F1E6 + c - 'A')));
+    }
+}

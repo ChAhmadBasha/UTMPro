@@ -1,0 +1,93 @@
+@model Plan
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Edit " + Model.Name; }
+<div class="flex items-center gap-3 mb-6"><a href="/admin/plans" class="text-gray-400">&larr;</a><h1 class="text-2xl font-bold">Edit: @Model.Name</h1></div>
+<form method="post" action="/admin/plans/@Model.Id/edit" class="max-w-4xl">@Html.AntiForgeryToken()
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl border p-6 space-y-4">
+            <h2 class="font-semibold">Basic Info</h2>
+            <div><label class="block text-sm font-medium mb-1">Plan Name</label><input type="text" name="Name" value="@Model.Name" required class="w-full px-3 py-2 border rounded-lg"></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-sm font-medium mb-1">Price ($)</label><input type="number" name="Price" value="@Model.Price" step="0.01" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Billing Cycle</label>
+                    <select name="BillingCycle" class="w-full px-3 py-2 border rounded-lg">
+                        @if (Model.BillingCycle == "Monthly") { <option selected>Monthly</option><option>Yearly</option> } else { <option>Monthly</option><option selected>Yearly</option> }
+                    </select></div>
+            </div>
+            <div><label class="block text-sm font-medium mb-1">Sort Order</label><input type="number" name="SortOrder" value="@Model.SortOrder" class="w-full px-3 py-2 border rounded-lg"></div>
+            <label class="flex items-center gap-2"><input type="checkbox" name="IsActive" value="true" @(Model.IsActive?"checked":"")><span class="text-sm">Active</span></label>
+            <label class="flex items-center gap-2"><input type="checkbox" name="IsDefault" value="true" @(Model.IsDefault?"checked":"")><span class="text-sm font-medium text-purple-700">Default Plan for new workspaces</span></label>
+        </div>
+        <div class="bg-white rounded-xl border p-6 space-y-4">
+            <h2 class="font-semibold">Limits</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-xs font-medium mb-1">Links/Month</label><input type="number" name="MaxLinksPerMonth" value="@Model.MaxLinksPerMonth" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Events/Month</label><input type="number" name="MaxEventsPerMonth" value="@Model.MaxEventsPerMonth" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Analytics Days</label><input type="number" name="AnalyticsRetentionDays" value="@Model.AnalyticsRetentionDays" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Max Domains</label><input type="number" name="MaxDomains" value="@Model.MaxDomains" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Max Members</label><input type="number" name="MaxMembers" value="@Model.MaxMembers" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Max Folders</label><input type="number" name="MaxFolders" value="@Model.MaxFolders" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Tags/Link</label><input type="number" name="MaxTagsPerLink" value="@Model.MaxTagsPerLink" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Destinations/Link</label><input type="number" name="MaxDestinationsPerLink" value="@Model.MaxDestinationsPerLink" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discount & Trial Section -->
+    <div class="bg-white rounded-xl border p-6 mt-6">
+        <h2 class="font-semibold mb-4 flex items-center gap-2">🏷️ Discount & Sale Offer</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Discount %</label>
+                <input type="number" name="DiscountPercent" value="@Model.DiscountPercent" min="0" max="100" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">0 = no discount, 100 = completely free</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Discount Badge</label>
+                <input type="text" name="DiscountBadge" value="@Model.DiscountBadge" placeholder="e.g. FREE FOR 3 MONTHS" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">Short badge text shown on pricing card</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Trial Days</label>
+                <input type="number" name="TrialDays" value="@Model.TrialDays" min="0" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">0 = no trial. After trial, downgrades to fallback plan.</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Discount Label (long text)</label>
+                <input type="text" name="DiscountLabel" value="@Model.DiscountLabel" placeholder="e.g. 🎉 Limited Time: 100% OFF for 3 months!" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">Promotional text shown below pricing</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Fallback Plan ID (after trial ends)</label>
+                <input type="number" name="FallbackPlanId" value="@(Model.FallbackPlanId?.ToString() ?? "")" placeholder="e.g. 1 for Free plan" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">Plan to downgrade to when trial expires</p>
+            </div>
+        </div>
+        @if (Model.HasDiscount) {
+        <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+            <strong>Preview:</strong> <span class="line-through text-gray-400">$@Model.Price</span> →
+            <span class="text-green-700 font-bold">$@Model.DiscountedPrice/mo</span>
+            @if (!string.IsNullOrEmpty(Model.DiscountBadge)) { <span class="ml-2 px-2 py-0.5 bg-green-600 text-white rounded-full text-xs font-bold">@Model.DiscountBadge</span> }
+        </div>
+        }
+    </div>
+
+    <div class="bg-white rounded-xl border p-6 mt-6">
+        <h2 class="font-semibold mb-4">Features</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            @foreach(var (name, field, val) in new[]{("Password Protection","HasPasswordProtection",Model.HasPasswordProtection),("Link Expiration","HasLinkExpiration",Model.HasLinkExpiration),("Geo Targeting","HasGeoTargeting",Model.HasGeoTargeting),("Device Targeting","HasDeviceTargeting",Model.HasDeviceTargeting),("Link Cloaking","HasLinkCloaking",Model.HasLinkCloaking),("A/B Testing","HasABTesting",Model.HasABTesting),("Customer Insights","HasCustomerInsights",Model.HasCustomerInsights),("Webhooks","HasEventWebhooks",Model.HasEventWebhooks),("API Access","HasAPIAccess",Model.HasAPIAccess),("Weighted URLs","HasWeightedURLs",Model.HasWeightedURLs)}) {
+            <label class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg"><input type="checkbox" name="@field" value="true" @(val?"checked":"")><span class="text-sm">@name</span></label>}
+        </div>
+    </div>
+    <div class="mt-6">
+        <button type="submit" class="bg-black text-white px-8 py-2.5 rounded-lg font-medium hover:bg-gray-800">Save Changes</button>
+    </div>
+</form>
+
+<!-- Delete form OUTSIDE the edit form (nested forms are invalid HTML) -->
+<div class="mt-3 max-w-4xl">
+    <form method="post" action="/admin/plans/@Model.Id/delete">@Html.AntiForgeryToken()
+        <button type="submit" class="px-6 py-2.5 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm hover:bg-red-100" onclick="return confirm('Disable this plan?')">Disable Plan</button>
+    </form>
+</div>

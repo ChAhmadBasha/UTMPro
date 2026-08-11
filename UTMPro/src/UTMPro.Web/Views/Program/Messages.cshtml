@@ -1,0 +1,21 @@
+@model List<PartnerMessage>
+@{ ViewData["Title"] = "Messages"; var ws = ViewBag.Workspace as Workspace; }
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Messages</h1>
+    <button onclick="document.getElementById('msgModal').classList.remove('hidden')" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">+ Send Message</button>
+</div>
+<div class="bg-white rounded-xl border overflow-hidden">
+@if(Model.Count==0){<div class="text-center py-12"><p class="text-gray-500">No messages yet</p></div>}
+else{<div class="divide-y divide-gray-100">@foreach(var m in Model){<div class="p-4 hover:bg-gray-50"><div class="flex justify-between mb-1"><span class="text-sm font-medium">@m.Subject</span><span class="text-xs text-gray-400">@m.CreatedAt.ToString("MMM d, HH:mm")</span></div><p class="text-sm text-gray-600 line-clamp-2">@m.Body</p><p class="text-xs text-gray-400 mt-1">From @m.SenderName</p></div>}</div>}
+</div>
+<div id="msgModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg m-4">
+        <div class="flex justify-between items-center mb-4"><h2 class="text-lg font-bold">Send Message</h2><button onclick="document.getElementById('msgModal').classList.add('hidden')" class="text-gray-400 text-2xl">&times;</button></div>
+        <form method="post" action="/@ws?.Slug/program/messages">@Html.AntiForgeryToken()
+            <div class="mb-4"><label class="block text-sm font-medium mb-2">Subject</label><input type="text" name="subject" required class="w-full px-3 py-2 border rounded-lg"></div>
+            <div class="mb-4"><label class="block text-sm font-medium mb-2">Message</label><textarea name="body" required rows="4" class="w-full px-3 py-2 border rounded-lg"></textarea></div>
+            <p class="text-xs text-gray-400 mb-4">Leave partner ID empty to broadcast to all partners.</p>
+            <button type="submit" class="w-full bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-800">Send Message</button>
+        </form>
+    </div>
+</div>

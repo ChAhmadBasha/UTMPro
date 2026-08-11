@@ -1,0 +1,22 @@
+@model List<User>
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Users"; }
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Users (@ViewBag.TotalCount)</h1>
+    <form method="get" class="flex gap-2"><input type="text" name="search" value="@ViewBag.Search" placeholder="Search..." class="px-3 py-2 border rounded-lg text-sm w-64"><button type="submit" class="px-4 py-2 bg-gray-100 rounded-lg text-sm">Search</button></form>
+</div>
+<div class="bg-white rounded-xl border overflow-hidden">
+<table class="w-full"><thead class="bg-gray-50 border-b"><tr>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">User</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Role</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Joined</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Last Login</th>
+</tr></thead><tbody class="divide-y divide-gray-100">
+@foreach (var u in Model) { <tr class="hover:bg-gray-50">
+    <td class="px-4 py-3"><a href="/admin/users/@u.Id" class="text-sm font-medium text-blue-600 hover:underline">@u.Name</a><p class="text-xs text-gray-500">@u.Email</p></td>
+    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(u.IsActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")">@(u.IsActive ? "Active" : "Suspended")</span></td>
+    <td class="px-4 py-3 text-sm">@(u.IsSuperAdmin ? "🛡️ Admin" : "User")</td>
+    <td class="px-4 py-3 text-sm text-gray-500">@u.CreatedAt.ToString("MMM d, yyyy")</td>
+    <td class="px-4 py-3 text-sm text-gray-500">@(u.LastLoginAt?.ToString("MMM d, HH:mm") ?? "Never")</td>
+</tr> }
+</tbody></table></div>

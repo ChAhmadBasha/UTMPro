@@ -1,0 +1,16 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Webhooks"; ViewData["Description"] = "Receive real-time notifications when events happen on your links"; }
+
+<h1 style="font-size:2rem;font-weight:800;">Webhooks</h1>
+<p>Get real-time HTTP notifications when events occur on your links.</p>
+
+<h2>Supported Events</h2>
+<ul><li><code>link.clicked</code> — When someone clicks a link</li><li><code>link.created</code> — When a new link is created</li><li><code>link.updated</code> — When a link is edited</li><li><code>link.deleted</code> — When a link is deleted</li></ul>
+
+<h2>Setting Up</h2>
+<ol><li>Go to <strong>Settings → Webhooks</strong></li><li>Click <strong>Add Webhook</strong></li><li>Enter your endpoint URL</li><li>Select the events to subscribe to</li><li>Optionally set a <strong>secret</strong> for HMAC signature verification</li></ol>
+
+<h2>Security</h2>
+<p>Each webhook delivery includes an HMAC-SHA256 signature in the <code>X-Webhook-Signature</code> header. Verify this against your secret to ensure the request is genuine.</p>
+
+<h2>Retry Logic</h2>
+<p>Failed deliveries are retried with exponential backoff. You can view delivery logs and retry status in the webhook settings.</p>

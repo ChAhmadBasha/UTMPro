@@ -1,0 +1,31 @@
+@model List<Workspace>
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Workspaces"; }
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Workspaces (@ViewBag.TotalCount)</h1>
+    <form method="get" class="flex gap-2"><input type="text" name="search" value="@ViewBag.Search" placeholder="Search..." class="px-3 py-2 border rounded-lg text-sm w-64"><button type="submit" class="px-4 py-2 bg-gray-100 rounded-lg text-sm">Search</button></form>
+</div>
+<div class="table-wrap bg-white rounded-xl border overflow-hidden">
+<table class="w-full min-w-[800px]"><thead class="bg-gray-50 border-b"><tr>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Workspace</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Owner</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Plan</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Members</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Links</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Created</th>
+    <th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
+</tr></thead><tbody class="divide-y divide-gray-100">
+@foreach (var w in Model) { <tr class="hover:bg-gray-50 @(!w.IsActive ? "opacity-50" : "")">
+    <td class="px-4 py-3"><a href="/admin/workspaces/@w.Id" class="text-sm font-medium text-blue-600 hover:underline">@w.Name</a><p class="text-xs text-gray-500">/@w.Slug</p></td>
+    <td class="px-4 py-3 text-sm">@w.OwnerName<p class="text-xs text-gray-500">@w.OwnerEmail</p></td>
+    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-gray-100 font-medium">@w.PlanName</span></td>
+    <td class="px-4 py-3 text-sm text-right">@w.MemberCount</td>
+    <td class="px-4 py-3 text-sm text-right font-medium">@w.LinkCount</td>
+    <td class="px-4 py-3 text-sm text-gray-500">@w.CreatedAt.ToString("MMM d, yyyy")</td>
+    <td class="px-4 py-3">
+        <div class="flex gap-2">
+            <a href="/admin/workspaces/@w.Id" class="text-xs text-blue-600 hover:underline">Detail</a>
+            <a href="/@w.Slug/links" target="_blank" class="text-xs text-green-600 hover:underline">Open ↗</a>
+        </div>
+    </td>
+</tr> }
+</tbody></table></div>

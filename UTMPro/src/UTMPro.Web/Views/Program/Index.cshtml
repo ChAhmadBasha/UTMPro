@@ -1,0 +1,33 @@
+@model PartnerProgram
+@{ ViewData["Title"] = "Partner Program"; var ws = ViewBag.Workspace as Workspace; }
+<div class="flex items-center justify-between mb-6">
+    <div><h1 class="text-2xl font-bold">Partner Program</h1><p class="text-gray-500 text-sm">@Model.ProgramName</p></div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Partners</p><p class="text-2xl font-bold">@Model.TotalPartners</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Total Revenue</p><p class="text-2xl font-bold">$@Model.TotalRevenue.ToString("N2")</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Total Payouts</p><p class="text-2xl font-bold">$@Model.TotalPayouts.ToString("N2")</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Commission</p><p class="text-2xl font-bold">@Model.CommissionValue@(Model.CommissionType == "Percentage" ? "%" : " flat")</p></div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+    <div class="bg-white rounded-xl border p-6"><h2 class="font-semibold mb-4">Program Settings</h2><div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Commission Type</span><span>@Model.CommissionType</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Duration</span><span>@Model.CommissionDuration</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Cookie Window</span><span>@Model.CookieDays days</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Payout Threshold</span><span>$@Model.PayoutThreshold</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Payout Frequency</span><span>@Model.PayoutFrequency</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Application Required</span><span>@(Model.RequireApplication ? "Yes" : "No")</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Public</span><span>@(Model.IsPublic ? "Yes" : "No")</span></div>
+    </div></div>
+    <div class="bg-white rounded-xl border p-6"><h2 class="font-semibold mb-4">Quick Links</h2>
+        <div class="space-y-3">
+            <a href="/@ws?.Slug/program/partners" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 text-sm">👥 Manage Partners</a>
+            <a href="/@ws?.Slug/program/sales" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 text-sm">💰 Sales & Commissions</a>
+            <a href="/@ws?.Slug/program/payouts" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 text-sm">💸 Payouts</a>
+            <a href="/@ws?.Slug/program/bounties" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 text-sm">🎯 Bounties</a>
+            <a href="/@ws?.Slug/program/messages" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 text-sm">💬 Messages</a>
+            <a href="/@ws?.Slug/program/fraud" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 text-sm">🛡️ Fraud Events</a>
+            <a href="/@ws?.Slug/program/analytics" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 text-sm">📊 Analytics</a>
+        </div>
+    </div>
+</div>

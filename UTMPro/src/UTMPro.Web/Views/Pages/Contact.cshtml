@@ -1,0 +1,73 @@
+@{ Layout = "~/Views/Pages/_PageLayout.cshtml"; ViewData["Title"] = ViewBag.Title ?? "Contact Us"; ViewData["Description"] = "Get in touch with the UTMPro team."; }
+
+<div class="max-w-5xl mx-auto px-6 py-16">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-3">@(ViewBag.Title ?? "Contact Us")</h1>
+        <p class="text-lg text-gray-500 max-w-xl mx-auto">@(ViewBag.Subtitle ?? "We'd love to hear from you.")</p>
+    </div>
+
+    <div class="grid grid-cols-3 gap-8">
+        <!-- Contact Info -->
+        <div class="space-y-6">
+            <div class="bg-gray-50 rounded-2xl p-6">
+                <div class="text-2xl mb-2">📧</div>
+                <h3 class="font-semibold mb-1">Email</h3>
+                <a href="mailto:@(ViewBag.ContactEmail ?? "hello@utmpro.link")" class="text-blue-600 hover:underline text-sm">@(ViewBag.ContactEmail ?? "hello@utmpro.link")</a>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ViewBag.Phone as string)) {
+            <div class="bg-gray-50 rounded-2xl p-6">
+                <div class="text-2xl mb-2">📞</div>
+                <h3 class="font-semibold mb-1">Phone</h3>
+                <p class="text-sm text-gray-600">@ViewBag.Phone</p>
+            </div>}
+
+            @if (!string.IsNullOrEmpty(ViewBag.Address as string)) {
+            <div class="bg-gray-50 rounded-2xl p-6">
+                <div class="text-2xl mb-2">📍</div>
+                <h3 class="font-semibold mb-1">Address</h3>
+                <p class="text-sm text-gray-600">@ViewBag.Address</p>
+            </div>}
+
+            <div class="bg-gray-50 rounded-2xl p-6">
+                <div class="text-2xl mb-2">💬</div>
+                <h3 class="font-semibold mb-1">Response Time</h3>
+                <p class="text-sm text-gray-600">We typically respond within 24 hours on business days.</p>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="col-span-2">
+            <div class="bg-white border rounded-2xl p-8">
+                <h2 class="text-xl font-bold mb-6">Send us a message</h2>
+                <form method="post" action="/contact">
+                    @Html.AntiForgeryToken()
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Name</label>
+                            <input type="text" name="name" required class="w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black" placeholder="Your name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" name="email" required class="w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black" placeholder="your@email.com">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Subject</label>
+                        <input type="text" name="subject" required class="w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black" placeholder="How can we help?">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2">Message</label>
+                        <textarea name="message" required rows="5" class="w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black resize-none" placeholder="Tell us more..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.MapEmbed as string)) {
+    <div class="mt-12 rounded-2xl overflow-hidden border">
+        <iframe src="@ViewBag.MapEmbed" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+    </div>}
+</div>

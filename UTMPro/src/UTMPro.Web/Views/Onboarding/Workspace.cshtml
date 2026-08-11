@@ -1,0 +1,102 @@
+@{ Layout = null; var defaultPlan = ViewBag.DefaultPlan as Plan; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Create Workspace - UTMPro</title><script src="https://cdn.tailwindcss.com"></script>
+<style>.sale-pulse{animation:sp 2s ease-in-out infinite}@@keyframes sp{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Progress bar -->
+    <div class="fixed top-0 left-0 right-0 h-1 bg-gray-200 z-50">
+        <div id="progressBar" class="h-full bg-black transition-all duration-500" style="width: 25%"></div>
+    </div>
+
+    <div class="max-w-lg mx-auto pt-16 px-6">
+        <div class="text-center mb-2">
+            <span class="text-2xl font-bold">UTMPro</span>
+            <div class="flex justify-center gap-2 mt-4 mb-8">
+                <div class="step-dot w-2.5 h-2.5 rounded-full bg-black"></div>
+                <div class="step-dot w-2.5 h-2.5 rounded-full bg-gray-300" id="dot2"></div>
+                <div class="step-dot w-2.5 h-2.5 rounded-full bg-gray-300" id="dot3"></div>
+                <div class="step-dot w-2.5 h-2.5 rounded-full bg-gray-300" id="dot4"></div>
+            </div>
+        </div>
+
+        <!-- Trial/Promo Banner -->
+        @if (defaultPlan != null && defaultPlan.HasDiscount && defaultPlan.TrialDays > 0) {
+        <div class="sale-pulse bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-5 mb-6 text-center shadow-lg">
+            <p class="text-lg font-bold">🎉 You're getting the @defaultPlan.Name plan FREE!</p>
+            <p class="text-sm opacity-90 mt-1">
+                <span class="line-through opacity-60">$@defaultPlan.Price/mo</span> →
+                <span class="font-bold text-xl">$0/mo</span>
+                for @(defaultPlan.TrialDays / 30) months
+            </p>
+            <div class="flex justify-center gap-4 mt-3 text-xs opacity-80">
+                <span>✓ @defaultPlan.MaxLinksPerMonth.ToString("N0") links/mo</span>
+                <span>✓ @defaultPlan.MaxDomains domains</span>
+                <span>✓ @defaultPlan.MaxMembers members</span>
+                <span>✓ API Access</span>
+            </div>
+            <p class="text-xs opacity-60 mt-2">No credit card required. Switches to Free plan after trial.</p>
+        </div>
+        }
+
+        <!-- Step 1: Workspace Name -->
+        <div id="step1" class="bg-white rounded-2xl shadow-lg p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold">Create Your Workspace</h1>
+                <p class="text-gray-500 mt-2">This is where your team manages links</p>
+            </div>
+            @if(ViewBag.Error != null){<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">@ViewBag.Error</div>}
+            <form method="post" action="/onboarding/workspace" id="wsForm">
+                @Html.AntiForgeryToken()
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Workspace Name</label>
+                    <input type="text" name="name" id="wsName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black text-lg" placeholder="My Company" autofocus>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Workspace URL</label>
+                    <div class="flex items-center border border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-black">
+                        <span class="px-4 py-3 text-gray-400 text-sm bg-gray-50 border-r">app.utmpro.link/</span>
+                        <input type="text" name="slug" id="wsSlug" required class="flex-1 px-4 py-3 focus:outline-none" placeholder="my-company">
+                    </div>
+                    <p id="slugCheck" class="text-xs mt-1 text-gray-400"></p>
+                </div>
+                <button type="submit" class="w-full bg-black text-white py-3 px-4 rounded-xl font-medium hover:bg-gray-800 text-lg transition-colors">
+                    @if (defaultPlan != null && defaultPlan.HasTrial) {
+                        @:Create Workspace & Start Free Trial →
+                    } else {
+                        @:Create Workspace →
+                    }
+                </button>
+            </form>
+        </div>
+
+        <!-- What you're getting -->
+        @if (defaultPlan != null && defaultPlan.HasTrial) {
+        <div class="mt-6 bg-white rounded-xl border p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">✨ Included in your @defaultPlan.Name trial:</h3>
+            <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                <div class="flex items-center gap-1.5"><span class="text-green-500">✓</span> @defaultPlan.MaxLinksPerMonth.ToString("N0") links/month</div>
+                <div class="flex items-center gap-1.5"><span class="text-green-500">✓</span> @defaultPlan.MaxEventsPerMonth.ToString("N0") events/month</div>
+                <div class="flex items-center gap-1.5"><span class="text-green-500">✓</span> @defaultPlan.MaxDomains custom domains</div>
+                <div class="flex items-center gap-1.5"><span class="text-green-500">✓</span> @defaultPlan.MaxMembers team members</div>
+                @if (defaultPlan.HasABTesting) {<div class="flex items-center gap-1.5"><span class="text-green-500">✓</span> A/B Testing</div>}
+                @if (defaultPlan.HasAPIAccess) {<div class="flex items-center gap-1.5"><span class="text-green-500">✓</span> API Access</div>}
+                @if (defaultPlan.HasGeoTargeting) {<div class="flex items-center gap-1.5"><span class="text-green-500">✓</span> Geo Targeting</div>}
+                @if (defaultPlan.HasEventWebhooks) {<div class="flex items-center gap-1.5"><span class="text-green-500">✓</span> Webhooks</div>}
+            </div>
+        </div>
+        }
+
+        <!-- Helpful tips -->
+        <div class="mt-6 text-center">
+            <p class="text-xs text-gray-400">You can always change your workspace name later in settings</p>
+        </div>
+    </div>
+
+    <script>
+        const nameInput = document.getElementById('wsName');
+        const slugInput = document.getElementById('wsSlug');
+        nameInput.addEventListener('input', () => {
+            slugInput.value = nameInput.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        });
+    </script>
+</body></html>

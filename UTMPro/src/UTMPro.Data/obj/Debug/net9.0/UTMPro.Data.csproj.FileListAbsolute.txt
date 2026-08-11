@@ -1,0 +1,12 @@
+/home/user/UTMPro/src/UTMPro.Data/bin/Debug/net9.0/UTMPro.Data.deps.json
+/home/user/UTMPro/src/UTMPro.Data/bin/Debug/net9.0/UTMPro.Data.dll
+/home/user/UTMPro/src/UTMPro.Data/bin/Debug/net9.0/UTMPro.Data.pdb
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/UTMPro.Data.csproj.AssemblyReference.cache
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/UTMPro.Data.GeneratedMSBuildEditorConfig.editorconfig
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/UTMPro.Data.AssemblyInfoInputs.cache
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/UTMPro.Data.AssemblyInfo.cs
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/UTMPro.Data.csproj.CoreCompileInputs.cache
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/UTMPro.Data.dll
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/refint/UTMPro.Data.dll
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/UTMPro.Data.pdb
+/home/user/UTMPro/src/UTMPro.Data/obj/Debug/net9.0/ref/UTMPro.Data.dll

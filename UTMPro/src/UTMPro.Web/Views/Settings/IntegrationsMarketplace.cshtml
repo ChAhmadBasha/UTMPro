@@ -1,0 +1,39 @@
+@{ ViewData["Title"] = "Integrations"; var ws = ViewBag.Workspace as Workspace;
+    var allIntegrations = ViewBag.AllIntegrations as List<Integration>;
+    var connectedIds = ViewBag.ConnectedIds as HashSet<int>;
+    var category = ViewBag.Category as string;
+    var categories = allIntegrations?.Select(i => i.Category).Distinct().OrderBy(c => c).ToList() ?? new List<string>();
+}
+<h1 class="text-2xl font-bold mb-6">Integrations</h1>
+<div class="flex gap-2 mb-6 flex-wrap">
+    <a href="/@ws?.Slug/settings/integrations" class="px-3 py-1.5 text-sm rounded-lg @(string.IsNullOrEmpty(category) ? "bg-black text-white" : "bg-white border hover:bg-gray-50")">All</a>
+    @foreach (var cat in categories) {
+    <a href="/@ws?.Slug/settings/integrations?category=@cat" class="px-3 py-1.5 text-sm rounded-lg @(category == cat ? "bg-black text-white" : "bg-white border hover:bg-gray-50")">@cat</a> }
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+@if (allIntegrations != null) {
+    foreach (var intg in allIntegrations.Where(i => string.IsNullOrEmpty(category) || i.Category == category)) {
+    var isConnected = connectedIds?.Contains(intg.Id) == true;
+    <div class="bg-white rounded-xl border p-5 hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between mb-3">
+            <div>
+                <h3 class="font-semibold text-lg">@intg.Name</h3>
+                <span class="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-500">@intg.Category</span>
+            </div>
+            @if (isConnected) { <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">✓ Connected</span> }
+        </div>
+        <p class="text-sm text-gray-500 mb-4">@intg.Description</p>
+        <div class="flex gap-2">
+            @if (isConnected) {
+            <form method="post" action="/@ws?.Slug/settings/integrations/@intg.Slug/disconnect">@Html.AntiForgeryToken()
+                <button type="submit" class="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-sm hover:bg-red-50" onclick="return confirm('Disconnect @intg.Name?')">Disconnect</button>
+            </form>
+            } else {
+            <a href="/@ws?.Slug/settings/integrations/@intg.Slug/connect" class="px-3 py-1.5 bg-black text-white rounded-lg text-sm hover:bg-gray-800">Connect</a>
+            }
+            @if (!string.IsNullOrEmpty(intg.DocsUrl)) { <a href="@intg.DocsUrl" target="_blank" class="px-3 py-1.5 border rounded-lg text-sm text-gray-600 hover:bg-gray-50">Docs</a> }
+        </div>
+    </div>
+    }
+}
+</div>

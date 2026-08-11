@@ -1,0 +1,42 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Link Management"; }
+<h1 style="font-size:2rem;font-weight:800;">Link Management</h1>
+<p>Everything you need to know about creating, editing, and managing short links.</p>
+
+<h2>Creating Links</h2>
+<p>Click <strong>+ Create Link</strong> to open the link creation modal. You can set:</p>
+<ul>
+    <li><strong>Destination URL</strong> — The URL you want to redirect to</li>
+    <li><strong>Domain</strong> — Which domain to use (system or custom)</li>
+    <li><strong>Custom Slug</strong> — Optional custom path (e.g., <code>/summer-sale</code>)</li>
+    <li><strong>UTM Parameters</strong> — Source, medium, campaign tracking</li>
+    <li><strong>Password</strong> — Require a password to access (Pro+)</li>
+    <li><strong>Expiration</strong> — Set an expiry date</li>
+    <li><strong>Social Preview</strong> — Custom OG title, description, image</li>
+</ul>
+
+<h2>Multiple Destinations (Weighted URLs)</h2>
+<p>On Pro+ plans, you can add multiple destination URLs with weights:</p>
+<ul>
+    <li><strong>Weighted mode</strong> — Traffic split proportionally by weight (e.g., 70/30)</li>
+    <li><strong>A/B Test mode</strong> — Time-limited test to find the best performer</li>
+    <li><strong>Rotator mode</strong> — Round-robin through destinations</li>
+</ul>
+
+<h2>Editing Links</h2>
+<p>Click any link → Click <strong>✏️ Edit Link</strong> → Popup modal opens with all editable fields including destinations, UTM, password, expiration, and social preview.</p>
+
+<h2>Enable/Disable Links</h2>
+<p>Click the <strong>Disable</strong> / <strong>Enable</strong> button on the link detail page. Disabled links return a 404 to visitors.</p>
+
+<h2>Link Organization</h2>
+<ul>
+    <li><strong>Folders</strong> — Group links into folders with color labels</li>
+    <li><strong>Tags</strong> — Add multiple tags per link for filtering</li>
+    <li><strong>Comments</strong> — Add internal notes visible to team members</li>
+</ul>
+
+<h2>Bulk Operations</h2>
+<ul>
+    <li><strong>CSV Import</strong> — Upload a CSV file with URLs to create many links at once</li>
+    <li><strong>CSV Export</strong> — Download all links as a CSV file</li>
+</ul>

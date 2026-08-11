@@ -1,0 +1,73 @@
+@model BioProfile
+@{ Layout = null; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Manage Bio - UTMPro</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50 min-h-screen">
+<div class="max-w-4xl mx-auto py-8 px-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Link-in-Bio</h1>
+        <a href="/@@Model.Username" target="_blank" class="text-sm text-blue-600 hover:underline">View live page →</a>
+    </div>
+    @if(TempData["Success"]!=null){<div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">@TempData["Success"]</div>}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <!-- Settings -->
+        <div>
+            <div class="bg-white rounded-xl border p-6 mb-4">
+                <h2 class="font-semibold mb-4">Profile Settings</h2>
+                <form method="post" action="/account/bio/update">@Html.AntiForgeryToken()
+                    <div class="space-y-3">
+                        <div><label class="block text-xs font-medium mb-1">Display Name</label><input type="text" name="displayName" value="@Model.DisplayName" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                        <div><label class="block text-xs font-medium mb-1">Bio</label><textarea name="bio" class="w-full px-3 py-2 border rounded-lg text-sm" rows="2">@Model.Bio</textarea></div>
+                        <div><label class="block text-xs font-medium mb-1">Avatar URL</label><input type="url" name="avatarUrl" value="@Model.AvatarUrl" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="https://..."></div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="block text-xs font-medium mb-1">Theme</label><select name="theme" class="w-full px-3 py-2 border rounded-lg text-sm"><option value="default" selected="@(Model.Theme=="default")">Default</option><option value="dark" selected="@(Model.Theme=="dark")">Dark</option><option value="gradient" selected="@(Model.Theme=="gradient")">Gradient</option><option value="minimal" selected="@(Model.Theme=="minimal")">Minimal</option><option value="colorful" selected="@(Model.Theme=="colorful")">Colorful</option></select></div>
+                            <div><label class="block text-xs font-medium mb-1">Button Style</label><select name="buttonStyle" class="w-full px-3 py-2 border rounded-lg text-sm"><option value="rounded" selected="@(Model.ButtonStyle=="rounded")">Rounded</option><option value="square" selected="@(Model.ButtonStyle=="square")">Square</option><option value="pill" selected="@(Model.ButtonStyle=="pill")">Pill</option><option value="outline" selected="@(Model.ButtonStyle=="outline")">Outline</option></select></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="block text-xs font-medium mb-1">Background</label><input type="color" name="bgColor" value="@Model.BgColor" class="w-full h-8 border rounded"></div>
+                            <div><label class="block text-xs font-medium mb-1">Text Color</label><input type="color" name="textColor" value="@Model.TextColor" class="w-full h-8 border rounded"></div>
+                        </div>
+                        <details><summary class="text-xs font-medium cursor-pointer">Social Links</summary>
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <input type="url" name="twitter" value="@Model.SocialTwitter" class="px-2 py-1.5 border rounded text-xs" placeholder="Twitter URL">
+                                <input type="url" name="instagram" value="@Model.SocialInstagram" class="px-2 py-1.5 border rounded text-xs" placeholder="Instagram URL">
+                                <input type="url" name="linkedin" value="@Model.SocialLinkedIn" class="px-2 py-1.5 border rounded text-xs" placeholder="LinkedIn URL">
+                                <input type="url" name="github" value="@Model.SocialGithub" class="px-2 py-1.5 border rounded text-xs" placeholder="GitHub URL">
+                            </div>
+                        </details>
+                        <button type="submit" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Stats -->
+            <div class="bg-white rounded-xl border p-6">
+                <h3 class="font-semibold mb-2">Stats</h3>
+                <div class="flex gap-4 text-sm"><span class="text-gray-500">Views: <strong>@Model.ViewCount</strong></span><span class="text-gray-500">Links: <strong>@Model.Links.Count</strong></span></div>
+                <p class="text-xs text-gray-400 mt-2">URL: <a href="/@@Model.Username" target="_blank" class="text-blue-600">utmpro.link/@@Model.Username</a></p>
+            </div>
+        </div>
+
+        <!-- Links -->
+        <div>
+            <div class="bg-white rounded-xl border p-6 mb-4">
+                <div class="flex items-center justify-between mb-4"><h2 class="font-semibold">Links</h2></div>
+                <form method="post" action="/account/bio/links/add" class="mb-4 p-3 bg-gray-50 rounded-lg">@Html.AntiForgeryToken()
+                    <div class="flex gap-2 mb-2"><input type="text" name="emoji" class="w-12 px-2 py-2 border rounded-lg text-center" placeholder="🔗" maxlength="4"><input type="text" name="title" required class="flex-1 px-3 py-2 border rounded-lg text-sm" placeholder="Link title"></div>
+                    <div class="flex gap-2"><input type="url" name="url" required class="flex-1 px-3 py-2 border rounded-lg text-sm" placeholder="https://..."><button type="submit" class="px-4 py-2 bg-black text-white rounded-lg text-sm">Add</button></div>
+                </form>
+                <div class="space-y-2">
+                    @foreach(var link in Model.Links.OrderBy(l => l.SortOrder)){
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <span class="text-lg">@(link.IconEmoji ?? "🔗")</span>
+                        <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">@link.Title</p><p class="text-xs text-gray-400 truncate">@link.Url</p></div>
+                        <span class="text-xs text-gray-400">@link.ClickCount clicks</span>
+                        <form method="post" action="/account/bio/links/@link.Id/delete" class="inline">@Html.AntiForgeryToken()<button type="submit" class="text-red-400 hover:text-red-600 text-sm">✕</button></form>
+                    </div>}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4"><a href="/account/settings" class="text-sm text-gray-500 hover:text-black">← Back to account</a></div>
+</div>
+</body></html>

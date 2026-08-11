@@ -1,0 +1,13 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Link Cloaking"; ViewData["Description"] = "Hide destination URLs from visitors for cleaner branding"; }
+
+<h1 style="font-size:2rem;font-weight:800;">Link Cloaking</h1>
+<p>Link cloaking hides the actual destination URL from the visitor's browser address bar, keeping your branded domain visible.</p>
+
+<h2>How It Works</h2>
+<p>When cloaking is enabled, instead of a standard 302 redirect, UTMPro loads the destination page inside an iframe while keeping your short link URL in the browser's address bar.</p>
+
+<h2>When to Use</h2>
+<ul><li><strong>Affiliate marketing:</strong> Hide long affiliate URLs</li><li><strong>Brand consistency:</strong> Keep your domain visible at all times</li><li><strong>Partner links:</strong> Present partner content under your brand</li></ul>
+
+<h2>Limitations</h2>
+<ul><li>Some websites block iframe embedding (X-Frame-Options)</li><li>Forms and authentication flows may not work inside iframes</li><li>SEO juice goes to your domain, not the destination</li></ul>

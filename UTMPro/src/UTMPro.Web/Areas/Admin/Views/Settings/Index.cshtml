@@ -1,0 +1,72 @@
+@model List<SystemSetting>
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "System Settings"; }
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">System Settings</h1>
+    <a href="/admin/pages" class="text-sm text-blue-600 hover:underline">📄 Pages Editor →</a>
+</div>
+<div class="bg-white rounded-xl border p-4 sm:p-6 max-w-4xl">
+<form method="post" action="/admin/settings">
+    @Html.AntiForgeryToken()
+    <div class="space-y-3">
+    @foreach (var s in Model) {
+        var isImage = s.SettingKey.Contains("Logo") || s.SettingKey.Contains("Favicon") || s.SettingKey.Contains("Image") || s.SettingKey.Contains("Avatar") || s.SettingKey.Contains("Url") && (s.SettingValue.Contains("/uploads/") || s.SettingValue.Contains(".png") || s.SettingValue.Contains(".jpg") || s.SettingValue.Contains(".ico"));
+        var isLongText = s.SettingValue.Length > 100 || s.SettingKey.Contains("Html") || s.SettingKey.Contains("Content") || s.SettingKey.Contains("Json");
+
+    <div class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 p-3 bg-gray-50 rounded-lg">
+        <div class="flex-1 min-w-0">
+            <label class="text-sm font-medium text-gray-900 break-all">@s.SettingKey</label>
+            @if (!string.IsNullOrEmpty(s.Description)) {
+            <p class="text-xs text-gray-500 mt-0.5">@s.Description</p>
+            }
+        </div>
+        <div class="w-full sm:w-80">
+            @if (isImage) {
+            <!-- Image field with preview + upload -->
+            <div class="flex items-center gap-2 mb-1">
+                @if (!string.IsNullOrEmpty(s.SettingValue) && (s.SettingValue.StartsWith("/") || s.SettingValue.StartsWith("http"))) {
+                <img src="@s.SettingValue" alt="@s.SettingKey" class="h-8 w-8 object-contain rounded border bg-white shrink-0" onerror="this.style.display='none'">
+                }
+                <input type="text" name="setting_@s.SettingKey" id="field_@s.SettingKey" value="@s.SettingValue" class="flex-1 px-3 py-1.5 border rounded-lg text-sm">
+            </div>
+            <label class="inline-flex items-center gap-1 text-xs text-blue-600 cursor-pointer hover:underline">
+                📤 Upload
+                <input type="file" accept="image/*,.ico,.svg" class="hidden" onchange="uploadSettingImage(this, '@s.SettingKey')">
+            </label>
+            } else if (isLongText) {
+            <textarea name="setting_@s.SettingKey" class="w-full px-3 py-1.5 border rounded-lg text-sm font-mono" rows="4">@s.SettingValue</textarea>
+            } else {
+            <input type="text" name="setting_@s.SettingKey" value="@s.SettingValue" class="w-full px-3 py-1.5 border rounded-lg text-sm">
+            }
+        </div>
+    </div>
+    }
+    </div>
+    <button type="submit" class="mt-6 bg-black text-white px-6 py-2.5 rounded-lg font-medium hover:bg-gray-800">Save All Settings</button>
+</form>
+</div>
+
+<script>
+async function uploadSettingImage(input, settingKey) {
+    if (!input.files[0]) return;
+    if (input.files[0].size > 2 * 1024 * 1024) { alert('File too large. Max 2MB.'); return; }
+
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+
+    try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (res.ok) {
+            const data = await res.json();
+            const field = document.getElementById('field_' + settingKey);
+            if (field) {
+                field.value = data.url;
+                // Update preview image
+                const img = field.parentElement.querySelector('img');
+                if (img) { img.src = data.url; img.style.display = ''; }
+            }
+        } else {
+            alert('Upload failed. Allowed: png, jpg, gif, webp, svg, ico. Max 2MB.');
+        }
+    } catch(e) { alert('Upload error: ' + e.message); }
+}
+</script>

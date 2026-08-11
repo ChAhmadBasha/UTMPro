@@ -1,0 +1,59 @@
+@model BioProfile
+@{ Layout = null;
+    var btnClass = Model.ButtonStyle switch { "square" => "rounded-none", "pill" => "rounded-full", "outline" => "rounded-xl border-2 bg-transparent", _ => "rounded-xl" };
+    var isOutline = Model.ButtonStyle == "outline";
+    var isDark = Model.Theme == "dark";
+    var bgStyle = Model.Theme switch { "gradient" => "background: linear-gradient(135deg, #667eea, #764ba2);", "dark" => $"background: #1a1a2e; color: #eee;", "colorful" => "background: linear-gradient(135deg, #f093fb, #f5576c, #4facfe);", _ => $"background-color: {Model.BgColor}; color: {Model.TextColor};" };
+}
+<!DOCTYPE html><html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@(Model.DisplayName ?? Model.Username) — UTMPro</title>
+<meta name="description" content="@(Model.Bio ?? $"Links from {Model.DisplayName ?? Model.Username}")">
+<meta property="og:title" content="@(Model.DisplayName ?? Model.Username)">
+<meta property="og:description" content="@(Model.Bio ?? "Check out my links")">
+@if(Model.AvatarUrl != null){<meta property="og:image" content="@Model.AvatarUrl">}
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-start justify-center pt-12 pb-12" style="@bgStyle">
+    <div class="w-full max-w-md mx-4">
+        <!-- Avatar + Name -->
+        <div class="text-center mb-8">
+            @if(!string.IsNullOrEmpty(Model.AvatarUrl)){
+            <img src="@Model.AvatarUrl" alt="@Model.DisplayName" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white/30 object-cover">
+            }else{
+            <div class="w-24 h-24 rounded-full mx-auto mb-4 bg-white/20 flex items-center justify-center text-4xl font-bold" style="color:@Model.TextColor">@Model.Username[0..1].ToUpper()</div>
+            }
+            <h1 class="text-2xl font-bold">@(Model.DisplayName ?? Model.Username)</h1>
+            @if(!string.IsNullOrEmpty(Model.Bio)){<p class="mt-2 opacity-80 text-sm max-w-xs mx-auto">@Model.Bio</p>}
+        </div>
+
+        <!-- Social Icons -->
+        @{ var socials = new List<(string? url, string icon, string name)> {
+            (Model.SocialTwitter, "𝕏", "Twitter"), (Model.SocialInstagram, "📷", "Instagram"),
+            (Model.SocialLinkedIn, "in", "LinkedIn"), (Model.SocialGithub, "🐙", "GitHub"),
+            (Model.SocialYoutube, "▶", "YouTube"), (Model.SocialTiktok, "♪", "TikTok") };
+            var activeSocials = socials.Where(s => !string.IsNullOrEmpty(s.url)).ToList();
+        }
+        @if(activeSocials.Count > 0){
+        <div class="flex justify-center gap-3 mb-6">
+            @foreach(var (url, icon, name) in activeSocials){
+            <a href="@url" target="_blank" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-sm hover:bg-white/40 transition-colors" title="@name">@icon</a>
+            }
+        </div>}
+
+        <!-- Links -->
+        <div class="space-y-3">
+            @foreach(var link in Model.Links.Where(l => l.IsActive).OrderBy(l => l.SortOrder)){
+            <a href="@link.Url" target="_blank" onclick="fetch('/@@@Model.Username/click/@link.Id')"
+               class="block w-full px-6 py-4 text-center font-medium transition-all hover:scale-[1.02] hover:shadow-lg @btnClass"
+               style="@(isOutline ? $"border-color:{Model.TextColor};color:{Model.TextColor};" : $"background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);color:{Model.TextColor};")">
+                @if(!string.IsNullOrEmpty(link.IconEmoji)){<span class="mr-2">@link.IconEmoji</span>}@link.Title
+            </a>}
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-12 opacity-50">
+            <a href="/" class="text-xs hover:opacity-100 transition-opacity">Powered by UTMPro</a>
+        </div>
+    </div>
+</body></html>

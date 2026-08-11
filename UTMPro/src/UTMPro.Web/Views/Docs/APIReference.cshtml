@@ -1,0 +1,39 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "API Reference"; ViewData["Description"] = "REST API v1 documentation for programmatic link management"; }
+
+<h1 style="font-size:2rem;font-weight:800;">API Reference (v1)</h1>
+<p>Manage links, events, and domains programmatically using the UTMPro REST API.</p>
+
+<h2>Authentication</h2>
+<p>Include your API key in the <code>Authorization</code> header:</p>
+<pre>Authorization: Bearer utmpro_your_api_key_here</pre>
+<p>Create API keys at <strong>Settings → API Keys</strong>.</p>
+
+<h2>Base URL</h2>
+<pre>https://app.utmpro.link/api/v1</pre>
+
+<h2>Endpoints</h2>
+<table><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/v1/links</td><td>List links (paginated)</td></tr>
+<tr><td>POST</td><td>/api/v1/links</td><td>Create a new link</td></tr>
+<tr><td>GET</td><td>/api/v1/links/{id}</td><td>Get link details</td></tr>
+<tr><td>PUT</td><td>/api/v1/links/{id}</td><td>Update a link</td></tr>
+<tr><td>DELETE</td><td>/api/v1/links/{id}</td><td>Delete a link</td></tr>
+<tr><td>GET</td><td>/api/v1/events</td><td>List click events</td></tr>
+<tr><td>GET</td><td>/api/v1/domains</td><td>List domains</td></tr>
+<tr><td>GET</td><td>/api/v1/tags</td><td>List tags</td></tr></table>
+
+<h2>Create Link Example</h2>
+<pre>POST /api/v1/links
+Content-Type: application/json
+
+{
+  "url": "https://example.com/landing-page",
+  "domain": "go.utmpro.link",
+  "slug": "my-campaign",
+  "utm_source": "api",
+  "utm_medium": "automation",
+  "utm_campaign": "product-launch"
+}</pre>
+
+<h2>Rate Limits</h2>
+<p>API requests are rate-limited based on your plan. If you exceed the limit, you'll receive a <code>429 Too Many Requests</code> response.</p>

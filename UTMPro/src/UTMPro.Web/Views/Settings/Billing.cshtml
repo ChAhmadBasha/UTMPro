@@ -1,0 +1,39 @@
+@{ ViewData["Title"] = "Billing"; var plan = ViewBag.CurrentPlan as Plan; var plans = ViewBag.AllPlans as List<Plan>; }
+<h1 class="text-2xl font-bold mb-6">Billing</h1>
+<div class="bg-white rounded-xl border p-6 mb-6">
+    <h2 class="font-semibold text-lg mb-2">Current Plan: <span class="text-black">@plan?.Name</span></h2>
+    @if (plan?.HasDiscount == true) {
+        <p class="text-gray-500 text-sm">
+            <span class="line-through text-gray-300">$@plan.Price</span>
+            <span class="text-green-600 font-bold">$@plan.DiscountedPrice/month</span>
+            @if (!string.IsNullOrEmpty(plan.DiscountBadge)) {
+                <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold">@plan.DiscountBadge</span>
+            }
+        </p>
+    } else {
+        <p class="text-gray-500 text-sm">$@plan?.Price/month</p>
+    }
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    @if (plans != null) { foreach (var p in plans) {
+    <div class="relative bg-white rounded-xl border p-6 @(p.Id == plan?.Id ? "ring-2 ring-black" : "")">
+        @if (p.HasDiscount && !string.IsNullOrEmpty(p.DiscountBadge)) {
+        <div class="absolute -top-2.5 left-1/2 -translate-x-1/2">
+            <span class="bg-green-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap">@p.DiscountBadge</span>
+        </div>
+        }
+        <h3 class="font-bold text-lg">@p.Name</h3>
+        @if (p.HasDiscount) {
+            <p class="text-lg mt-2"><span class="line-through text-gray-300 text-sm">$@p.Price</span> <span class="font-bold text-green-600">$@p.DiscountedPrice</span><span class="text-sm text-gray-500">/mo</span></p>
+        } else {
+            <p class="text-2xl font-bold mt-2">$@p.Price<span class="text-sm text-gray-500">/mo</span></p>
+        }
+        <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li>@p.MaxLinksPerMonth.ToString("N0") links/month</li>
+            <li>@p.MaxEventsPerMonth.ToString("N0") events/month</li>
+            <li>@p.MaxDomains domains</li>
+            <li>@p.MaxMembers members</li>
+        </ul>
+    </div>
+    } }
+</div>

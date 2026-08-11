@@ -1,0 +1,78 @@
+@model List<Workspace>
+@{ Layout = null; var maxWs = (int)(ViewBag.MaxWorkspaces ?? 5); }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your Workspaces - UTMPro</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="border-b bg-white"><div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="/" class="text-xl font-bold">UTMPro</a>
+        <div class="flex items-center gap-3 text-sm">
+            @if (User.IsInRole("SuperAdmin")) { <a href="/admin" class="text-purple-600 font-medium hover:underline">🛡️ Admin</a> }
+            <a href="/account/settings" class="text-gray-600 hover:text-black">⚙️ Account</a>
+            <a href="/auth/logout" class="text-red-500 hover:underline">Logout</a>
+        </div>
+    </div></nav>
+
+    <div class="max-w-4xl mx-auto px-6 py-12">
+        @if(TempData["Success"]!=null){<div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 text-sm">@TempData["Success"]</div>}
+        @if(TempData["Error"]!=null){<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">@TempData["Error"]</div>}
+
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">Your Workspaces</h1>
+                <p class="text-gray-500 mt-1">@Model.Count of @maxWs workspaces used</p>
+            </div>
+            @if (Model.Count < maxWs) {
+            <a href="/workspaces/new" class="bg-black text-white px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 text-sm">+ New Workspace</a>
+            }
+        </div>
+
+        @if (Model.Count == 0) {
+        <div class="bg-white rounded-2xl border p-12 text-center">
+            <p class="text-5xl mb-4">🏢</p>
+            <h2 class="text-xl font-bold mb-2">No workspaces yet</h2>
+            <p class="text-gray-500 mb-6">Create your first workspace to start shortening links.</p>
+            <a href="/workspaces/new" class="bg-black text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800">Create Workspace</a>
+        </div>
+        } else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach (var ws in Model) {
+            <a href="/@ws.Slug/links" class="block bg-white rounded-xl border p-6 hover:shadow-lg hover:border-gray-400 transition-all group">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-black text-white rounded-lg flex items-center justify-center font-bold text-lg shrink-0">
+                        @ws.Name[..1].ToUpper()
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="font-semibold truncate group-hover:text-blue-600">@ws.Name</h3>
+                        <p class="text-xs text-gray-400 truncate">/@ws.Slug</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-gray-50 rounded-lg p-2">
+                        <p class="text-lg font-bold">@ws.LinkCount</p>
+                        <p class="text-[10px] text-gray-400 uppercase">Links</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-2">
+                        <p class="text-lg font-bold">@ws.MemberCount</p>
+                        <p class="text-[10px] text-gray-400 uppercase">Members</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-2">
+                        <p class="text-xs font-semibold mt-1">@ws.PlanName</p>
+                        <p class="text-[10px] text-gray-400 uppercase">Plan</p>
+                    </div>
+                </div>
+                @if (!ws.IsActive) {
+                <div class="mt-3 px-2 py-1 bg-red-50 text-red-600 text-xs rounded text-center font-medium">Suspended</div>
+                }
+            </a>
+            }
+
+            <!-- New Workspace Card -->
+            @if (Model.Count < maxWs) {
+            <a href="/workspaces/new" class="block border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-gray-500 hover:bg-gray-50 transition-all flex flex-col items-center justify-center text-gray-400 hover:text-gray-600 min-h-[180px]">
+                <span class="text-4xl mb-2">+</span>
+                <span class="font-medium text-sm">Create Workspace</span>
+            </a>
+            }
+        </div>
+        }
+    </div>
+</body></html>

@@ -1,0 +1,21 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Custom Domains"; }
+<h1 style="font-size:2rem;font-weight:800;">Custom Domains</h1>
+<p>Brand your short links with your own domain instead of using <code>go.utmpro.link</code>.</p>
+<h2>Adding a Custom Domain</h2>
+<ol>
+    <li>Go to <strong>Links → Domains</strong> in your workspace</li>
+    <li>Click <strong>+ Add Domain</strong></li>
+    <li>Enter your domain (e.g., <code>links.yourbrand.com</code>)</li>
+    <li>Add an A record in your DNS pointing to the server IP shown</li>
+    <li>Wait for verification (automatic, checked every 5 minutes)</li>
+</ol>
+<h2>DNS Configuration</h2>
+<pre>Type:  A
+Name:  links (or your subdomain)
+Value: [Your Server IP - shown in the add domain dialog]
+TTL:   300</pre>
+<h2>Domain Limits by Plan</h2>
+<table><tr><th>Plan</th><th>Custom Domains</th></tr>
+<tr><td>Free</td><td>1</td></tr><tr><td>Pro</td><td>3</td></tr><tr><td>Business</td><td>10</td></tr><tr><td>Advanced</td><td>50</td></tr></table></div>
+<h2>Managing Domains</h2>
+<p>You can edit a domain's default redirect URL, add a description, or delete it from the Domains page. System domains (like <code>go.utmpro.link</code>) are managed by the administrator and cannot be edited by users.</p>

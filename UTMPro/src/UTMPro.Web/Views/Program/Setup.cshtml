@@ -1,0 +1,39 @@
+@{ ViewData["Title"] = "Create Partner Program"; var ws = ViewBag.Workspace as Workspace; }
+<div class="max-w-2xl">
+    <h1 class="text-2xl font-bold mb-6">Create Partner Program</h1>
+    <div class="bg-white rounded-xl border p-6">
+        <form method="post" action="/@ws?.Slug/program/setup">@Html.AntiForgeryToken()
+            <div class="mb-4"><label class="block text-sm font-medium mb-2">Program Name</label><input type="text" name="programName" required class="w-full px-3 py-2 border rounded-lg" placeholder="e.g. Acme Referral Program"></div>
+            <div class="mb-4"><label class="block text-sm font-medium mb-2">Description</label><textarea name="description" class="w-full px-3 py-2 border rounded-lg" rows="3" placeholder="Tell partners about your program..."></textarea></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                <div><label class="block text-sm font-medium mb-2">Commission Type</label><select name="commissionType" class="w-full px-3 py-2 border rounded-lg"><option value="Percentage">Percentage</option><option value="FlatRate">Flat Rate</option></select></div>
+                <div><label class="block text-sm font-medium mb-2">Commission Value</label><input type="number" name="commissionValue" value="20" step="0.01" class="w-full px-3 py-2 border rounded-lg"></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                <div><label class="block text-sm font-medium mb-2">Commission Duration</label><select name="commissionDuration" class="w-full px-3 py-2 border rounded-lg"><option value="Lifetime">Lifetime</option><option value="Recurring">Recurring</option><option value="OneTime">One-Time</option></select></div>
+                <div><label class="block text-sm font-medium mb-2">Cookie Window (days)</label><input type="number" name="cookieDays" value="90" class="w-full px-3 py-2 border rounded-lg"></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                <div><label class="block text-sm font-medium mb-2">Payout Threshold ($)</label><input type="number" name="payoutThreshold" value="50" step="0.01" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-2">Payout Frequency</label><select name="payoutFrequency" class="w-full px-3 py-2 border rounded-lg"><option value="Monthly">Monthly</option><option value="Weekly">Weekly</option><option value="Manual">Manual</option></select></div>
+            </div>
+            <!-- Dual-sided incentives (Give $X, Get $X) -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div><label class="block text-sm font-medium mb-2">Referred Customer Reward (optional)</label>
+                    <div class="flex gap-2">
+                        <select name="referredRewardType" class="px-3 py-2 border rounded-lg text-sm"><option value="">None</option><option value="Percentage">% Discount</option><option value="FlatRate">$ Credit</option></select>
+                        <input type="number" name="referredRewardValue" step="0.01" class="flex-1 px-3 py-2 border rounded-lg text-sm" placeholder="e.g. 10">
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">"Give $X, Get $X" — reward for the referred customer</p>
+                </div>
+            </div>
+
+            <div class="mb-4 flex flex-wrap gap-4">
+                <label class="flex items-center gap-2"><input type="checkbox" name="requireApplication" value="true"><span class="text-sm">Require application</span></label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="autoApprove" value="true" checked><span class="text-sm">Auto-approve</span></label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="isPublic" value="true" checked><span class="text-sm">Public program</span></label>
+            </div>
+            <button type="submit" class="w-full bg-black text-white py-2.5 rounded-lg font-medium hover:bg-gray-800">Create Program</button>
+        </form>
+    </div>
+</div>

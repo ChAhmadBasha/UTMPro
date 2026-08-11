@@ -1,0 +1,39 @@
+@model List<TeamActivity>
+@{ ViewData["Title"] = "Team Activity"; var ws = ViewBag.Workspace as Workspace;
+    var counts = ViewBag.ActivityCounts as Dictionary<long, int>;
+    var members = ViewBag.Members as List<WorkspaceMember>;
+}
+<h1 class="text-2xl font-bold mb-6">Team Activity</h1>
+
+<!-- Leaderboard -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-5">
+        <h3 class="text-sm font-medium mb-3 text-gray-500">This Week's Leaderboard</h3>
+        @if(members != null && counts != null){
+        <div class="space-y-2">
+            @foreach(var m in members.OrderByDescending(m => counts.GetValueOrDefault(m.UserId, 0)).Take(5)){
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs font-bold">@(m.UserName?[..1].ToUpper())</div>
+                    <span class="text-sm">@m.UserName</span>
+                </div>
+                <span class="text-sm font-bold">@counts.GetValueOrDefault(m.UserId, 0)</span>
+            </div>}
+        </div>}
+    </div>
+    <div class="col-span-3 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-5">
+        <h3 class="text-sm font-medium mb-3 text-gray-500">Recent Activity</h3>
+        <div class="space-y-3 max-h-96 overflow-y-auto">
+            @foreach(var a in Model){
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-sm mt-0.5">
+                    @(a.ActivityType switch { "link.created" => "🔗", "link.deleted" => "🗑️", "member.invited" => "👤", "domain.added" => "🌐", _ => "⚡" })
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm"><strong>@a.UserName</strong> @a.Description</p>
+                    <p class="text-xs text-gray-400">@a.CreatedAt.ToString("MMM d, HH:mm")</p>
+                </div>
+            </div>}
+        </div>
+    </div>
+</div>

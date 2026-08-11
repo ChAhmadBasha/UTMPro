@@ -1,0 +1,145 @@
+@{ var p = Context.Request.Path.Value ?? ""; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@ViewData["Title"] — UTMPro Docs</title>
+<meta name="description" content="@(ViewData["Description"] ?? "UTMPro documentation — learn how to shorten URLs, track campaigns, and grow your traffic with UTM parameters.")">
+<meta name="keywords" content="UTMPro, URL shortener, UTM parameters, link tracking, analytics, short links, QR codes, custom domains">
+<link rel="canonical" href="https://utmpro.link@p">
+<meta property="og:title" content="@ViewData["Title"] — UTMPro Docs">
+<meta property="og:description" content="@(ViewData["Description"] ?? "UTMPro documentation")">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="UTMPro">
+<meta name="twitter:card" content="summary">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+.prose h1{font-size:2rem;font-weight:800;margin-bottom:1rem;color:#111;}
+.prose h2{font-size:1.5rem;font-weight:700;margin-top:2rem;margin-bottom:0.75rem;color:#111;}
+.prose h3{font-size:1.15rem;font-weight:600;margin-top:1.5rem;margin-bottom:0.5rem;color:#374151;}
+.prose p{margin-bottom:0.75rem;color:#4b5563;line-height:1.8;}
+.prose code{background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:0.875rem;}
+.prose pre{background:#1e1e2e;color:#cdd6f4;padding:16px;border-radius:8px;overflow-x:auto;font-size:13px;margin:1rem 0;}
+.prose ul{list-style-type:disc;padding-left:1.5rem;margin-bottom:1rem;}
+.prose ol{list-style-type:decimal;padding-left:1.5rem;margin-bottom:1rem;}
+.prose li{margin-bottom:0.35rem;color:#4b5563;line-height:1.7;}
+.prose a{color:#2563eb;} .prose a:hover{text-decoration:underline;}
+.prose table{width:100%;border-collapse:collapse;margin:1rem 0;}
+.prose th,.prose td{border:1px solid #e5e7eb;padding:8px 12px;text-align:left;font-size:0.875rem;}
+.prose th{background:#f9fafb;font-weight:600;}
+.prose strong{color:#111;}
+.prose kbd{display:inline-block;padding:2px 8px;font-size:12px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;font-family:monospace;}
+.doc-nav a{display:block;padding:5px 12px;border-radius:6px;font-size:13px;color:#6b7280;text-decoration:none;}
+.doc-nav a:hover{background:#f3f4f6;color:#111;}
+.doc-nav a.active{background:#f3f4f6;color:#111;font-weight:600;}
+.doc-section{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;padding:0 12px;margin-bottom:4px;margin-top:16px;}
+</style>
+<script type="application/ld+json">
+{"@@context":"https://schema.org","@@type":"WebPage","name":"@ViewData["Title"]","description":"@(ViewData["Description"] ?? "UTMPro documentation")","publisher":{"@@type":"Organization","name":"UTMPro","url":"https://utmpro.link"}}
+</script>
+</head>
+<body class="bg-white min-h-screen">
+<nav class="border-b sticky top-0 bg-white z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <a href="/" class="text-xl font-bold">UTMPro</a>
+            <span class="text-gray-300 hidden sm:inline">/</span>
+            <a href="/docs" class="text-sm font-medium text-gray-500 hover:text-black hidden sm:inline">Documentation</a>
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+            <a href="/blog" class="text-gray-600 hover:text-black hidden sm:inline">Blog</a>
+            <a href="/pricing" class="text-gray-600 hover:text-black hidden sm:inline">Pricing</a>
+            <a href="/login" class="bg-black text-white px-4 py-1.5 rounded-lg text-sm">Login</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 flex gap-8 py-8">
+    <!-- Sidebar -->
+    <div class="hidden lg:block w-56 shrink-0">
+        <div class="sticky top-20 doc-nav space-y-0.5 max-h-[calc(100vh-6rem)] overflow-y-auto pb-8">
+            <p class="doc-section" style="margin-top:0">Getting Started</p>
+            <a href="/docs" class="@(p=="/docs"?"active":"")">📚 Overview</a>
+            <a href="/docs/getting-started" class="@(p.Contains("getting-started")?"active":"")">🚀 Quick Start</a>
+            <a href="/docs/create-account" class="@(p.Contains("create-account")?"active":"")">👤 Create Account</a>
+            <a href="/docs/workspace-setup" class="@(p.Contains("workspace-setup")?"active":"")">🏢 Workspace Setup</a>
+
+            <p class="doc-section">Link Management</p>
+            <a href="/docs/links" class="@(p=="/docs/links"?"active":"")">🔗 Overview</a>
+            <a href="/docs/create-short-link" class="@(p.Contains("create-short")?"active":"")">✨ Create Links</a>
+            <a href="/docs/link-redirects" class="@(p.Contains("link-redirect")?"active":"")">🔀 Redirect Modes</a>
+            <a href="/docs/password-protected-links" class="@(p.Contains("password")?"active":"")">🔒 Password Links</a>
+            <a href="/docs/link-expiration" class="@(p.Contains("expiration")?"active":"")">⏱️ Expiration</a>
+            <a href="/docs/link-cloaking" class="@(p.Contains("cloaking")?"active":"")">🫥 Cloaking</a>
+            <a href="/docs/ab-testing" class="@(p.Contains("ab-test")?"active":"")">🧪 A/B Testing</a>
+            <a href="/docs/link-in-bio" class="@(p.Contains("link-in-bio")?"active":"")">🔗 Link-in-Bio</a>
+            <a href="/docs/social-link-previews" class="@(p.Contains("social-link")?"active":"")">📱 Social Previews</a>
+            <a href="/docs/bulk-import-export" class="@(p.Contains("bulk")?"active":"")">📦 Bulk Import/Export</a>
+
+            <p class="doc-section">UTM Tracking</p>
+            <a href="/docs/utm-parameters-explained" class="@(p.Contains("utm-parameters")?"active":"")">📋 UTM Explained</a>
+            <a href="/docs/utm-builder" class="@(p.Contains("utm-builder")?"active":"")">🔧 UTM Builder</a>
+            <a href="/docs/utm-templates" class="@(p.Contains("utm-templates")?"active":"")">📄 UTM Templates</a>
+            <a href="/docs/conversion-tracking" class="@(p.Contains("conversion")?"active":"")">🎯 Conversion Tracking</a>
+
+            <p class="doc-section">Analytics</p>
+            <a href="/docs/analytics" class="@(p=="/docs/analytics"?"active":"")">📊 Overview</a>
+            <a href="/docs/click-analytics" class="@(p.Contains("click-analytics")?"active":"")">👆 Click Analytics</a>
+            <a href="/docs/geo-analytics" class="@(p.Contains("geo-analytics")?"active":"")">🌍 Geo Analytics</a>
+            <a href="/docs/device-analytics" class="@(p.Contains("device-analytics")?"active":"")">📱 Device Analytics</a>
+
+            <p class="doc-section">Domains & QR</p>
+            <a href="/docs/custom-domains" class="@(p=="/docs/custom-domains"?"active":"")">🌐 Custom Domains</a>
+            <a href="/docs/domain-verification" class="@(p.Contains("domain-verif")?"active":"")">✅ Verification</a>
+            <a href="/docs/qr-codes" class="@(p.Contains("qr")?"active":"")">📱 QR Codes</a>
+
+            <p class="doc-section">Team</p>
+            <a href="/docs/team-management" class="@(p.Contains("team-man")?"active":"")">👥 Team Management</a>
+            <a href="/docs/roles-permissions" class="@(p.Contains("roles")?"active":"")">🛡️ Roles & Permissions</a>
+
+            <p class="doc-section">Billing</p>
+            <a href="/docs/billing" class="@(p=="/docs/billing"?"active":"")">💳 Plans & Pricing</a>
+            <a href="/docs/free-trial" class="@(p.Contains("free-trial")?"active":"")">🎉 Free Trial</a>
+
+            <p class="doc-section">Developer</p>
+            <a href="/docs/api-reference" class="@(p.Contains("api-ref")?"active":"")">⚡ API Reference</a>
+            <a href="/docs/webhooks" class="@(p.Contains("webhooks")?"active":"")">🔔 Webhooks</a>
+            <a href="/docs/integrations" class="@(p=="/docs/integrations"?"active":"")">🔌 Integrations</a>
+            <a href="/docs/sso-saml" class="@(p.Contains("sso")?"active":"")">🔐 SSO / SAML</a>
+            <a href="/docs/browser-extension" class="@(p.Contains("browser-ext")?"active":"")">🧩 Extension</a>
+
+            <p class="doc-section">More</p>
+            <a href="/docs/partner-program" class="@(p.Contains("partner")?"active":"")">🤝 Partner Program</a>
+            <a href="/docs/faq" class="@(p.Contains("faq")?"active":"")">❓ FAQ</a>
+            <a href="/contact">📧 Contact Us</a>
+        </div>
+    </div>
+
+    <!-- Mobile nav toggle -->
+    <div class="lg:hidden fixed bottom-4 right-4 z-50">
+        <button onclick="document.getElementById('mobileDocNav').classList.toggle('hidden')" class="bg-black text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-xl">📚</button>
+    </div>
+    <div id="mobileDocNav" class="hidden lg:hidden fixed inset-0 z-40 bg-white overflow-y-auto p-6 doc-nav">
+        <div class="flex justify-between items-center mb-4"><h2 class="font-bold">Documentation</h2><button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-2xl">&times;</button></div>
+        <a href="/docs">📚 Overview</a><a href="/docs/getting-started">🚀 Quick Start</a><a href="/docs/create-account">👤 Create Account</a>
+        <a href="/docs/create-short-link">✨ Create Links</a><a href="/docs/link-redirects">🔀 Redirect Modes</a>
+        <a href="/docs/utm-parameters-explained">📋 UTM Explained</a><a href="/docs/utm-builder">🔧 UTM Builder</a>
+        <a href="/docs/analytics">📊 Analytics</a><a href="/docs/custom-domains">🌐 Custom Domains</a>
+        <a href="/docs/qr-codes">📱 QR Codes</a><a href="/docs/billing">💳 Billing</a><a href="/docs/free-trial">🎉 Free Trial</a>
+        <a href="/docs/api-reference">⚡ API</a><a href="/docs/webhooks">🔔 Webhooks</a><a href="/docs/faq">❓ FAQ</a>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 max-w-3xl min-w-0">
+        <div class="prose">
+            @RenderBody()
+        </div>
+        <!-- Prev/Next navigation -->
+        <div class="mt-12 pt-6 border-t flex justify-between text-sm">
+            <a href="/docs" class="text-blue-600 hover:underline">← Back to Docs</a>
+            <a href="/blog" class="text-blue-600 hover:underline">Read Blog →</a>
+        </div>
+    </div>
+</div>
+
+<footer class="border-t py-6 mt-8 text-center text-gray-400 text-sm">
+    <p>© 2026 UTMPro. All rights reserved. | <a href="/docs" class="hover:text-gray-600">Docs</a> · <a href="/blog" class="hover:text-gray-600">Blog</a> · <a href="/pricing" class="hover:text-gray-600">Pricing</a> · <a href="/contact" class="hover:text-gray-600">Contact</a></p>
+</footer>
+</body></html>

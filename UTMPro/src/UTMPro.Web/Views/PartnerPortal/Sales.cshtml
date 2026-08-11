@@ -1,0 +1,13 @@
+@model List<PartnerSale>
+@{ Layout = null; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>My Sales</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-white border-b"><div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center"><span class="font-bold">Partner Portal</span><div class="flex gap-4 text-sm"><a href="/partners/dashboard">Dashboard</a><a href="/partners/sales" class="font-medium">Sales</a><a href="/partners/payouts">Payouts</a></div></div></nav>
+<div class="max-w-6xl mx-auto px-6 py-8">
+    <h1 class="text-2xl font-bold mb-6">My Sales</h1>
+    <div class="bg-white rounded-xl border overflow-hidden">
+    <div class="table-wrap"><table class="w-full min-w-[600px]"><thead class="bg-gray-50 border-b"><tr><th class="text-left px-4 py-3 text-xs font-medium text-gray-500">Date</th><th class="text-right px-4 py-3 text-xs font-medium text-gray-500">Sale</th><th class="text-right px-4 py-3 text-xs font-medium text-gray-500">Commission</th><th class="text-left px-4 py-3 text-xs font-medium text-gray-500">Status</th></tr></thead>
+    <tbody class="divide-y">@foreach(var s in Model){<tr class="hover:bg-gray-50"><td class="px-4 py-3 text-sm">@s.SaleDate.ToString("MMM d, yyyy")</td><td class="px-4 py-3 text-sm text-right font-medium">$@s.SaleAmount.ToString("N2")</td><td class="px-4 py-3 text-sm text-right text-green-600">$@s.CommissionAmount.ToString("N2")</td><td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(s.Status == "Paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700")">@s.Status</span></td></tr>}</tbody></table></div>
+    </div>
+</div>
+</body></html>

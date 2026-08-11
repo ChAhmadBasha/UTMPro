@@ -1,0 +1,52 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "UTM Parameters Explained"; ViewData["Description"] = "Complete guide to UTM parameters and how they track your marketing campaigns"; }
+
+<h1 style="font-size:2rem;font-weight:800;">UTM Parameters Explained</h1>
+<p>UTM (Urchin Tracking Module) parameters are tags added to URLs that help you track exactly where your traffic comes from in Google Analytics, AdSense, Ad Exchange, and other analytics platforms.</p>
+
+<h2>The 5 UTM Parameters</h2>
+<table><tr><th>Parameter</th><th>Required</th><th>Purpose</th><th>Example</th></tr>
+<tr><td><code>utm_source</code></td><td>✅</td><td>Where the traffic comes from</td><td><code>google</code>, <code>facebook</code>, <code>newsletter</code></td></tr>
+<tr><td><code>utm_medium</code></td><td>✅</td><td>The marketing medium/channel</td><td><code>cpc</code>, <code>email</code>, <code>social</code>, <code>display</code></td></tr>
+<tr><td><code>utm_campaign</code></td><td>✅</td><td>The specific campaign name</td><td><code>summer-sale-2026</code>, <code>product-launch</code></td></tr>
+<tr><td><code>utm_term</code></td><td>❌</td><td>Paid search keywords</td><td><code>running+shoes</code></td></tr>
+<tr><td><code>utm_content</code></td><td>❌</td><td>Differentiates similar content/ads</td><td><code>banner-v1</code>, <code>sidebar-link</code></td></tr></table>
+
+<h2>Why UTM Tracking Matters</h2>
+<ul>
+<li><strong>For Google Ads:</strong> Track which campaigns, ad groups, and keywords drive conversions</li>
+<li><strong>For Facebook Ads:</strong> Identify which ad sets and creatives perform best</li>
+<li><strong>For AdSense / Ad Exchange:</strong> Understand which traffic sources generate the highest RPM (Revenue Per Mille). Higher-quality UTM-tagged traffic helps AdSense optimize ad delivery, increasing your earnings.</li>
+<li><strong>For Email Marketing:</strong> See which email sends and links get the most clicks</li>
+<li><strong>For SEO:</strong> Compare organic traffic across different content pieces</li>
+</ul>
+
+<h2>How UTM Tags Help with Paid Traffic</h2>
+<p>When you run paid campaigns across Google, Facebook, TikTok, or any ad network, UTM parameters let you:</p>
+<ol>
+<li><strong>Attribute every conversion</strong> to the exact ad that drove it</li>
+<li><strong>Calculate true ROI</strong> by connecting ad spend to revenue</li>
+<li><strong>Optimize ad spend</strong> by cutting underperforming campaigns</li>
+<li><strong>Prove value</strong> to clients with precise campaign reports</li>
+</ol>
+
+<h2>UTM and AdSense/AdX Revenue</h2>
+<p>If you monetize with <strong>Google AdSense</strong> or <strong>Ad Exchange (AdX)</strong>, UTM-tagged traffic is critical:</p>
+<ul>
+<li><strong>Traffic quality signals:</strong> Google uses traffic source data to determine ad quality. UTM-tagged organic/social traffic is valued higher than unidentified traffic.</li>
+<li><strong>Better ad matching:</strong> When Google knows a visitor came from <code>utm_source=google&utm_medium=cpc</code>, it can serve more relevant (and higher-paying) ads.</li>
+<li><strong>Higher CPMs:</strong> Advertisers pay more for identifiable, high-intent traffic. UTM tracking helps you prove traffic quality to ad networks.</li>
+<li><strong>Invalid traffic detection:</strong> Properly tagged traffic helps Google distinguish legitimate visits from bot/spam traffic that could get your account flagged.</li>
+</ul>
+
+<h2>Best Practices</h2>
+<ul>
+<li>Use lowercase for all UTM values (Google Analytics is case-sensitive)</li>
+<li>Use hyphens instead of spaces (<code>summer-sale</code> not <code>summer sale</code>)</li>
+<li>Be consistent with naming (always <code>facebook</code>, never sometimes <code>fb</code>)</li>
+<li>Use UTMPro's <strong>UTM Templates</strong> to enforce naming conventions across your team</li>
+<li>Never use UTM parameters on internal links (they'll override the original source)</li>
+</ul>
+
+<div style="background:#eff6ff;border:1px solid #bfdbfe;padding:16px;border-radius:8px;margin-top:1rem;">
+<strong>💡 Pro Tip:</strong> Create a UTM naming convention document and share it with your marketing team. Consistent UTM tags = clean analytics data = better decisions.
+</div>

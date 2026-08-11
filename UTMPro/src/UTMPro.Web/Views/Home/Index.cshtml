@@ -1,0 +1,90 @@
+@{ Layout = null; var latestPosts = ViewBag.LatestPosts as List<BlogPost>; var logo = ViewBag.SiteLogo as string; var footer = ViewBag.FooterText as string; var email = ViewBag.ContactEmail as string; }
+<!DOCTYPE html><html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UTMPro - URL Shortening & Link Attribution Platform</title>
+<meta name="description" content="Create short links, QR codes, and track everything. UTM parameters, analytics, geo-targeting, and more.">
+@if(!string.IsNullOrEmpty(logo)){<link rel="icon" href="@logo" type="image/png">}
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-white">
+    <!-- Nav -->
+    <nav class="border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2">
+                @if(!string.IsNullOrEmpty(logo)){<img src="@logo" alt="UTMPro" class="h-8">}
+                <span class="text-2xl font-bold">UTMPro</span>
+            </a>
+            <button onclick="document.getElementById('mobileMenu').classList.toggle('hidden')" class="md:hidden p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg></button><div class="hidden md:flex gap-4 items-center">
+                <a href="/about" class="text-gray-600 hover:text-black text-sm">About</a>
+                <a href="/blog" class="text-gray-600 hover:text-black text-sm">Blog</a>
+                <a href="/docs" class="text-gray-600 hover:text-black text-sm">Docs</a>
+                <a href="/pricing" class="text-gray-600 hover:text-black text-sm">Pricing</a>
+                <a href="/contact" class="text-gray-600 hover:text-black text-sm">Contact</a>
+                <a href="/login" class="text-gray-600 hover:text-black text-sm">Login</a>
+                <a href="/register" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">Get Started Free</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="max-w-4xl mx-auto text-center py-12 sm:py-24 px-4 sm:px-6">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6">The Link Management Platform for Modern Teams</h1>
+        <p class="text-base sm:text-lg md:text-xl text-gray-500 mb-8 max-w-2xl mx-auto">Create short links, QR codes, and track everything. UTM parameters, analytics, geo-targeting, and more — all in one platform.</p>
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+            <a href="/register" class="bg-black text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-800 text-lg">Start Free →</a>
+            <a href="/pricing" class="border border-gray-300 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 text-lg">View Pricing</a>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="max-w-6xl mx-auto py-16 px-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div class="text-center p-6"><div class="text-4xl mb-4">🔗</div><h3 class="font-bold text-lg mb-2">Short Links</h3><p class="text-gray-500 text-sm">Create branded short links with custom slugs and domains</p></div>
+            <div class="text-center p-6"><div class="text-4xl mb-4">📊</div><h3 class="font-bold text-lg mb-2">Analytics</h3><p class="text-gray-500 text-sm">Real-time click tracking with geo, device, and browser insights</p></div>
+            <div class="text-center p-6"><div class="text-4xl mb-4">🎯</div><h3 class="font-bold text-lg mb-2">UTM Builder</h3><p class="text-gray-500 text-sm">Automatic UTM parameter management and templates</p></div>
+            <div class="text-center p-6"><div class="text-4xl mb-4">🤝</div><h3 class="font-bold text-lg mb-2">Partner Program</h3><p class="text-gray-500 text-sm">Built-in affiliate/referral system with commission tracking</p></div>
+            <div class="text-center p-6"><div class="text-4xl mb-4">💳</div><h3 class="font-bold text-lg mb-2">Stripe Billing</h3><p class="text-gray-500 text-sm">Subscription management with automated invoicing</p></div>
+            <div class="text-center p-6"><div class="text-4xl mb-4">🔒</div><h3 class="font-bold text-lg mb-2">Enterprise SSO</h3><p class="text-gray-500 text-sm">SAML SSO and SCIM directory sync for teams</p></div>
+        </div>
+    </section>
+
+    <!-- Latest Blog Posts -->
+    @if(latestPosts?.Count > 0){
+    <section class="max-w-6xl mx-auto py-16 px-6 border-t">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold">Latest from the Blog</h2>
+            <a href="/blog" class="text-sm text-gray-500 hover:text-black">View all articles →</a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            @foreach(var post in latestPosts){
+            <a href="/blog/@post.Slug" class="group block bg-white rounded-xl border hover:shadow-lg transition-all overflow-hidden">
+                @if(!string.IsNullOrEmpty(post.FeaturedImage)){
+                <img src="@post.FeaturedImage" alt="@post.Title" class="w-full h-32 object-cover">
+                }else{
+                <div class="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-3xl">📝</div>
+                }
+                <div class="p-4">
+                    <h3 class="font-semibold text-sm mb-1 group-hover:text-blue-600 line-clamp-2">@post.Title</h3>
+                    <p class="text-xs text-gray-400">@post.PublishedAt?.ToString("MMM d, yyyy")</p>
+                </div>
+            </a>}
+        </div>
+    </section>
+    }
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 py-12">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid grid-cols-4 gap-8">
+                <div>
+                    <span class="font-bold text-lg">UTMPro</span>
+                    <p class="text-gray-500 text-sm mt-2">The link management platform for modern teams.</p>
+                    @if(!string.IsNullOrEmpty(email)){<p class="text-sm text-gray-400 mt-2">📧 @email</p>}
+                </div>
+                <div><h4 class="font-semibold text-sm mb-3">Product</h4><div class="space-y-2 text-sm text-gray-500"><a href="/pricing" class="block hover:text-black">Pricing</a><a href="/blog" class="block hover:text-black">Blog</a><a href="/login" class="block hover:text-black">Login</a></div></div>
+                <div><h4 class="font-semibold text-sm mb-3">Features</h4><div class="space-y-2 text-sm text-gray-500"><p>Link Shortening</p><p>Analytics</p><p>QR Codes</p><p>UTM Builder</p></div></div>
+                <div><h4 class="font-semibold text-sm mb-3">Company</h4><div class="space-y-2 text-sm text-gray-500"><a href="/about" class="block hover:text-black">About Us</a><a href="/contact" class="block hover:text-black">Contact Us</a><a href="/privacy" class="block hover:text-black">Privacy Policy</a><a href="/terms" class="block hover:text-black">Terms of Service</a></div></div>
+            </div>
+            <div class="border-t mt-8 pt-6 text-center text-gray-400 text-sm">@(footer ?? "© 2026 UTMPro. All rights reserved.")</div>
+        </div>
+    </footer>
+</body></html>

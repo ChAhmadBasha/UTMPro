@@ -1,0 +1,132 @@
+@{ ViewData["Title"] = "Billing";
+    var ws = ViewBag.Workspace as Workspace;
+    var plan = ViewBag.CurrentPlan as Plan;
+    var plans = ViewBag.AllPlans as List<Plan>;
+    var subscription = ViewBag.Subscription as StripeSubscriptionModel;
+    var invoices = ViewBag.Invoices as List<StripeInvoiceModel>;
+    var hasStripe = (bool)(ViewBag.HasStripeCustomer ?? false);
+    var role = ViewBag.CurrentRole as string ?? "";
+    var isOwner = role == "Owner";
+}
+
+<!-- Settings Nav -->
+<div class="flex gap-2 sm:gap-4 mb-6 border-b overflow-x-auto border-gray-200 pb-3">
+    <a href="/@ws?.Slug/settings/general" class="text-sm text-gray-500 pb-3 -mb-3">General</a>
+    <a href="/@ws?.Slug/settings/domains" class="text-sm text-gray-500 pb-3 -mb-3">Domains</a>
+    <a href="/@ws?.Slug/settings/members" class="text-sm text-gray-500 pb-3 -mb-3">Members</a>
+    <a href="/@ws?.Slug/settings/billing" class="text-sm font-medium text-black border-b-2 border-black pb-3 -mb-3">Billing</a>
+    <a href="/@ws?.Slug/settings/webhooks" class="text-sm text-gray-500 pb-3 -mb-3">Webhooks</a>
+</div>
+
+<h1 class="text-2xl font-bold mb-6">Billing & Subscription</h1>
+
+<!-- Current Plan Card -->
+<div class="bg-white rounded-xl border p-6 mb-6">
+    <div class="flex justify-between items-start">
+        <div>
+            <div class="flex items-center gap-3">
+                <h2 class="font-semibold text-xl">@plan?.Name Plan</h2>
+                @if (subscription != null && subscription.Status == "trialing") { <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">Trial Active</span> }
+                @if (subscription != null && subscription.CancelAtPeriodEnd) { <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">Cancels at period end</span> }
+                @if (subscription != null && subscription.Status == "past_due") { <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">Payment past due</span> }
+                @if (subscription != null && subscription.Status == "active") { <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Active</span> }
+                @if (subscription == null && plan != null && plan.Price == 0 && !plan.HasDiscount) { <span class="px-2 py-1 bg-gray-100 text-gray-500 rounded text-xs font-medium">Free Plan</span> }
+                @if (subscription == null && ws?.PlanEndDate.HasValue == true && ws.PlanEndDate > DateTime.UtcNow) {
+                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">🎉 Free Trial Active</span>
+                }
+                @if (plan?.HasDiscount == true && !string.IsNullOrEmpty(plan.DiscountBadge)) {
+                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">@plan.DiscountBadge</span>
+                }
+            </div>
+            @if (plan?.HasDiscount == true) {
+            <p class="text-gray-500 text-sm mt-1">
+                <span class="line-through text-gray-300">$@plan.Price</span>
+                <span class="text-green-600 font-semibold">$@plan.DiscountedPrice/month</span>
+                · @plan.MaxLinksPerMonth.ToString("N0") links · @plan.MaxEventsPerMonth.ToString("N0") events
+            </p>
+            } else {
+            <p class="text-gray-500 text-sm mt-1">$@plan?.Price/month · @plan?.MaxLinksPerMonth.ToString("N0") links · @plan?.MaxEventsPerMonth.ToString("N0") events</p>
+            }
+            @if (subscription != null) {
+            <p class="text-xs text-gray-400 mt-2">
+                Billing period: @subscription.CurrentPeriodStart.ToString("MMM d, yyyy") — @subscription.CurrentPeriodEnd.ToString("MMM d, yyyy")
+            </p>
+            @if (subscription.TrialEnd.HasValue) {
+            <p class="text-xs text-blue-500">Trial ends: @subscription.TrialEnd.Value.ToString("MMM d, yyyy")</p>
+            }
+            } else if (ws?.PlanEndDate.HasValue == true) {
+                @if (ws.PlanEndDate > DateTime.UtcNow) {
+                    var daysLeft = (ws.PlanEndDate.Value - DateTime.UtcNow).Days;
+                    <div class="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                        <p class="text-xs text-green-700 font-medium">🎉 Free trial active — <strong>@daysLeft days remaining</strong></p>
+                        <p class="text-xs text-green-600 mt-0.5">Expires: @ws.PlanEndDate.Value.ToString("MMM d, yyyy") · Will switch to Free plan after trial</p>
+                    </div>
+                } else {
+                    <p class="text-xs text-orange-500 mt-2">⚠️ Trial expired on @ws.PlanEndDate.Value.ToString("MMM d, yyyy")</p>
+                }
+            }
+        </div>
+        <div class="flex gap-2">
+            @if (isOwner) {
+            <a href="/@ws?.Slug/settings/billing/upgrade" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">
+                @(plan?.Price > 0 ? "Change Plan" : "Upgrade Plan")
+            </a>
+            @if (hasStripe) {
+            <a href="/@ws?.Slug/settings/billing/portal" class="border px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Manage Billing</a>
+            }}
+        </div>
+    </div>
+</div>
+
+<!-- Usage -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white rounded-xl border p-5">
+        <div class="flex justify-between items-end mb-2"><span class="text-xs text-gray-500">Links Used This Month</span><span class="text-sm font-medium">@ws?.LinksUsedThisMonth / @plan?.MaxLinksPerMonth.ToString("N0")</span></div>
+        <div class="h-2 bg-gray-200 rounded-full"><div class="h-full bg-black rounded-full transition-all" style="width: @(Math.Min(100, (ws?.LinksUsedThisMonth ?? 0) * 100.0 / Math.Max(1, plan?.MaxLinksPerMonth ?? 25)))%"></div></div>
+    </div>
+    <div class="bg-white rounded-xl border p-5">
+        <div class="flex justify-between items-end mb-2"><span class="text-xs text-gray-500">Events Used This Month</span><span class="text-sm font-medium">@ws?.EventsUsedThisMonth.ToString("N0") / @plan?.MaxEventsPerMonth.ToString("N0")</span></div>
+        <div class="h-2 bg-gray-200 rounded-full"><div class="h-full bg-black rounded-full transition-all" style="width: @(Math.Min(100, (ws?.EventsUsedThisMonth ?? 0) * 100.0 / Math.Max(1, plan?.MaxEventsPerMonth ?? 1000)))%"></div></div>
+    </div>
+</div>
+
+<!-- Plan Features -->
+<div class="bg-white rounded-xl border p-6 mb-6">
+    <h3 class="font-semibold mb-4">Plan Features</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Domains</span><span class="font-medium">@plan?.MaxDomains</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Members</span><span class="font-medium">@plan?.MaxMembers</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Analytics Retention</span><span class="font-medium">@plan?.AnalyticsRetentionDays days</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Password Protection</span><span>@(plan?.HasPasswordProtection == true ? "✅" : "❌")</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">A/B Testing</span><span>@(plan?.HasABTesting == true ? "✅" : "❌")</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">API Access</span><span>@(plan?.HasAPIAccess == true ? "✅" : "❌")</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Geo Targeting</span><span>@(plan?.HasGeoTargeting == true ? "✅" : "❌")</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Webhooks</span><span>@(plan?.HasEventWebhooks == true ? "✅" : "❌")</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Weighted URLs</span><span>@(plan?.HasWeightedURLs == true ? "✅" : "❌")</span></div>
+    </div>
+</div>
+
+<!-- Invoices -->
+<div class="bg-white rounded-xl border overflow-hidden">
+    <div class="px-6 py-4 border-b flex justify-between items-center"><h2 class="font-semibold">Invoices</h2></div>
+    @if (invoices?.Count > 0) {
+    <div class="table-wrap"><table class="w-full min-w-[600px]"><thead class="bg-gray-50"><tr>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500">Date</th>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500">Invoice</th>
+        <th class="text-right px-4 py-3 text-xs font-medium text-gray-500">Amount</th>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500">Status</th>
+        <th class="px-4 py-3"></th>
+    </tr></thead><tbody class="divide-y">
+    @foreach (var inv in invoices) {
+    <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-sm text-gray-500">@inv.CreatedAt.ToString("MMM d, yyyy")</td>
+        <td class="px-4 py-3 text-sm">@(inv.InvoiceNumber ?? inv.StripeInvoiceId)</td>
+        <td class="px-4 py-3 text-sm text-right font-medium">$@inv.Amount.ToString("N2") @inv.Currency.ToUpper()</td>
+        <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(inv.Status == "paid" ? "bg-green-100 text-green-700" : inv.Status == "open" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500")">@inv.Status</span></td>
+        <td class="px-4 py-3">@if (!string.IsNullOrEmpty(inv.PdfUrl)) { <a href="@inv.PdfUrl" target="_blank" class="text-xs text-blue-600 hover:underline">PDF ↗</a> }</td>
+    </tr>}
+    </tbody></table></div>
+    } else {
+    <div class="text-center py-8"><p class="text-gray-500 text-sm">No invoices yet. Invoices will appear here after your first payment.</p></div>
+    }
+</div>

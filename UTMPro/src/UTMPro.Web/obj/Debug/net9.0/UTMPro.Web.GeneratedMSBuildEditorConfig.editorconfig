@@ -1,0 +1,505 @@
+is_global = true
+build_property.TargetFramework = net9.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = UTMPro.Web
+build_property.RootNamespace = UTMPro.Web
+build_property.ProjectDir = /home/user/UTMPro/src/UTMPro.Web/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = /home/user/UTMPro/src/UTMPro.Web
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 9.0
+build_property.EnableCodeStyleSeverity = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Blog/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvQmxvZy9DcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Blog/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvQmxvZy9FZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Blog/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvQmxvZy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Dashboard/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvRGFzaGJvYXJkL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Domains/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvRG9tYWlucy9DcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Domains/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvRG9tYWlucy9FZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Domains/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvRG9tYWlucy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Fraud/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvRnJhdWQvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Pages/About.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFnZXMvQWJvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Pages/Branding.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFnZXMvQnJhbmRpbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Pages/Contact.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFnZXMvQ29udGFjdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Pages/Emails.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFnZXMvRW1haWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Pages/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFnZXMvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Pages/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFnZXMvUHJpdmFjeS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Pages/Terms.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFnZXMvVGVybXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/PartnerPrograms/Detail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFydG5lclByb2dyYW1zL0RldGFpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/PartnerPrograms/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGFydG5lclByb2dyYW1zL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Payouts/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGF5b3V0cy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Plans/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGxhbnMvQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Plans/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGxhbnMvRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Plans/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvUGxhbnMvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Settings/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvU2V0dGluZ3MvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Shared/_AdminLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvU2hhcmVkL19BZG1pbkxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/StripeEvents/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvU3RyaXBlRXZlbnRzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/TrafficRules/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvVHJhZmZpY1J1bGVzL0NyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/TrafficRules/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvVHJhZmZpY1J1bGVzL0VkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/TrafficRules/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvVHJhZmZpY1J1bGVzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Users/Detail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvVXNlcnMvRGV0YWlsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Users/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvVXNlcnMvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Users/Memberships.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvVXNlcnMvTWVtYmVyc2hpcHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Workspaces/Detail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvV29ya3NwYWNlcy9EZXRhaWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/Workspaces/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvV29ya3NwYWNlcy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Areas/Admin/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Account/Referrals.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9SZWZlcnJhbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Account/Security.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9TZWN1cml0eS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Account/Settings.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9TZXR0aW5ncy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Activity/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWN0aXZpdHkvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Analytics/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQW5hbHl0aWNzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/ApiDocs/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBpRG9jcy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Auth/ForgotPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9Gb3Jnb3RQYXNzd29yZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Auth/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9Mb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Auth/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9SZWdpc3Rlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Auth/ResetPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9SZXNldFBhc3N3b3JkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Auth/VerifyEmail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9WZXJpZnlFbWFpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Bio/Manage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmlvL01hbmFnZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Bio/Profile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmlvL1Byb2ZpbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Bio/Setup.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmlvL1NldHVwLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Blog/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmxvZy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Blog/Post.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmxvZy9Qb3N0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Customers/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ3VzdG9tZXJzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/Analytics.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9BbmFseXRpY3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/Billing.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9CaWxsaW5nLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/CustomDomains.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9DdXN0b21Eb21haW5zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/FAQ.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9GQVEuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/GettingStarted.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9HZXR0aW5nU3RhcnRlZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/Integrations.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9JbnRlZ3JhdGlvbnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/Links.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9MaW5rcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/PartnerProgram.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9QYXJ0bmVyUHJvZ3JhbS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/QRCodes.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9RUkNvZGVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/UTMBuilder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9VVE1CdWlsZGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Docs/_DocsLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9jcy9fRG9jc0xheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/DomainsPage/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRG9tYWluc1BhZ2UvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Error/403.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXJyb3IvNDAzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Error/404.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXJyb3IvNDA0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Error/500.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXJyb3IvNTAwLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Events/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXZlbnRzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Folders/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRm9sZGVycy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Home/Pricing.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9QcmljaW5nLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Invite/Invalid.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSW52aXRlL0ludmFsaWQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Links/BulkImport.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTGlua3MvQnVsa0ltcG9ydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Links/Detail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTGlua3MvRGV0YWlsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Links/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTGlua3MvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Onboarding/Workspace.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvT25ib2FyZGluZy9Xb3Jrc3BhY2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Pages/About.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFnZXMvQWJvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Pages/Contact.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFnZXMvQ29udGFjdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Pages/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFnZXMvUHJpdmFjeS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Pages/Terms.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFnZXMvVGVybXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Pages/_PageLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFnZXMvX1BhZ2VMYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/PartnerPortal/Apply.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFydG5lclBvcnRhbC9BcHBseS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/PartnerPortal/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFydG5lclBvcnRhbC9EYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/PartnerPortal/Links.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFydG5lclBvcnRhbC9MaW5rcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/PartnerPortal/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFydG5lclBvcnRhbC9Mb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/PartnerPortal/Payouts.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFydG5lclBvcnRhbC9QYXlvdXRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/PartnerPortal/Sales.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFydG5lclBvcnRhbC9TYWxlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/PartnerPortal/Welcome.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFydG5lclBvcnRhbC9XZWxjb21lLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Analytics.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9BbmFseXRpY3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Bounties.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9Cb3VudGllcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Fraud.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9GcmF1ZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Messages.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9NZXNzYWdlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/PartnerDetail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9QYXJ0bmVyRGV0YWlsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Partners.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9QYXJ0bmVycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Payouts.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9QYXlvdXRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Sales.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9TYWxlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Program/Setup.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvZ3JhbS9TZXR1cC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/PublicStats/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHVibGljU3RhdHMvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Billing.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvQmlsbGluZy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/BillingPage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvQmlsbGluZ1BhZ2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/BillingStripe.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvQmlsbGluZ1N0cmlwZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Domains.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvRG9tYWlucy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/General.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvR2VuZXJhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/IntegrationConnect.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvSW50ZWdyYXRpb25Db25uZWN0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Integrations.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvSW50ZWdyYXRpb25zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/IntegrationsMarketplace.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvSW50ZWdyYXRpb25zTWFya2V0cGxhY2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Logs.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvTG9ncy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Members.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvTWVtYmVycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Notifications.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvTm90aWZpY2F0aW9ucy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/OAuthApps.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvT0F1dGhBcHBzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/SAML.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvU0FNTC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Security.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvU2VjdXJpdHkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Tokens.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvVG9rZW5zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Tracking.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvVHJhY2tpbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Upgrade.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvVXBncmFkZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Settings/Webhooks.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2V0dGluZ3MvV2ViaG9va3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/Tags/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVGFncy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/UTMTemplates/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVVRNVGVtcGxhdGVzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/user/UTMPro/src/UTMPro.Web/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 

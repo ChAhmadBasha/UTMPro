@@ -1,0 +1,41 @@
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Pages Manager"; }
+<h1 class="text-2xl font-bold mb-6">Pages Manager</h1>
+<p class="text-gray-500 mb-6">Edit your public-facing website pages. Changes are saved and reflected immediately.</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <a href="/admin/pages/about" class="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow group">
+        <div class="text-3xl mb-3">ℹ️</div>
+        <h3 class="font-bold text-lg group-hover:text-blue-600">About Us</h3>
+        <p class="text-sm text-gray-500 mt-1">Edit company info, mission, vision, and team members</p>
+    </a>
+    <a href="/admin/pages/contact" class="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow group">
+        <div class="text-3xl mb-3">📧</div>
+        <h3 class="font-bold text-lg group-hover:text-blue-600">Contact Us</h3>
+        <p class="text-sm text-gray-500 mt-1">Edit contact form email, address, phone, and map</p>
+    </a>
+    <a href="/admin/pages/privacy" class="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow group">
+        <div class="text-3xl mb-3">🔒</div>
+        <h3 class="font-bold text-lg group-hover:text-blue-600">Privacy Policy</h3>
+        <p class="text-sm text-gray-500 mt-1">Edit your privacy policy content</p>
+    </a>
+    <a href="/admin/pages/terms" class="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow group">
+        <div class="text-3xl mb-3">📜</div>
+        <h3 class="font-bold text-lg group-hover:text-blue-600">Terms of Service</h3>
+        <p class="text-sm text-gray-500 mt-1">Edit your terms of service content</p>
+    </a>
+    <a href="/admin/pages/branding" class="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow group">
+        <div class="text-3xl mb-3">🎨</div>
+        <h3 class="font-bold text-lg group-hover:text-blue-600">Site Branding</h3>
+        <p class="text-sm text-gray-500 mt-1">Logo, favicon, contact info, social links, footer</p>
+    </a>
+    <a href="/admin/pages/emails" class="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow group">
+        <div class="text-3xl mb-3">✉️</div>
+        <h3 class="font-bold text-lg group-hover:text-blue-600">Email Templates</h3>
+        <p class="text-sm text-gray-500 mt-1">Edit verification, welcome, reset, and invitation emails</p>
+    </a>
+    <a href="/admin/blog" class="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow group">
+        <div class="text-3xl mb-3">📝</div>
+        <h3 class="font-bold text-lg group-hover:text-blue-600">Blog Posts</h3>
+        <p class="text-sm text-gray-500 mt-1">Create and manage blog articles</p>
+    </a>
+</div>

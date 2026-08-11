@@ -1,0 +1,24 @@
+@model PartnerProgram
+@{ Layout = null; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Join @Model.ProgramName</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+<div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg m-4">
+    <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold">@Model.ProgramName</h1>
+        @if(Model.Description != null){<p class="text-gray-500 mt-2">@Model.Description</p>}
+        <div class="mt-4 flex justify-center gap-6 text-sm">
+            <div class="text-center"><p class="text-2xl font-bold text-green-600">@Model.CommissionValue@(Model.CommissionType == "Percentage" ? "%" : "$")</p><p class="text-gray-500">Commission</p></div>
+            <div class="text-center"><p class="text-2xl font-bold">@Model.CookieDays</p><p class="text-gray-500">Cookie days</p></div>
+            <div class="text-center"><p class="text-2xl font-bold">@Model.CommissionDuration</p><p class="text-gray-500">Duration</p></div>
+        </div>
+    </div>
+    @if(ViewBag.Error != null){<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">@ViewBag.Error</div>}
+    <form method="post" action="/partners/@Model.Slug/apply">
+        <div class="mb-4"><label class="block text-sm font-medium mb-2">Name</label><input type="text" name="name" required class="w-full px-3 py-2 border rounded-lg"></div>
+        <div class="mb-4"><label class="block text-sm font-medium mb-2">Email</label><input type="email" name="email" required class="w-full px-3 py-2 border rounded-lg"></div>
+        <div class="mb-4"><label class="block text-sm font-medium mb-2">Country</label><input type="text" name="country" class="w-full px-3 py-2 border rounded-lg" placeholder="Optional"></div>
+        <button type="submit" class="w-full py-2.5 rounded-lg font-medium text-white" style="background-color: @Model.BrandColor">@(Model.RequireApplication ? "Submit Application" : "Join Program")</button>
+    </form>
+    <div class="mt-4 flex justify-center"><a href="/partners/@Model.Slug/login" class="text-sm text-gray-500 hover:text-black">Already a partner? Sign in</a></div>
+</div>
+</body></html>

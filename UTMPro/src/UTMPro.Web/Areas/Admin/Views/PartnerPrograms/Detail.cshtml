@@ -1,0 +1,12 @@
+@model PartnerProgram
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = Model.ProgramName; var partners = ViewBag.Partners as List<Partner>; }
+<div class="flex items-center gap-3 mb-6"><a href="/admin/partner-programs" class="text-gray-400">&larr;</a><h1 class="text-2xl font-bold">@Model.ProgramName</h1></div>
+<div class="grid grid-cols-4 gap-4 mb-6">
+    <div class="bg-white p-4 rounded-xl border"><p class="text-xs text-gray-500">Partners</p><p class="text-xl font-bold">@Model.TotalPartners</p></div>
+    <div class="bg-white p-4 rounded-xl border"><p class="text-xs text-gray-500">Revenue</p><p class="text-xl font-bold">$@Model.TotalRevenue.ToString("N2")</p></div>
+    <div class="bg-white p-4 rounded-xl border"><p class="text-xs text-gray-500">Payouts</p><p class="text-xl font-bold">$@Model.TotalPayouts.ToString("N2")</p></div>
+    <div class="bg-white p-4 rounded-xl border"><p class="text-xs text-gray-500">Commission</p><p class="text-xl font-bold">@Model.CommissionValue@(Model.CommissionType == "Percentage" ? "%" : " flat")</p></div>
+</div>
+@if(partners?.Count > 0){<div class="bg-white rounded-xl border p-6"><h2 class="font-semibold mb-4">Top Partners</h2><table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="text-left px-3 py-2">Partner</th><th class="text-right px-3 py-2">Revenue</th><th class="text-right px-3 py-2">Commission</th><th class="text-left px-3 py-2">Status</th></tr></thead><tbody class="divide-y">
+@foreach(var p in partners){<tr><td class="px-3 py-2">@p.Name<br><span class="text-xs text-gray-400">@p.Email</span></td><td class="px-3 py-2 text-right">$@p.TotalRevenue.ToString("N2")</td><td class="px-3 py-2 text-right">$@p.TotalCommission.ToString("N2")</td><td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-xs @(p.ApplicationStatus == "Approved" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700")">@p.ApplicationStatus</span></td></tr>}
+</tbody></table></div>}

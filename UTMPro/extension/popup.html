@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UTMPro</title>
+  <link rel="stylesheet" href="css/popup.css">
+</head>
+<body>
+  <!-- ═══ Login Screen ═══ -->
+  <div id="loginScreen" class="screen">
+    <div class="header">
+      <div class="logo">UTMPro</div>
+      <p class="subtitle">Link Shortener & Analytics</p>
+    </div>
+    <div class="card">
+      <p class="text-sm text-muted mb-3">Connect your UTMPro account to create short links from any page.</p>
+      <div class="field">
+        <label>API Base URL</label>
+        <input type="url" id="apiBaseUrl" value="https://app.utmpro.link" placeholder="https://app.utmpro.link">
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="apiKey" placeholder="utmpro_xxxxxxxxxxxx">
+        <p class="hint">Get your API key from Settings → API Keys</p>
+      </div>
+      <div class="field">
+        <label>Workspace ID</label>
+        <input type="number" id="workspaceId" placeholder="1">
+      </div>
+      <button class="btn-primary" onclick="saveSettings()">Connect Account</button>
+    </div>
+    <p class="footer-link"><a href="https://app.utmpro.link/register" target="_blank">Don't have an account? Sign up free →</a></p>
+  </div>
+
+  <!-- ═══ Main Screen ═══ -->
+  <div id="mainScreen" class="screen hidden">
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="logo-small">UTMPro</div>
+      <div class="topbar-actions">
+        <button class="icon-btn" onclick="openDashboard()" title="Open Dashboard">📊</button>
+        <button class="icon-btn" onclick="showSettings()" title="Settings">⚙️</button>
+      </div>
+    </div>
+
+    <!-- Current page info -->
+    <div class="page-info" id="pageInfo">
+      <div class="page-favicon" id="pageFavicon">🌐</div>
+      <div class="page-details">
+        <div class="page-title" id="pageTitle">Loading...</div>
+        <div class="page-url" id="pageUrl">...</div>
+      </div>
+    </div>
+
+    <!-- Create Link Form -->
+    <div class="card">
+      <div class="field">
+        <label>Destination URL</label>
+        <input type="url" id="destUrl" placeholder="https://example.com">
+      </div>
+
+      <div class="field-row">
+        <div class="field flex-1">
+          <label>Domain</label>
+          <select id="domainSelect">
+            <option value="0">Loading...</option>
+          </select>
+        </div>
+        <div class="field" style="width: 140px;">
+          <label>Slug (optional)</label>
+          <input type="text" id="slugInput" placeholder="auto">
+        </div>
+      </div>
+
+      <!-- UTM toggle -->
+      <details class="utm-section">
+        <summary class="utm-toggle">📊 UTM Parameters</summary>
+        <div class="utm-fields">
+          <div class="field-row">
+            <div class="field flex-1">
+              <label>Source</label>
+              <input type="text" id="utmSource" placeholder="google">
+            </div>
+            <div class="field flex-1">
+              <label>Medium</label>
+              <input type="text" id="utmMedium" placeholder="cpc">
+            </div>
+          </div>
+          <div class="field">
+            <label>Campaign</label>
+            <input type="text" id="utmCampaign" placeholder="summer2026">
+          </div>
+        </div>
+      </details>
+
+      <button class="btn-primary" id="createBtn" onclick="createLink()">
+        <span id="createBtnText">Create Short Link</span>
+        <span id="createSpinner" class="spinner hidden"></span>
+      </button>
+    </div>
+
+    <!-- Result -->
+    <div id="resultCard" class="card result-card hidden">
+      <div class="result-header">
+        <span class="result-icon">✅</span>
+        <span class="result-title">Link Created!</span>
+      </div>
+      <div class="result-url" id="resultUrl"></div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copyLink()">📋 Copy</button>
+        <button class="btn-secondary" onclick="openLink()">🔗 Open</button>
+        <button class="btn-secondary" onclick="showQR()">📱 QR</button>
+      </div>
+      <div id="qrContainer" class="qr-container hidden">
+        <canvas id="qrCanvas"></canvas>
+        <button class="btn-small" onclick="downloadQR()">Download QR</button>
+      </div>
+      <p id="copyFeedback" class="copy-feedback hidden">Copied to clipboard! ✓</p>
+    </div>
+
+    <!-- Error -->
+    <div id="errorCard" class="card error-card hidden">
+      <span class="error-icon">❌</span>
+      <span id="errorMsg" class="error-text"></span>
+    </div>
+
+    <!-- Recent Links -->
+    <div class="section-header">
+      <span>Recent Links</span>
+      <button class="link-btn" onclick="loadRecent()">↻ Refresh</button>
+    </div>
+    <div id="recentLinks" class="recent-list">
+      <p class="text-muted text-center py-3">Loading...</p>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat"><span class="stat-value" id="statLinks">-</span><span class="stat-label">Links</span></div>
+      <div class="stat"><span class="stat-value" id="statClicks">-</span><span class="stat-label">Clicks Today</span></div>
+    </div>
+  </div>
+
+  <script src="lib/qrcode.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

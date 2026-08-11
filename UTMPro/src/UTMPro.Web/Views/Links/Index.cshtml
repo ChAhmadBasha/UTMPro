@@ -1,0 +1,468 @@
+@model LinksViewModel
+@{
+    ViewData["Title"] = "Links";
+    var workspace = ViewBag.Workspace as Workspace;
+    var slug = workspace?.Slug;
+    var hasWeighted = Model.Plan?.HasWeightedURLs == true;
+    var maxDest = Model.Plan?.MaxDestinationsPerLink ?? 1;
+}
+
+<!-- Hidden anti-forgery token for AJAX calls -->
+@Html.AntiForgeryToken()
+
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Links</h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">@Model.TotalCount total · @Model.LinksUsedThisMonth / @Model.Plan.MaxLinksPerMonth used this month</p>
+    </div>
+    <button onclick="openCreateModal()" class="bg-black dark:bg-white dark:text-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-80 flex items-center gap-2">+ Create Link</button>
+</div>
+
+<!-- Filters -->
+<div class="flex flex-col sm:flex-row gap-3 mb-6">
+    <form method="get" class="flex gap-3 flex-wrap w-full">
+        <input type="text" name="search" value="@Model.Search" placeholder="Search links..." class="px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm w-64">
+        <select name="domainId" class="px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm"><option value="">All Domains</option>@foreach(var d in Model.Domains){<option value="@d.Id" selected="@(Model.DomainId==d.Id)">@d.DomainName</option>}</select>
+        <select name="folderId" class="px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm"><option value="">All Folders</option>@foreach(var f in Model.Folders){<option value="@f.Id" selected="@(Model.FolderId==f.Id)">@f.Name</option>}</select>
+        <button type="submit" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600">Filter</button>
+    </form>
+</div>
+
+<!-- Links Table -->
+<div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden"><div class="table-wrap">
+    @if(Model.Links.Count==0){
+    <div class="text-center py-12"><p class="text-gray-500 text-lg">No links yet</p><p class="text-gray-400 text-sm mt-1">Create your first link to get started</p></div>
+    }else{
+    <!-- Bulk action bar -->
+    <div id="bulkBar" class="hidden bg-black dark:bg-white text-white dark:text-black px-4 py-2 flex items-center gap-3 text-sm rounded-t-xl">
+        <span id="bulkCount">0</span> selected
+        <button onclick="bulkAction('archive')" class="px-3 py-1 bg-white/20 rounded-lg hover:bg-white/30 text-xs">📦 Archive</button>
+        <button onclick="bulkAction('toggle')" class="px-3 py-1 bg-white/20 rounded-lg hover:bg-white/30 text-xs">🔄 Toggle</button>
+        <button onclick="bulkAction('delete')" class="px-3 py-1 bg-red-500/80 rounded-lg hover:bg-red-500 text-xs">🗑️ Delete</button>
+        <button onclick="clearBulk()" class="ml-auto text-xs opacity-70 hover:opacity-100">✕</button>
+    </div>
+    <div class="table-wrap"><table class="w-full min-w-[600px]"><thead class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600"><tr>
+        <th class="px-3 py-3 w-8"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)" class="rounded"></th>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Link</th>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Destination</th>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mode</th>
+        <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Clicks</th>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Created</th>
+        <th class="px-4 py-3"></th>
+    </tr></thead><tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+    @foreach(var link in Model.Links){
+    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+        <td class="px-3 py-3"><input type="checkbox" class="link-checkbox rounded" value="@link.Id" onchange="updateBulkBar()"></td>
+        <td class="px-4 py-3"><a href="/@slug/links/@link.Id" class="text-sm font-medium text-blue-600 hover:underline">@link.Domain/@link.Slug</a>@if(link.HasPassword){<span class="ml-1 text-xs">🔒</span>}@if(!link.IsActive){<span class="ml-1 px-1 bg-red-100 text-red-600 text-xs rounded">off</span>}
+            @if(link.TagNames.Count>0){<div class="flex gap-1 mt-1">@foreach(var t in link.TagNames){<span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs">@t</span>}</div>}</td>
+        <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">@link.PrimaryUrl</td>
+        <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-xs @(link.RedirectMode switch{"Weighted"=>"bg-purple-100 text-purple-700","ABTest"=>"bg-blue-100 text-blue-700",_=>"bg-gray-100 text-gray-500"})">@link.RedirectMode</span></td>
+        <td class="px-4 py-3 text-sm font-medium text-right">@link.TotalClicks.ToString("N0")</td>
+        <td class="px-4 py-3 text-sm text-gray-500">@link.CreatedAt.ToString("MMM d, yyyy")</td>
+        <td class="px-4 py-3 flex gap-2 items-center">
+            <button onclick="copyLink('https://@link.Domain/@link.Slug', this)" title="Copy short link" class="text-gray-400 hover:text-black dark:hover:text-white transition-colors p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 copy-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 check-icon hidden text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+            <a href="/@slug/links/@link.Id" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm">View →</a>
+        </td>
+    </tr>}
+    </tbody></table></div>}
+</div>
+
+@if(Model.TotalPages>1){<div class="flex justify-center gap-2 mt-6">@for(int i=1;i<=Math.Min(Model.TotalPages,10);i++){<a href="?page=@i&search=@Model.Search" class="px-3 py-1 text-sm rounded-lg @(i==Model.CurrentPage?"bg-black dark:bg-white text-white dark:text-black":"bg-white dark:bg-gray-800 border dark:border-gray-700 hover:bg-gray-50")">@i</a>}</div>}
+
+<!-- ═══════════ CREATE LINK MODAL ═══════════ -->
+<div id="createModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-6 overflow-y-auto">
+<div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl mx-2 sm:m-4 mb-8 shadow-2xl border dark:border-gray-700">
+    <!-- Header -->
+    <div class="flex justify-between items-center px-5 py-4 border-b dark:border-gray-700">
+        <div class="flex items-center gap-2 text-sm"><span class="text-gray-400">Links ›</span><span class="font-semibold">New link</span></div>
+        <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+    </div>
+
+    <form id="createLinkForm">
+    <div class="flex flex-col lg:flex-row">
+        <!-- ═══ LEFT PANEL: Form ═══ -->
+        <div class="flex-1 p-4 sm:p-5 max-h-[75vh] overflow-y-auto">
+            <!-- Destination URL -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium mb-1.5">Destination URL</label>
+                <input type="url" id="primaryUrl" required class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white" placeholder="https://example.com/your-page" onblur="fetchMeta()">
+            </div>
+            <!-- Short Link -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium mb-1.5">Short Link</label>
+                <div class="flex gap-2">
+                    <select id="domainSelect" class="px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-sm w-44">@foreach(var d in Model.Domains){<option value="@d.Id">@d.DomainName</option>}</select>
+                    <input type="text" id="customSlug" class="flex-1 px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-sm" placeholder="(optional) custom slug">
+                </div>
+            </div>
+            <!-- Tags -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium mb-1.5">Tags</label>
+                <select id="tagSelect" class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-sm"><option value="">Select tags...</option>@foreach(var t in Model.Tags){<option value="@t.Id">@t.Name</option>}</select>
+            </div>
+            <!-- Folder -->
+            <div class="mb-5">
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-sm font-medium">Folder</label>
+                    <a href="/@slug/links/folders" class="text-xs text-blue-600 hover:underline">Manage</a>
+                </div>
+                <select id="folderSelect" class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-sm">
+                    <option value="">No folder</option>
+                    @foreach(var f in Model.Folders){<option value="@f.Id">@(f.Color != "#22c55e" ? "" : "")@f.Name</option>}
+                </select>
+            </div>
+            <!-- Comments -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium mb-1.5">Comments</label>
+                <textarea id="comments" class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-sm" rows="2" placeholder="Internal notes..."></textarea>
+            </div>
+
+            <!-- ═══ TAB PILLS ═══ -->
+            <div class="flex flex-wrap gap-2 border-t dark:border-gray-700 pt-4 mb-4">
+                <button type="button" onclick="switchTab('utmTab')" class="tab-pill flex items-center gap-1.5 px-3 py-1.5 border dark:border-gray-600 rounded-full text-xs hover:bg-gray-50 dark:hover:bg-gray-700" data-tab="utmTab">📊 UTM</button>
+                @if(hasWeighted){<button type="button" onclick="switchTab('abTab')" class="tab-pill flex items-center gap-1.5 px-3 py-1.5 border dark:border-gray-600 rounded-full text-xs hover:bg-gray-50 dark:hover:bg-gray-700" data-tab="abTab">🔀 A/B Test</button>}
+                <button type="button" onclick="switchTab('pwdTab')" class="tab-pill flex items-center gap-1.5 px-3 py-1.5 border dark:border-gray-600 rounded-full text-xs hover:bg-gray-50 dark:hover:bg-gray-700" data-tab="pwdTab">🔒 Password</button>
+                <button type="button" onclick="switchTab('expTab')" class="tab-pill flex items-center gap-1.5 px-3 py-1.5 border dark:border-gray-600 rounded-full text-xs hover:bg-gray-50 dark:hover:bg-gray-700" data-tab="expTab">⏰ Expiration</button>
+            </div>
+
+            <!-- TAB CONTENT: Only ONE visible at a time -->
+            <div id="utmTab" class="tab-content hidden p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
+                <h4 class="text-sm font-medium mb-3">UTM Parameters</h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="utmSource" class="px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm" placeholder="utm_source">
+                    <input type="text" id="utmMedium" class="px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm" placeholder="utm_medium">
+                    <input type="text" id="utmCampaign" class="px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm" placeholder="utm_campaign">
+                    <input type="text" id="utmTerm" class="px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm" placeholder="utm_term">
+                    <input type="text" id="utmContent" class="px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm" placeholder="utm_content">
+                </div>
+            </div>
+
+            @if(hasWeighted){
+            <div id="abTab" class="tab-content hidden p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
+                <h4 class="text-sm font-medium mb-2">Multiple Destinations <span class="text-xs text-gray-400">(max @maxDest)</span></h4>
+                <div id="destinationsContainer" class="space-y-2"></div>
+                <button type="button" onclick="addDestination()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add destination</button>
+                <label class="flex items-center gap-2 mt-3"><input type="checkbox" id="enableABTest"><span class="text-sm">Enable A/B Test mode</span></label>
+            </div>}
+
+            <div id="pwdTab" class="tab-content hidden p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
+                <h4 class="text-sm font-medium mb-2">Password Protection</h4>
+                <label class="flex items-center gap-2 mb-3">
+                    <input type="checkbox" id="enablePassword" onchange="document.getElementById('passwordField').classList.toggle('hidden',!this.checked)">
+                    <span class="text-sm">Enable password protection</span>
+                </label>
+                <div id="passwordField" class="hidden">
+                    <input type="password" id="linkPassword" class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm" placeholder="Enter password for this link">
+                </div>
+                <p class="text-xs text-gray-400 mt-2">When enabled, visitors must enter the password before being redirected.</p>
+            </div>
+
+            <div id="expTab" class="tab-content hidden p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
+                <h4 class="text-sm font-medium mb-2">Link Expiration</h4>
+                <input type="datetime-local" id="expiresAt" class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm">
+                <p class="text-xs text-gray-400 mt-2">After this date, the link will redirect to the expiration URL or the default redirect.</p>
+            </div>
+        </div>
+
+        <!-- ═══ RIGHT PANEL: Preview ═══ -->
+        <div class="w-full lg:w-80 p-5 max-h-[75vh] overflow-y-auto border-t lg:border-t-0 lg:border-l dark:border-gray-700">
+            <!-- QR Code -->
+            <div class="mb-5">
+                <h4 class="text-sm font-medium mb-2">QR Code</h4>
+                <div id="qrPreview" class="bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-6 flex items-center justify-center min-h-[100px]">
+                    <p class="text-xs text-gray-400 text-center">Enter a URL to generate QR</p>
+                </div>
+            </div>
+
+            <!-- Custom Link Preview -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium">Custom Link Preview</h4>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="enablePreview" class="sr-only peer" onchange="togglePreviewEdit()">
+                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-black dark:peer-checked:bg-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-800 after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                    </label>
+                </div>
+                <p class="text-xs text-gray-400 mb-3">Customize how your link looks when shared on social media.</p>
+
+                <!-- Preview Card -->
+                <div class="border dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700 mb-3">
+                    <div id="previewImageContainer" class="bg-gray-100 dark:bg-gray-600 h-36 flex items-center justify-center relative">
+                        <img id="previewImage" src="" alt="" class="w-full h-full object-cover hidden">
+                        <span id="previewImagePlaceholder" class="text-3xl">🔗</span>
+                    </div>
+                    <div class="p-3">
+                        <p id="previewTitle" class="text-sm font-medium line-clamp-2">Enter a URL to see preview</p>
+                        <p id="previewDesc" class="text-xs text-gray-500 mt-1 line-clamp-2"></p>
+                    </div>
+                </div>
+
+                <!-- Editable preview fields (shown when toggle ON) -->
+                <div id="previewEditFields" class="hidden space-y-3">
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-medium">Image</label>
+                            <div class="flex gap-1">
+                                <label class="text-xs text-blue-600 cursor-pointer hover:underline">
+                                    📤 Upload
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadPreviewImage(this)">
+                                </label>
+                                <span class="text-xs text-gray-300">|</span>
+                                <span class="text-xs text-gray-400">or paste URL</span>
+                            </div>
+                        </div>
+                        <input type="text" id="customImageUrl" class="w-full px-2.5 py-1.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-xs mt-1" placeholder="https://...image.jpg" oninput="updatePreviewImage()">
+                    </div>
+                    <div>
+                        <div class="flex justify-between"><label class="text-xs font-medium">Title</label><span class="text-xs text-gray-400" id="titleCharCount">0/120</span></div>
+                        <textarea id="customTitle" maxlength="120" class="w-full px-2.5 py-1.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-xs mt-1" rows="2" placeholder="Custom title..." oninput="updatePreviewTitle()"></textarea>
+                    </div>
+                    <div>
+                        <div class="flex justify-between"><label class="text-xs font-medium">Description</label><span class="text-xs text-gray-400" id="descCharCount">0/240</span></div>
+                        <textarea id="customDescription" maxlength="240" class="w-full px-2.5 py-1.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-xs mt-1" rows="2" placeholder="Custom description..." oninput="updatePreviewDesc()"></textarea>
+                    </div>
+                    <button type="button" onclick="resetPreview()" class="text-xs text-gray-500 hover:text-black dark:hover:text-white">Reset to default</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-between items-center px-5 py-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-2xl">
+        <div>
+            <span id="createResult" class="text-sm text-green-600 hidden"></span>
+            <span id="createError" class="text-sm text-red-600 hidden"></span>
+        </div>
+        <button type="submit" class="bg-black dark:bg-white dark:text-black text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:opacity-80 flex items-center gap-2">Create link <span>↵</span></button>
+    </div>
+    </form>
+</div>
+</div>
+
+@section Scripts {
+<script>
+// ═══ BULK ACTIONS ═══
+function toggleSelectAll(checked) { document.querySelectorAll('.link-checkbox').forEach(cb => { cb.checked = checked; }); updateBulkBar(); }
+function updateBulkBar() { const checked = document.querySelectorAll('.link-checkbox:checked'); document.getElementById('bulkBar').classList.toggle('hidden', checked.length === 0); document.getElementById('bulkCount').textContent = checked.length; }
+function clearBulk() { document.querySelectorAll('.link-checkbox').forEach(cb => cb.checked = false); document.getElementById('selectAll').checked = false; updateBulkBar(); }
+async function bulkAction(action) {
+    const ids = [...document.querySelectorAll('.link-checkbox:checked')].map(cb => parseInt(cb.value));
+    if (ids.length === 0) return;
+    if (action === 'delete' && !confirm(`Delete ${ids.length} links?`)) return;
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    const res = await fetch('/@slug/links/bulk-action/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token }, body: JSON.stringify({ linkIds: ids }) });
+    const data = await res.json();
+    if (data.success) { location.reload(); }
+}
+
+// Copy link to clipboard with visual feedback
+function copyLink(url, btn) {
+    navigator.clipboard.writeText(url).then(() => {
+        const copyIcon = btn.querySelector('.copy-icon');
+        const checkIcon = btn.querySelector('.check-icon');
+        copyIcon.classList.add('hidden');
+        checkIcon.classList.remove('hidden');
+        setTimeout(() => { copyIcon.classList.remove('hidden'); checkIcon.classList.add('hidden'); }, 1500);
+    });
+}
+
+let destCount = 0;
+const maxDestinations = @maxDest;
+let fetchedMeta = {};
+let activeTab = null;
+
+function openCreateModal() { document.getElementById('createModal').classList.remove('hidden'); }
+function closeCreateModal() { document.getElementById('createModal').classList.add('hidden'); }
+
+// ═══ TAB SWITCHING (only one visible at a time) ═══
+function switchTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+    // Remove active style from all pills
+    document.querySelectorAll('.tab-pill').forEach(p => { p.classList.remove('bg-black','text-white','dark:bg-white','dark:text-black'); });
+
+    if (activeTab === tabId) {
+        // Toggle off — close the tab
+        activeTab = null;
+        return;
+    }
+
+    // Show selected tab
+    const tab = document.getElementById(tabId);
+    if (tab) { tab.classList.remove('hidden'); activeTab = tabId; }
+
+    // Highlight active pill
+    const pill = document.querySelector(`.tab-pill[data-tab="${tabId}"]`);
+    if (pill) { pill.classList.add('bg-black','text-white','dark:bg-white','dark:text-black'); }
+}
+
+// ═══ PREVIEW ═══
+function togglePreviewEdit() {
+    document.getElementById('previewEditFields').classList.toggle('hidden', !document.getElementById('enablePreview').checked);
+}
+function updatePreviewImage() {
+    const url = document.getElementById('customImageUrl').value;
+    const img = document.getElementById('previewImage');
+    const ph = document.getElementById('previewImagePlaceholder');
+    if (url) { img.src = url; img.classList.remove('hidden'); ph.classList.add('hidden'); }
+    else { img.classList.add('hidden'); ph.classList.remove('hidden'); }
+}
+function updatePreviewTitle() { document.getElementById('previewTitle').textContent = document.getElementById('customTitle').value || 'Enter a URL'; document.getElementById('titleCharCount').textContent = (document.getElementById('customTitle').value?.length||0)+'/120'; }
+function updatePreviewDesc() { document.getElementById('previewDesc').textContent = document.getElementById('customDescription').value; document.getElementById('descCharCount').textContent = (document.getElementById('customDescription').value?.length||0)+'/240'; }
+function resetPreview() {
+    document.getElementById('customTitle').value = fetchedMeta.title || '';
+    document.getElementById('customDescription').value = fetchedMeta.description || '';
+    document.getElementById('customImageUrl').value = fetchedMeta.image || '';
+    updatePreviewTitle(); updatePreviewDesc(); updatePreviewImage();
+}
+
+// ═══ FETCH META FROM URL ═══
+async function fetchMeta() {
+    const url = document.getElementById('primaryUrl').value;
+    if (!url || !url.startsWith('http')) return;
+    try {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        const res = await fetch('/@slug/links/api/fetch-metadata', { method:'POST', headers:{'Content-Type':'application/json','RequestVerificationToken':token}, body:JSON.stringify({url}) });
+        if (!res.ok) return;
+        const data = await res.json();
+        fetchedMeta = data;
+        // AI Slug Suggestions: generate from page title
+        if (data.title) {
+            const suggestions = generateSlugSuggestions(data.title);
+            showSlugSuggestions(suggestions);
+        }
+        if (data.title) { document.getElementById('previewTitle').textContent = data.title; document.getElementById('customTitle').value = data.title; updatePreviewTitle(); }
+        if (data.description) { document.getElementById('previewDesc').textContent = data.description; document.getElementById('customDescription').value = data.description; updatePreviewDesc(); }
+        if (data.image) { document.getElementById('customImageUrl').value = data.image; updatePreviewImage(); }
+    } catch(e) { console.log('Meta fetch error:', e); }
+}
+
+// ═══ IMAGE UPLOAD ═══
+async function uploadPreviewImage(input) {
+    if (!input.files[0]) return;
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    try {
+        const res = await fetch('/@slug/api/upload-image', { method:'POST', body:formData });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.url) { document.getElementById('customImageUrl').value = data.url; updatePreviewImage(); }
+        } else { alert('Upload failed. Max 2MB, allowed: png/jpg/gif/webp.'); }
+    } catch(e) { alert('Upload error'); }
+}
+
+// ═══ MULTI-DESTINATION ═══
+function addDestination() {
+    if (destCount >= maxDestinations) { alert('Max ' + maxDestinations + ' destinations'); return; }
+    destCount++;
+    const c = document.getElementById('destinationsContainer');
+    const r = document.createElement('div'); r.className = 'flex gap-2 items-center dest-row';
+    r.innerHTML = '<input type="url" class="dest-url flex-1 px-3 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm" placeholder="https://..." required><input type="number" class="dest-weight w-16 px-2 py-2 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-sm" value="100" min="1"><button type="button" onclick="this.parentElement.remove();destCount--;" class="text-red-500 text-lg">✕</button>';
+    c.appendChild(r);
+}
+
+// ═══ AI SLUG SUGGESTIONS ═══
+function generateSlugSuggestions(title) {
+    const words = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
+    const suggestions = [];
+    if (words.length >= 2) suggestions.push(words.slice(0, 3).join('-'));
+    if (words.length >= 1) suggestions.push(words[0] + '-' + Math.random().toString(36).substring(2, 6));
+    if (words.length >= 2) suggestions.push(words[0][0] + words[1][0] + '-' + words.slice(0, 2).join(''));
+    return suggestions.slice(0, 3);
+}
+
+function showSlugSuggestions(slugs) {
+    let container = document.getElementById('slugSuggestions');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'slugSuggestions';
+        container.className = 'flex gap-1 mt-1 flex-wrap';
+        document.getElementById('customSlug').parentElement.appendChild(container);
+    }
+    container.innerHTML = '<span class="text-xs text-gray-400 mr-1">💡</span>' +
+        slugs.map(s => `<button type="button" onclick="document.getElementById('customSlug').value='${s}';document.getElementById('slugSuggestions').remove();" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-xs rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer">${s}</button>`).join('');
+}
+
+// ═══ SUBMIT CREATE LINK ═══
+document.getElementById('createLinkForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Gather destinations
+    const dests = []; let si = 0;
+    document.querySelectorAll('.dest-row').forEach(r => {
+        const u = r.querySelector('.dest-url')?.value;
+        if (u) dests.push({ url:u, weight:parseInt(r.querySelector('.dest-weight')?.value||'100'), isAdminUrl:false, label:null, sortOrder:si++ });
+    });
+
+    // Password — only send if checkbox is checked AND field has value
+    const pwdEnabled = document.getElementById('enablePassword')?.checked || false;
+    const pwdValue = pwdEnabled ? (document.getElementById('linkPassword')?.value || null) : null;
+
+    // Preview — only send if toggle is ON
+    const previewOn = document.getElementById('enablePreview')?.checked || false;
+
+    const body = {
+        primaryUrl: document.getElementById('primaryUrl').value,
+        domainId: parseInt(document.getElementById('domainSelect').value),
+        customSlug: document.getElementById('customSlug').value || null,
+        folderId: document.getElementById('folderSelect').value ? parseInt(document.getElementById('folderSelect').value) : null,
+        comments: document.getElementById('comments').value || null,
+        utmSource: document.getElementById('utmSource')?.value || null,
+        utmMedium: document.getElementById('utmMedium')?.value || null,
+        utmCampaign: document.getElementById('utmCampaign')?.value || null,
+        utmTerm: document.getElementById('utmTerm')?.value || null,
+        utmContent: document.getElementById('utmContent')?.value || null,
+        password: pwdValue,
+        expiresAt: document.getElementById('expiresAt')?.value || null,
+        isCloaked: false,
+        enableABTest: document.getElementById('enableABTest')?.checked || false,
+        customTitle: previewOn ? (document.getElementById('customTitle')?.value || null) : null,
+        customDescription: previewOn ? (document.getElementById('customDescription')?.value || null) : null,
+        customImageUrl: previewOn ? (document.getElementById('customImageUrl')?.value || null) : null,
+        destinations: dests,
+        tagIds: [],
+        targetingRules: []
+    };
+
+    const resultEl = document.getElementById('createResult');
+    const errorEl = document.getElementById('createError');
+    resultEl.classList.add('hidden');
+    errorEl.classList.add('hidden');
+
+    try {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        const res = await fetch('/@slug/links', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'RequestVerificationToken':token },
+            body: JSON.stringify(body)
+        });
+
+        // Handle non-JSON responses (e.g., redirect, HTML error page)
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            errorEl.textContent = 'Server error (status ' + res.status + '). Check if you are logged in.';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        const data = await res.json();
+        if (data.success) {
+            resultEl.textContent = '✅ Link created: ' + data.shortUrl;
+            resultEl.classList.remove('hidden');
+            // Copy to clipboard
+            try { await navigator.clipboard.writeText(data.shortUrl); } catch(ce) {}
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            errorEl.textContent = data.error || 'Failed to create link';
+            errorEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        errorEl.textContent = 'Network error: ' + err.message;
+        errorEl.classList.remove('hidden');
+    }
+});
+</script>
+}

@@ -1,0 +1,34 @@
+@model SAMLConfiguration
+@{ ViewData["Title"] = "SAML SSO"; var ws = ViewBag.Workspace as Workspace; }
+<h1 class="text-2xl font-bold mb-6">SAML Single Sign-On</h1>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-5xl">
+    <div class="bg-white rounded-xl border p-6">
+        <h2 class="font-semibold mb-4">Service Provider (Your Side)</h2>
+        <div class="space-y-3 text-sm">
+            <div><span class="text-gray-500">Entity ID:</span><br><code class="bg-gray-50 px-2 py-1 rounded text-xs break-all">@ViewBag.SpEntityId</code></div>
+            <div><span class="text-gray-500">ACS URL:</span><br><code class="bg-gray-50 px-2 py-1 rounded text-xs break-all">@ViewBag.SpAcsUrl</code></div>
+            <div><span class="text-gray-500">Metadata URL:</span><br><a href="@ViewBag.MetadataUrl" target="_blank" class="text-blue-600 text-xs hover:underline break-all">@ViewBag.MetadataUrl</a></div>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl border p-6">
+        <h2 class="font-semibold mb-4">Identity Provider Configuration</h2>
+        <form method="post" action="/@ws?.Slug/settings/security/saml">@Html.AntiForgeryToken()
+            <div class="space-y-3">
+                <div><label class="block text-xs font-medium mb-1">IdP Entity ID</label><input type="text" name="idpEntityId" value="@Model?.IdpEntityId" class="w-full px-3 py-1.5 border rounded-lg text-sm" placeholder="https://idp.example.com/saml"></div>
+                <div><label class="block text-xs font-medium mb-1">IdP SSO URL</label><input type="url" name="idpSSOUrl" value="@Model?.IdpSSOUrl" class="w-full px-3 py-1.5 border rounded-lg text-sm" placeholder="https://idp.example.com/sso"></div>
+                <div><label class="block text-xs font-medium mb-1">IdP Certificate (X.509)</label><textarea name="idpCertificate" class="w-full px-3 py-1.5 border rounded-lg text-sm font-mono" rows="4" placeholder="-----BEGIN CERTIFICATE-----">@Model?.IdpCertificate</textarea></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block text-xs font-medium mb-1">Email Attribute</label><input type="text" name="emailAttribute" value="@(Model?.EmailAttribute ?? "email")" class="w-full px-3 py-1.5 border rounded-lg text-sm"></div>
+                    <div><label class="block text-xs font-medium mb-1">Name Attribute</label><input type="text" name="nameAttribute" value="@(Model?.NameAttribute ?? "name")" class="w-full px-3 py-1.5 border rounded-lg text-sm"></div>
+                </div>
+                <div><label class="block text-xs font-medium mb-1">Default Role</label><select name="defaultRole" class="w-full px-3 py-1.5 border rounded-lg text-sm"><option value="Member" selected="@(Model?.DefaultRole == "Member")">Member</option><option value="Viewer" selected="@(Model?.DefaultRole == "Viewer")">Viewer</option></select></div>
+                <div class="flex gap-6">
+                    <label class="flex items-center gap-2"><input type="checkbox" name="requireSAML" value="true" @(Model?.RequireSAML == true ? "checked" : "")><span class="text-sm">Require SAML</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="autoProvision" value="true" @(Model?.AutoProvision != false ? "checked" : "")><span class="text-sm">Auto-provision users</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="isActive" value="true" @(Model?.IsActive == true ? "checked" : "")><span class="text-sm">Active</span></label>
+                </div>
+                <button type="submit" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800">Save SAML Configuration</button>
+            </div>
+        </form>
+    </div>
+</div>

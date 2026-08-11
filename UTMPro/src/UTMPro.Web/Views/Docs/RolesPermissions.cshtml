@@ -1,0 +1,16 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Roles & Permissions"; ViewData["Description"] = "Understanding Owner, Admin, and Member roles in UTMPro"; }
+
+<h1 style="font-size:2rem;font-weight:800;">Roles & Permissions</h1>
+
+<h2>Role Comparison</h2>
+<table><tr><th>Permission</th><th>Owner</th><th>Admin</th><th>Member</th></tr>
+<tr><td>Create Links</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Edit All Links</td><td>✅</td><td>✅</td><td>Own only</td></tr>
+<tr><td>View Analytics</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Manage Members</td><td>✅</td><td>✅</td><td>❌</td></tr>
+<tr><td>Change Settings</td><td>✅</td><td>✅</td><td>❌</td></tr>
+<tr><td>Manage Billing</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>Delete Workspace</td><td>✅</td><td>❌</td><td>❌</td></tr></table>
+
+<h2>SuperAdmin</h2>
+<p>Platform-wide administrator with access to the <code>/admin</code> portal. Can manage all users, workspaces, plans, domains, and system settings. The first user to register is automatically promoted to SuperAdmin.</p>

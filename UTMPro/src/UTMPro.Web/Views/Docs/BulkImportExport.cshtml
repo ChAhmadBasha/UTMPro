@@ -1,0 +1,17 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Bulk Import & Export"; ViewData["Description"] = "Import links from CSV or export all your links at once"; }
+
+<h1 style="font-size:2rem;font-weight:800;">Bulk Import & Export</h1>
+
+<h2>Import Links from CSV</h2>
+<p>Upload a CSV file to create hundreds of links at once.</p>
+<h3>CSV Format</h3>
+<pre>destination_url,slug,utm_source,utm_medium,utm_campaign
+https://example.com/page1,summer-1,facebook,cpc,summer-2026
+https://example.com/page2,summer-2,google,cpc,summer-2026</pre>
+
+<h3>Steps</h3>
+<ol><li>Go to <strong>Links → Import</strong> (or use the 📤 icon in the top bar)</li><li>Upload your CSV file</li><li>Review the preview</li><li>Click <strong>Import</strong></li></ol>
+
+<h2>Export Links</h2>
+<p>Download all your workspace links as a CSV file:</p>
+<ol><li>Go to <strong>Links → Export</strong> (or use the 📥 icon)</li><li>Your CSV will download with all link data including click counts</li></ol>

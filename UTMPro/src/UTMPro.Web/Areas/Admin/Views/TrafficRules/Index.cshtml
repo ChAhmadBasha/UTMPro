@@ -1,0 +1,26 @@
+@model List<AdminTrafficRule>
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Traffic Rules"; }
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Admin Traffic Rules</h1>
+    <a href="/admin/traffic-rules/create" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">+ New Rule</a>
+</div>
+<div class="bg-white rounded-xl border overflow-hidden">
+@if (Model.Count == 0) { <div class="text-center py-12"><p class="text-gray-500">No traffic rules</p></div> }
+else { <table class="w-full"><thead class="bg-gray-50 border-b"><tr>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Rule Name</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Scope</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Traffic %</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">URLs</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+    <th class="px-4 py-3"></th>
+</tr></thead><tbody class="divide-y divide-gray-100">
+@foreach (var r in Model) { <tr class="hover:bg-gray-50">
+    <td class="px-4 py-3 text-sm font-medium"><a href="/admin/traffic-rules/@r.Id" class="text-blue-600 hover:underline">@r.RuleName</a></td>
+    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(r.IsGlobal ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700")">@(r.IsGlobal ? "Global" : "Workspace")</span></td>
+    <td class="px-4 py-3 text-sm text-right font-medium">@r.TrafficPercent%</td>
+    <td class="px-4 py-3 text-sm text-right">@r.Urls.Count</td>
+    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(r.IsActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")">@(r.IsActive ? "Active" : "Disabled")</span></td>
+    <td class="px-4 py-3"><a href="/admin/traffic-rules/@r.Id" class="text-sm text-gray-500 hover:text-black">Edit</a></td>
+</tr> }
+</tbody></table> }
+</div>

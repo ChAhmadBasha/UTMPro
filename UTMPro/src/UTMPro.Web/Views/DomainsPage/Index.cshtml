@@ -1,0 +1,171 @@
+@model List<Domain>
+@{
+    ViewData["Title"] = "Domains";
+    var ws = ViewBag.Workspace as Workspace;
+    var max = (int)(ViewBag.MaxDomains ?? 1);
+    var custom = (int)(ViewBag.CustomDomainCount ?? 0);
+    var serverIP = ViewBag.ServerIP as string ?? "76.76.21.21";
+    var role = ViewBag.CurrentRole as string ?? "";
+    var canEdit = role is "Owner" or "Admin" or "Member";
+    var canAdmin = role is "Owner" or "Admin";
+}
+
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Domains</h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">@custom custom of @max max domains</p>
+    </div>
+    @if (canAdmin) {
+    <button onclick="document.getElementById('addDomainModal').classList.remove('hidden')"
+            class="bg-black dark:bg-white dark:text-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-80">+ Add Domain</button>
+    }
+</div>
+
+<!-- Domains Table -->
+<div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden">
+    @if (Model.Count == 0) {
+    <div class="text-center py-12">
+        <div class="text-4xl mb-3">🌐</div>
+        <p class="text-gray-500 text-lg">No domains yet</p>
+        <p class="text-gray-400 text-sm mt-1">Add a custom domain to brand your short links</p>
+    </div>
+    } else {
+    <div class="table-wrap"><table class="w-full min-w-[600px]">
+        <thead class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
+            <tr>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Domain</th>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">DNS Record</th>
+                <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Clicks</th>
+                <th class="px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+        @foreach (var d in Model) {
+            var isOwn = d.WorkspaceId == ws?.Id;
+            var canModify = canEdit && isOwn && !d.IsSystemDomain;
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 @(!d.IsActive ? "opacity-50" : "")">
+            <td class="px-4 py-3">
+                <span class="text-sm font-medium">@d.DomainName</span>
+                @if (!d.IsActive) { <span class="ml-2 px-1.5 py-0.5 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 text-xs rounded">Disabled</span> }
+                @if (d.Description != null) { <p class="text-xs text-gray-400 mt-0.5">@d.Description</p> }
+            </td>
+            <td class="px-4 py-3">
+                <span class="px-2 py-1 rounded text-xs @(d.IsSystemDomain ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300" : "bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300")">
+                    @(d.IsSystemDomain ? "System" : "Custom")
+                </span>
+            </td>
+            <td class="px-4 py-3">
+                @if (d.IsVerified) {
+                    <span class="text-green-600 dark:text-green-400 text-sm font-medium">✓ Verified</span>
+                } else {
+                    <span class="text-yellow-600 dark:text-yellow-400 text-sm">⏳ Pending DNS</span>
+                }
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                <code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">@d.DNSType → @d.DNSValue</code>
+            </td>
+            <td class="px-4 py-3 text-sm text-right font-medium">@d.ClickCount.ToString("N0")</td>
+            <td class="px-4 py-3 text-right">
+                @if (canModify) {
+                <div class="flex gap-2 justify-end">
+                    <!-- Edit Button -->
+                    <button onclick="openEditDomain(@d.Id, '@d.DomainName', '@(d.DefaultRedirectUrl ?? "")', '@(d.Description ?? "")')"
+                            class="px-2 py-1 text-xs text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30">
+                        ✏️ Edit
+                    </button>
+                    <!-- Delete Button -->
+                    <form method="post" action="/@ws?.Slug/links/domains/@d.Id/delete" class="inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                class="px-2 py-1 text-xs text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30"
+                                onclick="return confirm('Delete domain @d.DomainName? Links using this domain will stop working.')">
+                            🗑️ Delete
+                        </button>
+                    </form>
+                </div>
+                } else if (d.IsSystemDomain) {
+                    <span class="text-xs text-gray-400">System managed</span>
+                }
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table></div>
+    }
+</div>
+
+<!-- ═══ ADD DOMAIN MODAL ═══ -->
+<div id="addDomainModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md m-4 border dark:border-gray-700">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold">Add Custom Domain</h2>
+            <button onclick="document.getElementById('addDomainModal').classList.add('hidden')" class="text-gray-400 text-2xl">&times;</button>
+        </div>
+        <form method="post" action="/@ws?.Slug/links/domains">
+            @Html.AntiForgeryToken()
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Domain Name</label>
+                <input type="text" name="domain" required
+                       class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                       placeholder="links.yourdomain.com">
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 p-4 rounded-lg mb-4 text-sm">
+                <p class="font-medium text-blue-800 dark:text-blue-300 mb-2">📋 DNS Setup Instructions:</p>
+                <p class="text-blue-700 dark:text-blue-400">Add an <strong>A record</strong> pointing to:</p>
+                <code class="block mt-1 bg-white dark:bg-gray-800 px-3 py-2 rounded border text-center font-mono text-lg select-all">@serverIP</code>
+                <p class="mt-2 text-blue-600 dark:text-blue-400 text-xs">Verification is automatic and checked every 5 minutes.</p>
+            </div>
+            <button type="submit" class="w-full bg-black dark:bg-white dark:text-black text-white py-2.5 rounded-lg font-medium hover:opacity-80">
+                Add Domain
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ═══ EDIT DOMAIN MODAL ═══ -->
+<div id="editDomainModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md m-4 border dark:border-gray-700">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold">Edit Domain</h2>
+            <button onclick="document.getElementById('editDomainModal').classList.add('hidden')" class="text-gray-400 text-2xl">&times;</button>
+        </div>
+        <form id="editDomainForm" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Domain</label>
+                <input type="text" id="editDomainName" disabled
+                       class="w-full px-3 py-2.5 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Default Redirect URL</label>
+                <input type="url" name="defaultRedirectUrl" id="editDefaultRedirect"
+                       class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                       placeholder="https://yourdomain.com (when link not found)">
+                <p class="text-xs text-gray-400 mt-1">Where to redirect if a slug isn't found on this domain</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Description</label>
+                <input type="text" name="description" id="editDescription"
+                       class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg"
+                       placeholder="e.g. Marketing campaign links">
+            </div>
+            <button type="submit" class="w-full bg-black dark:bg-white dark:text-black text-white py-2.5 rounded-lg font-medium hover:opacity-80">
+                Save Changes
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function openEditDomain(id, domainName, defaultRedirect, description) {
+    document.getElementById('editDomainName').value = domainName;
+    document.getElementById('editDefaultRedirect').value = defaultRedirect;
+    document.getElementById('editDescription').value = description;
+    document.getElementById('editDomainForm').action = '/@ws?.Slug/links/domains/' + id + '/edit';
+    document.getElementById('editDomainModal').classList.remove('hidden');
+}
+</script>
+}

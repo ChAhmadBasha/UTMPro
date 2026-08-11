@@ -1,0 +1,43 @@
+@model List<BlogPost>
+@{ Layout = null; var categories = ViewBag.Categories as List<BlogCategory>; var logo = ViewBag.SiteLogo as string; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog - UTMPro</title><meta name="description" content="Latest articles about link management, marketing, and growth.">
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-white">
+<nav class="border-b"><div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+    <a href="/" class="flex items-center gap-2">@if(!string.IsNullOrEmpty(logo)){<img src="@logo" alt="UTMPro" class="h-8">}else{<span class="text-2xl font-bold">UTMPro</span>}</a>
+    <div class="flex gap-4 items-center text-sm"><a href="/" class="text-gray-600 hover:text-black">Home</a><a href="/blog" class="font-medium">Blog</a><a href="/pricing" class="text-gray-600 hover:text-black">Pricing</a><a href="/login" class="bg-black text-white px-4 py-2 rounded-lg">Login</a></div>
+</div></nav>
+
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <h1 class="text-4xl font-bold mb-2">Blog</h1>
+    <p class="text-gray-500 mb-8">Latest insights on link management, marketing, and growth.</p>
+
+    @if(categories?.Count > 0){
+    <div class="flex gap-2 mb-8 flex-wrap">
+        <a href="/blog" class="px-3 py-1.5 rounded-lg text-sm @(ViewBag.CategoryId == null ? "bg-black text-white" : "bg-gray-100 hover:bg-gray-200")">All</a>
+        @foreach(var c in categories){<a href="/blog?category=@c.Id" class="px-3 py-1.5 rounded-lg text-sm @(ViewBag.CategoryId != null && (int)ViewBag.CategoryId == c.Id ? "bg-black text-white" : "bg-gray-100 hover:bg-gray-200")">@c.Name</a>}
+    </div>}
+
+    @if(Model.Count == 0){<div class="text-center py-16"><p class="text-gray-500 text-lg">No blog posts yet. Check back soon!</p></div>}
+    else{
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        @foreach(var post in Model){
+        <a href="/blog/@post.Slug" class="group block bg-white rounded-xl border hover:shadow-lg transition-shadow overflow-hidden">
+            @if(!string.IsNullOrEmpty(post.FeaturedImage)){<img src="@post.FeaturedImage" alt="@post.Title" class="w-full h-48 object-cover">}
+            else{<div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl">📝</div>}
+            <div class="p-5">
+                @if(post.Categories.Count > 0){<div class="flex gap-1 mb-2">@foreach(var c in post.Categories){<span class="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-500">@c</span>}</div>}
+                <h2 class="font-bold text-lg mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">@post.Title</h2>
+                <p class="text-gray-500 text-sm line-clamp-3">@(post.Excerpt ?? post.Content.Substring(0, Math.Min(150, post.Content.Length)))...</p>
+                <div class="flex justify-between items-center mt-4 text-xs text-gray-400">
+                    <span>@post.AuthorName</span>
+                    <span>@post.PublishedAt?.ToString("MMM d, yyyy")</span>
+                </div>
+            </div>
+        </a>}
+    </div>}
+</div>
+
+<footer class="border-t py-8 text-center text-gray-500 text-sm mt-12"><p>&copy; 2026 UTMPro</p></footer>
+</body></html>

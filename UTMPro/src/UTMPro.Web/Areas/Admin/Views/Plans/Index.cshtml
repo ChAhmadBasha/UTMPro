@@ -1,0 +1,69 @@
+@model List<Plan>
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Plans Management"; }
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Plans Management</h1>
+    <a href="/admin/plans/create" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">+ New Plan</a>
+</div>
+<div class="table-wrap bg-white rounded-xl border overflow-hidden">
+<table class="w-full"><thead class="bg-gray-50 border-b"><tr>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Plan</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Price</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Discount</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Links/mo</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Events/mo</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Domains</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Members</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Features</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+    <th class="px-4 py-3"></th>
+</tr></thead><tbody class="divide-y divide-gray-100">
+@foreach (var p in Model) {
+<tr class="hover:bg-gray-50 @(!p.IsActive ? "opacity-50" : "")">
+    <td class="px-4 py-3">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold">@p.Name</span>
+            @if (p.IsDefault) { <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-bold">DEFAULT</span> }
+        </div>
+        <p class="text-xs text-gray-400">Sort: @p.SortOrder @(p.TrialDays > 0 ? $" · Trial: {p.TrialDays}d" : "")</p>
+    </td>
+    <td class="px-4 py-3 text-sm text-right">
+        @if (p.HasDiscount) {
+            <span class="line-through text-gray-400 text-xs">$@p.Price</span><br/>
+            <span class="font-bold text-green-600">$@p.DiscountedPrice</span>
+        } else {
+            <span class="font-bold">$@p.Price</span>
+        }
+        <span class="text-xs text-gray-400 font-normal">/@p.BillingCycle.ToLower()</span>
+    </td>
+    <td class="px-4 py-3 text-sm text-right">
+        @if (p.HasDiscount) {
+            <span class="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold">@p.DiscountPercent%</span>
+            @if (!string.IsNullOrEmpty(p.DiscountBadge)) {
+                <p class="text-[10px] text-green-600 mt-0.5">@p.DiscountBadge</p>
+            }
+        } else {
+            <span class="text-gray-300 text-xs">—</span>
+        }
+    </td>
+    <td class="px-4 py-3 text-sm text-right">@p.MaxLinksPerMonth.ToString("N0")</td>
+    <td class="px-4 py-3 text-sm text-right">@p.MaxEventsPerMonth.ToString("N0")</td>
+    <td class="px-4 py-3 text-sm text-right">@p.MaxDomains</td>
+    <td class="px-4 py-3 text-sm text-right">@p.MaxMembers</td>
+    <td class="px-4 py-3 text-xs space-x-1">
+        @if(p.HasPasswordProtection){<span class="px-1 bg-blue-50 text-blue-600 rounded">🔒</span>}
+        @if(p.HasABTesting){<span class="px-1 bg-purple-50 text-purple-600 rounded">A/B</span>}
+        @if(p.HasAPIAccess){<span class="px-1 bg-green-50 text-green-600 rounded">API</span>}
+        @if(p.HasGeoTargeting){<span class="px-1 bg-orange-50 text-orange-600 rounded">Geo</span>}
+        @if(p.HasWeightedURLs){<span class="px-1 bg-gray-100 text-gray-600 rounded">W</span>}
+    </td>
+    <td class="px-4 py-3">
+        <form method="post" action="/admin/plans/@p.Id/toggle" class="inline">@Html.AntiForgeryToken()
+            <button type="submit" class="px-2 py-1 rounded text-xs @(p.IsActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")">@(p.IsActive ? "Active ✓" : "Disabled ✗")</button>
+        </form>
+    </td>
+    <td class="px-4 py-3 flex gap-2">
+        <a href="/admin/plans/@p.Id/edit" class="text-xs text-blue-600 hover:underline">Edit</a>
+    </td>
+</tr>}
+</tbody></table>
+</div>

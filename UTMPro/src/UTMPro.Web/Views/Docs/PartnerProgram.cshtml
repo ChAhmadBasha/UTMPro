@@ -1,0 +1,13 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Partner Program"; }
+<h1 style="font-size:2rem;font-weight:800;">Partner / Affiliate Program</h1>
+<p>Create a branded referral and affiliate program to grow your business through partners.</p>
+<h2>Setting Up</h2>
+<ol><li>Go to <strong>Partners</strong> in the sidebar</li><li>Click <strong>Setup Partner Program</strong></li><li>Configure commission type (percentage or flat rate), duration, cookie window, payout settings</li><li>Launch your program</li></ol>
+<h2>Commission Types</h2>
+<ul><li><strong>Percentage</strong> — Partner earns X% of each sale (e.g., 20%)</li><li><strong>Flat Rate</strong> — Partner earns a fixed amount per sale (e.g., $10)</li></ul>
+<h2>Commission Duration</h2>
+<ul><li><strong>One-Time</strong> — First sale only</li><li><strong>Recurring</strong> — For X months after referral</li><li><strong>Lifetime</strong> — All future sales from referred customer</li></ul>
+<h2>Partner Portal</h2>
+<p>Partners apply at <code>/partners/{your-program-slug}</code>. After approval they get a dashboard with referral link, sales, payouts, and analytics.</p>
+<h2>Fraud Detection</h2>
+<p>Automatic detection of: self-referrals, duplicate IPs, chargebacks. Partners are auto-flagged at fraud score ≥ 80 and auto-suspended at ≥ 100.</p>

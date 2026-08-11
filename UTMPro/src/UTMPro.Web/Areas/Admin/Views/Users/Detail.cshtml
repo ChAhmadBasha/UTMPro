@@ -1,0 +1,29 @@
+@model User
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = Model.Name; }
+<div class="flex items-center gap-3 mb-6"><a href="/admin/users" class="text-gray-400">&larr;</a><h1 class="text-2xl font-bold">@Model.Name</h1></div>
+<div class="grid grid-cols-2 gap-6 max-w-4xl">
+    <div class="bg-white rounded-xl border p-6">
+        <h2 class="font-semibold mb-4">User Details</h2>
+        <div class="space-y-3 text-sm">
+            <div><span class="text-gray-500">Email:</span> @Model.Email @(Model.EmailVerified ? "✓" : "")</div>
+            <div><span class="text-gray-500">External ID:</span> <code class="bg-gray-100 px-1 rounded text-xs">@Model.ExternalId</code></div>
+            <div><span class="text-gray-500">Google ID:</span> @(Model.GoogleId ?? "None")</div>
+            <div><span class="text-gray-500">Created:</span> @Model.CreatedAt.ToString("MMM d, yyyy HH:mm")</div>
+            <div><span class="text-gray-500">Last Login:</span> @(Model.LastLoginAt?.ToString("MMM d, yyyy HH:mm") ?? "Never")</div>
+            <div><span class="text-gray-500">Super Admin:</span> @(Model.IsSuperAdmin ? "Yes" : "No")</div>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl border p-6">
+        <h2 class="font-semibold mb-4">Actions</h2>
+        <div class="space-y-3">
+            <a href="/admin/users/@Model.Id/memberships" class="block w-full px-4 py-2 border rounded-lg text-sm text-center hover:bg-gray-50 mb-2">👥 Manage Workspace Memberships</a>
+            <form method="post" action="/admin/users/@Model.Id/toggle-admin">@Html.AntiForgeryToken()
+                <button type="submit" class="w-full px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">@(Model.IsSuperAdmin ? "Remove Admin Rights" : "Grant Admin Rights")</button>
+            </form>
+            @if (Model.IsActive) {
+            <form method="post" action="/admin/users/@Model.Id/suspend">@Html.AntiForgeryToken()
+                <button type="submit" class="w-full px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm hover:bg-red-100" onclick="return confirm('Suspend this user?')">Suspend User</button>
+            </form> }
+        </div>
+    </div>
+</div>

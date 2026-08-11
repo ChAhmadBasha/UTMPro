@@ -1,0 +1,45 @@
+@model BlogPost
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Edit: " + Model.Title; var categories = ViewBag.Categories as List<BlogCategory>; }
+<div class="flex items-center gap-3 mb-6"><a href="/admin/blog" class="text-gray-400">&larr;</a><h1 class="text-2xl font-bold">Edit Post</h1></div>
+<div class="max-w-4xl">
+<form method="post" action="/admin/blog/@Model.Id/edit">@Html.AntiForgeryToken()
+    <div class="grid grid-cols-3 gap-6">
+        <div class="col-span-2 space-y-4">
+            <div class="bg-white rounded-xl border p-6">
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">Title</label><input type="text" name="title" value="@Model.Title" required class="w-full px-3 py-2 border rounded-lg text-lg font-semibold"></div>
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">URL Slug</label><input type="text" name="slug" value="@Model.Slug" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">Excerpt</label><textarea name="excerpt" rows="2" class="w-full px-3 py-2 border rounded-lg text-sm">@Model.Excerpt</textarea></div>
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">Content (HTML)</label><textarea name="content" rows="20" required class="w-full px-3 py-2 border rounded-lg text-sm font-mono">@Model.Content</textarea></div>
+            </div>
+        </div>
+        <div class="space-y-4">
+            <div class="bg-white rounded-xl border p-5">
+                <h3 class="font-semibold mb-3">Publish</h3>
+                <select name="status" class="w-full px-3 py-2 border rounded-lg text-sm mb-3">
+                    <option value="Draft" selected="@(Model.Status == "Draft")">Draft</option>
+                    <option value="Published" selected="@(Model.Status == "Published")">Published</option>
+                    <option value="Archived" selected="@(Model.Status == "Archived")">Archived</option>
+                </select>
+                <button type="submit" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800">Update Post</button>
+                <p class="text-xs text-gray-400 mt-2">Views: @Model.ViewCount · Created: @Model.CreatedAt.ToString("MMM d, yyyy")</p>
+            </div>
+            <div class="bg-white rounded-xl border p-5">
+                <h3 class="font-semibold mb-3">Featured Image</h3>
+                <input type="url" name="featuredImage" value="@Model.FeaturedImage" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="https://...image.jpg">
+            </div>
+            <div class="bg-white rounded-xl border p-5">
+                <h3 class="font-semibold mb-3">Categories</h3>
+                @if(categories != null){@foreach(var c in categories){<label class="flex items-center gap-2 mb-1"><input type="checkbox" name="categoryIds" value="@c.Id" @(Model.Categories.Contains(c.Name) ? "checked" : "")><span class="text-sm">@c.Name</span></label>}}
+            </div>
+            <div class="bg-white rounded-xl border p-5">
+                <h3 class="font-semibold mb-3">SEO</h3>
+                <div class="space-y-2">
+                    <input type="text" name="metaTitle" value="@Model.MetaTitle" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Meta Title">
+                    <textarea name="metaDescription" rows="2" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Meta Description">@Model.MetaDescription</textarea>
+                    <input type="text" name="metaKeywords" value="@Model.MetaKeywords" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Keywords">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+</div>

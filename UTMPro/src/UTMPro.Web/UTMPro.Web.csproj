@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Phase 1 -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="MailKit" Version="4.7.1" />
+    <PackageReference Include="MaxMind.GeoIP2" Version="5.1.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+    <!-- Phase 2 -->
+    <PackageReference Include="Stripe.net" Version="46.3.0" />
+    <PackageReference Include="ITfoxtec.Identity.Saml2" Version="4.9.0" />
+    <PackageReference Include="QuestPDF" Version="2024.10.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UTMPro.Data\UTMPro.Data.csproj" />
+  </ItemGroup>
+</Project>

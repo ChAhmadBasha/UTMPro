@@ -1,0 +1,14 @@
+@model Partner
+@{ Layout = null; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>My Links</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-white border-b"><div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center"><span class="font-bold">Partner Portal</span><div class="flex gap-4 text-sm"><a href="/partners/dashboard">Dashboard</a><a href="/partners/links" class="font-medium">Links</a><a href="/partners/sales">Sales</a></div></div></nav>
+<div class="max-w-6xl mx-auto px-6 py-8">
+    <h1 class="text-2xl font-bold mb-6">My Referral Links</h1>
+    <div class="bg-white rounded-xl border p-6">
+        <h2 class="font-semibold mb-3">Default Referral Link</h2>
+        <div class="bg-gray-50 p-4 rounded-lg"><code class="text-sm text-blue-600 break-all">@Model.ReferralUrl</code></div>
+        <p class="text-xs text-gray-400 mt-2">Share this link to earn commissions on every sale.</p>
+    </div>
+</div>
+</body></html>

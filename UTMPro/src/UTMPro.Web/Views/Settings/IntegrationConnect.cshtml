@@ -1,0 +1,11 @@
+@{ ViewData["Title"] = "Connect Integration"; var ws = ViewBag.Workspace as Workspace; var integration = ViewBag.Integration as Integration; }
+<div class="max-w-lg">
+    <div class="flex items-center gap-3 mb-6"><a href="/@ws?.Slug/settings/integrations" class="text-gray-400">&larr;</a><h1 class="text-2xl font-bold">Connect @integration?.Name</h1></div>
+    <div class="bg-white rounded-xl border p-6">
+        <p class="text-gray-500 text-sm mb-4">@integration?.Description</p>
+        <form method="post" action="/@ws?.Slug/settings/integrations/@integration?.Slug/connect">@Html.AntiForgeryToken()
+            <div class="mb-4"><label class="block text-sm font-medium mb-2">Configuration (JSON)</label><textarea name="config" class="w-full px-3 py-2 border rounded-lg font-mono text-sm" rows="6" placeholder='{"api_key": "your_key_here"}'></textarea><p class="text-xs text-gray-400 mt-1">Enter integration-specific configuration in JSON format.</p></div>
+            <button type="submit" class="w-full bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-800">Connect @integration?.Name</button>
+        </form>
+    </div>
+</div>

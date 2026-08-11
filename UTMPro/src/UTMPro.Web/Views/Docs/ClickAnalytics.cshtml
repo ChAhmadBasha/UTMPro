@@ -1,0 +1,26 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Click Analytics"; ViewData["Description"] = "Deep-dive into click data with advanced filtering and breakdowns"; }
+
+<h1 style="font-size:2rem;font-weight:800;">Click Analytics</h1>
+<p>Every click on a UTMPro link captures rich data for analysis.</p>
+
+<h2>Data Captured Per Click</h2>
+<table><tr><th>Data Point</th><th>Source</th></tr>
+<tr><td>Timestamp</td><td>Server clock (UTC)</td></tr>
+<tr><td>IP Address</td><td>X-Forwarded-For / RemoteIP</td></tr>
+<tr><td>Country, City, Region</td><td>MaxMind GeoIP database</td></tr>
+<tr><td>Device Type</td><td>User-agent parsing (Mobile/Desktop/Tablet)</td></tr>
+<tr><td>Browser & Version</td><td>User-agent parsing</td></tr>
+<tr><td>Operating System</td><td>User-agent parsing</td></tr>
+<tr><td>Referrer URL</td><td>Referer header</td></tr>
+<tr><td>UTM Parameters</td><td>Link configuration</td></tr></table>
+
+<h2>Analytics Dashboard</h2>
+<p>View analytics at the workspace level (<strong>Analytics</strong> page) or per-link on the link detail page.</p>
+<ul><li><strong>Click graph:</strong> Line chart with configurable date range (7d, 30d, 90d, all time)</li><li><strong>Top referrers:</strong> Where traffic comes from</li><li><strong>Country breakdown:</strong> Click map with country flag bars</li><li><strong>Device breakdown:</strong> Mobile vs desktop vs tablet</li><li><strong>Browser/OS breakdown:</strong> Chrome, Safari, Firefox, etc.</li></ul>
+
+<h2>Analytics Retention</h2>
+<table><tr><th>Plan</th><th>Retention</th></tr>
+<tr><td>Free</td><td>30 days</td></tr>
+<tr><td>Pro</td><td>1 year</td></tr>
+<tr><td>Business</td><td>3 years</td></tr>
+<tr><td>Advanced</td><td>5 years</td></tr></table>

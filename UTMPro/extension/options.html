@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UTMPro Extension Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; min-height: 100vh; display: flex; justify-content: center; padding-top: 60px; }
+    .container { width: 500px; }
+    h1 { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    .field input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+    .field input:focus { outline: none; border-color: #000; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+    .hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    .btn { width: 100%; padding: 12px; border: none; background: #000; color: #fff; font-size: 14px; font-weight: 600; border-radius: 10px; cursor: pointer; }
+    .btn:hover { background: #1f1f1f; }
+    .success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .danger-zone { border-color: #fecaca; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>UTMPro Extension Settings</h1>
+    <p class="subtitle">Configure your UTMPro connection</p>
+
+    <div id="successMsg" class="success">✅ Settings saved successfully!</div>
+
+    <div class="card">
+      <div class="field">
+        <label>API Base URL</label>
+        <input type="url" id="apiBaseUrl" placeholder="https://app.utmpro.link">
+        <p class="hint">Your UTMPro instance URL. Use https://app.utmpro.link for cloud, or your self-hosted URL.</p>
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="apiKey" placeholder="utmpro_xxxxxxxxxxxx">
+        <p class="hint">Generate at: Settings → API Keys → Create New</p>
+      </div>
+      <div class="field">
+        <label>Workspace ID</label>
+        <input type="number" id="workspaceId" placeholder="1">
+        <p class="hint">Found in your workspace settings or URL.</p>
+      </div>
+      <button class="btn" onclick="save()">Save Settings</button>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:14px;margin-bottom:8px;">Keyboard Shortcuts</h3>
+      <p style="font-size:13px;color:#6b7280;">
+        Click the extension icon or use the browser's extension shortcut to open UTMPro quickly.
+        <br><br>
+        In Chrome: <code>chrome://extensions/shortcuts</code><br>
+        In Firefox: <code>about:addons</code> → Manage Extension Shortcuts
+      </p>
+    </div>
+
+    <div class="card danger-zone">
+      <h3 style="font-size:14px;margin-bottom:8px;color:#991b1b;">Danger Zone</h3>
+      <button class="btn btn-danger" onclick="reset()" style="margin-top:8px;">Disconnect & Clear Data</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const stored = await chrome.storage.sync.get(['apiBaseUrl', 'apiKey', 'workspaceId']);
+      document.getElementById('apiBaseUrl').value = stored.apiBaseUrl || 'https://app.utmpro.link';
+      document.getElementById('apiKey').value = stored.apiKey || '';
+      document.getElementById('workspaceId').value = stored.workspaceId || '';
+    });
+
+    async function save() {
+      const config = {
+        apiBaseUrl: document.getElementById('apiBaseUrl').value.replace(/\/$/, '') || 'https://app.utmpro.link',
+        apiKey: document.getElementById('apiKey').value.trim(),
+        workspaceId: parseInt(document.getElementById('workspaceId').value) || 0
+      };
+      await chrome.storage.sync.set(config);
+      const msg = document.getElementById('successMsg');
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    }
+
+    async function reset() {
+      if (!confirm('This will disconnect your account and clear all local data. Continue?')) return;
+      await chrome.storage.sync.clear();
+      await chrome.storage.local.clear();
+      location.reload();
+    }
+  </script>
+</body>
+</html>

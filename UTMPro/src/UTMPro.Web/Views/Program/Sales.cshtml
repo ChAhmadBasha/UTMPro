@@ -1,0 +1,24 @@
+@model List<PartnerSale>
+@{ ViewData["Title"] = "Sales"; var ws = ViewBag.Workspace as Workspace; }
+<h1 class="text-2xl font-bold mb-6">Partner Sales</h1>
+<div class="bg-white rounded-xl border overflow-hidden">
+<div class="table-wrap"><table class="w-full min-w-[600px]"><thead class="bg-gray-50 border-b"><tr>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Partner</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Customer</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Sale</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Commission</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+    <th class="px-4 py-3"></th>
+</tr></thead><tbody class="divide-y divide-gray-100">
+@foreach (var s in Model) {
+<tr class="hover:bg-gray-50">
+    <td class="px-4 py-3 text-sm text-gray-500">@s.SaleDate.ToString("MMM d, yyyy")</td>
+    <td class="px-4 py-3 text-sm font-medium">@s.PartnerName</td>
+    <td class="px-4 py-3 text-sm text-gray-500">@s.CustomerEmail</td>
+    <td class="px-4 py-3 text-sm text-right font-medium">$@s.SaleAmount.ToString("N2")</td>
+    <td class="px-4 py-3 text-sm text-right">$@s.CommissionAmount.ToString("N2")</td>
+    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(s.Status switch { "Approved" => "bg-green-100 text-green-700", "Paid" => "bg-blue-100 text-blue-700", _ => "bg-yellow-100 text-yellow-700" })">@s.Status</span></td>
+    <td class="px-4 py-3">@if(s.Status == "Pending"){ <form method="post" action="/@ws?.Slug/program/sales/@s.Id/approve" class="inline">@Html.AntiForgeryToken()<button type="submit" class="text-xs text-green-600 hover:underline">Approve</button></form> }</td>
+</tr>}
+</tbody></table></div></div>

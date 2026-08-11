@@ -1,0 +1,89 @@
+@model List<Domain>
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Domains"; }
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">All Domains (@ViewBag.TotalCount)</h1>
+    <a href="/admin/domains/create" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">+ Add Domain</a>
+</div>
+
+<!-- Auto-SSL Info Banner -->
+<div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm">
+    <p class="font-semibold text-blue-800">🔒 Automatic SSL Enabled</p>
+    <p class="text-blue-700 mt-1">SSL certificates are automatically issued via Let's Encrypt when a domain's DNS is verified. The process runs every 5 minutes.</p>
+    <p class="text-blue-600 mt-1 text-xs">Requires: <code class="bg-blue-100 px-1 rounded">win-acme</code> installed at the path set in System Settings → <code>WinAcmePath</code></p>
+</div>
+
+<div class="table-wrap bg-white rounded-xl border overflow-hidden">
+<table class="w-full min-w-[900px]"><thead class="bg-gray-50 border-b"><tr>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Domain</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Type</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">DNS</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">SSL</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Clicks</th>
+    <th class="px-4 py-3"></th>
+</tr></thead><tbody class="divide-y divide-gray-100">
+@foreach (var d in Model) {
+<tr class="hover:bg-gray-50 @(!d.IsActive ? "opacity-50" : "")">
+    <td class="px-4 py-3">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-medium">@d.DomainName</span>
+            @if (d.IsPrimary) { <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-bold">PRIMARY</span> }
+            @if (d.IsSystemDomain) { <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">SYSTEM</span> }
+        </div>
+        @if (!string.IsNullOrEmpty(d.Visibility) && d.Visibility != "General") {
+            <p class="text-[10px] text-gray-400 mt-0.5">Visibility: @d.Visibility @(d.AllowedPlanIds != null ? "· Plans: " + d.AllowedPlanIds : "")</p>
+        }
+    </td>
+    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(d.IsSystemDomain ? "bg-blue-100 text-blue-700" : "bg-gray-100")">@(d.IsSystemDomain ? "System" : "Custom")</span></td>
+    <td class="px-4 py-3">
+        @if (d.IsVerified) {
+            <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">✓ Verified</span>
+        } else {
+            <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs">⏳ Pending</span>
+            <p class="text-[10px] text-gray-400 mt-0.5">@d.DNSType → @d.DNSValue</p>
+        }
+    </td>
+    <td class="px-4 py-3">
+        @if (d.IsSystemDomain) {
+            <span class="text-xs text-gray-400">—</span>
+        } else if (d.SSLIssued) {
+            <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">🔒 Active</span>
+            @if (d.SSLExpiresAt.HasValue) {
+                var daysLeft = (d.SSLExpiresAt.Value - DateTime.UtcNow).Days;
+                <p class="text-[10px] @(daysLeft < 14 ? "text-orange-500" : "text-gray-400") mt-0.5">Expires in @daysLeft d</p>
+            }
+        } else if (!string.IsNullOrEmpty(d.SSLError)) {
+            <div>
+                <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">❌ Failed</span>
+                <p class="text-[10px] text-red-500 mt-0.5 max-w-[150px] truncate" title="@d.SSLError">@d.SSLError</p>
+                <form method="post" action="/admin/domains/@d.Id/retry-ssl" class="inline mt-1">@Html.AntiForgeryToken()
+                    <button type="submit" class="text-[10px] text-blue-600 hover:underline">🔄 Retry</button>
+                </form>
+            </div>
+        } else if (d.IsVerified) {
+            <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs">⏳ Issuing...</span>
+            <p class="text-[10px] text-gray-400 mt-0.5">Auto within 5 min</p>
+        } else {
+            <span class="text-xs text-gray-400">Verify DNS first</span>
+        }
+    </td>
+    <td class="px-4 py-3">
+        <form method="post" action="/admin/domains/@d.Id/toggle" class="inline">@Html.AntiForgeryToken()
+            <button type="submit" class="px-2 py-1 rounded text-xs @(d.IsActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")">@(d.IsActive ? "Active" : "Disabled")</button>
+        </form>
+    </td>
+    <td class="px-4 py-3 text-sm text-right font-medium">@d.ClickCount.ToString("N0")</td>
+    <td class="px-4 py-3">
+        <div class="flex gap-2">
+            <a href="/admin/domains/@d.Id/edit" class="text-xs text-blue-600 hover:underline">Edit</a>
+            @if (!d.IsSystemDomain) {
+            <a href="https://@d.DomainName" target="_blank" class="text-xs text-green-600 hover:underline">Test ↗</a>
+            <form method="post" action="/admin/domains/@d.Id/delete" class="inline">@Html.AntiForgeryToken()
+                <button type="submit" class="text-xs text-red-500 hover:underline" onclick="return confirm('Delete domain?')">Delete</button>
+            </form>
+            }
+        </div>
+    </td>
+</tr>}
+</tbody></table>
+</div>

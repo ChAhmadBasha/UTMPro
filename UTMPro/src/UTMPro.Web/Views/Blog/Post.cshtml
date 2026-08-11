@@ -1,0 +1,47 @@
+@model BlogPost
+@{ Layout = null; var recent = ViewBag.RecentPosts as List<BlogPost>; var logo = ViewBag.SiteLogo as string; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@(Model.MetaTitle ?? Model.Title) - UTMPro Blog</title>
+<meta name="description" content="@(Model.MetaDescription ?? Model.Excerpt)">
+@if(Model.MetaKeywords != null){<meta name="keywords" content="@Model.MetaKeywords">}
+@if(Model.CanonicalUrl != null){<link rel="canonical" href="@Model.CanonicalUrl">}
+<meta property="og:title" content="@(Model.MetaTitle ?? Model.Title)">
+<meta property="og:description" content="@(Model.MetaDescription ?? Model.Excerpt)">
+@if(!string.IsNullOrEmpty(Model.OgImage ?? Model.FeaturedImage)){<meta property="og:image" content="@(Model.OgImage ?? Model.FeaturedImage)">}
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-white">
+<nav class="border-b"><div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+    <a href="/" class="flex items-center gap-2">@if(!string.IsNullOrEmpty(logo)){<img src="@logo" alt="UTMPro" class="h-8">}else{<span class="text-2xl font-bold">UTMPro</span>}</a>
+    <div class="flex gap-4 items-center text-sm"><a href="/blog" class="text-gray-600 hover:text-black">← Blog</a><a href="/login" class="bg-black text-white px-4 py-2 rounded-lg">Login</a></div>
+</div></nav>
+
+<article class="max-w-3xl mx-auto px-6 py-12">
+    @if(Model.Categories.Count > 0){<div class="flex gap-2 mb-3">@foreach(var c in Model.Categories){<span class="px-2 py-1 bg-gray-100 rounded text-xs text-gray-500">@c</span>}</div>}
+    <h1 class="text-4xl font-bold mb-4">@Model.Title</h1>
+    <div class="flex items-center gap-4 text-sm text-gray-500 mb-8">
+        <span>By @Model.AuthorName</span>
+        <span>·</span>
+        <span>@Model.PublishedAt?.ToString("MMMM d, yyyy")</span>
+        <span>·</span>
+        <span>@Model.ViewCount views</span>
+    </div>
+    @if(!string.IsNullOrEmpty(Model.FeaturedImage)){<img src="@Model.FeaturedImage" alt="@Model.Title" class="w-full rounded-xl mb-8">}
+    <div class="prose prose-lg max-w-none">@Html.Raw(Model.Content)</div>
+</article>
+
+@if(recent?.Count > 0){
+<div class="max-w-3xl mx-auto px-6 py-8 border-t">
+    <h2 class="font-bold text-xl mb-4">More articles</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        @foreach(var p in recent){
+        <a href="/blog/@p.Slug" class="block p-4 border rounded-xl hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-sm mb-1 line-clamp-2">@p.Title</h3>
+            <p class="text-xs text-gray-400">@p.PublishedAt?.ToString("MMM d, yyyy")</p>
+        </a>}
+    </div>
+</div>}
+
+<footer class="border-t py-8 text-center text-gray-500 text-sm"><p>&copy; 2026 UTMPro</p></footer>
+</body></html>

@@ -1,0 +1,74 @@
+@model User
+@{ Layout = null; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Account Settings - UTMPro</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50 min-h-screen">
+<div class="max-w-2xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
+    <h1 class="text-2xl font-bold mb-6">Account Settings</h1>
+    <div class="flex gap-2 sm:gap-4 mb-6 border-b pb-3 overflow-x-auto">
+        <a href="/account/settings" class="text-sm font-medium text-black border-b-2 border-black pb-3 -mb-3 whitespace-nowrap">Profile</a>
+        <a href="/account/settings/security" class="text-sm text-gray-500 pb-3 -mb-3 whitespace-nowrap">Security</a>
+        <a href="/account/bio" class="text-sm text-gray-500 pb-3 -mb-3 whitespace-nowrap">Link-in-Bio</a>
+        <a href="/account/settings/referrals" class="text-sm text-gray-500 pb-3 -mb-3 whitespace-nowrap">Referrals</a>
+    </div>
+    @if (TempData["Success"] != null) { <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">@TempData["Success"]</div> }
+
+    <div class="bg-white rounded-xl border p-6">
+        <form method="post" action="/account/settings">
+            @Html.AntiForgeryToken()
+
+            <!-- Avatar -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium mb-2">Profile Photo</label>
+                <div class="flex items-center gap-4">
+                    @if (!string.IsNullOrEmpty(Model.AvatarUrl)) {
+                    <img src="@Model.AvatarUrl" alt="Avatar" class="w-16 h-16 rounded-full object-cover border">
+                    } else {
+                    <div class="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center text-xl font-bold">@Model.Name[..1].ToUpper()</div>
+                    }
+                    <div class="flex-1">
+                        <input type="text" name="avatarUrl" id="avatarUrlField" value="@Model.AvatarUrl" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Avatar URL or upload">
+                        <div class="mt-1">
+                            <label class="inline-flex items-center gap-1 text-xs text-blue-600 cursor-pointer hover:underline">
+                                📤 Upload photo
+                                <input type="file" accept="image/*" class="hidden" onchange="uploadAvatar(this)">
+                            </label>
+                            <span class="text-xs text-gray-400 ml-2">PNG, JPG · Max 2MB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Name</label>
+                <input type="text" name="name" value="@Model.Name" class="w-full px-3 py-2.5 border rounded-lg">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Email</label>
+                <input type="email" name="email" value="@Model.Email" class="w-full px-3 py-2.5 border rounded-lg">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">External ID</label>
+                <input type="text" value="@Model.ExternalId" disabled class="w-full px-3 py-2.5 border bg-gray-50 rounded-lg text-gray-500">
+            </div>
+            <button type="submit" class="bg-black text-white px-6 py-2.5 rounded-lg font-medium hover:bg-gray-800">Save Changes</button>
+        </form>
+    </div>
+    <div class="mt-6"><a href="/" class="text-sm text-gray-500 hover:text-black">&larr; Back to workspace</a></div>
+</div>
+
+<script>
+async function uploadAvatar(input) {
+    if (!input.files[0]) return;
+    if (input.files[0].size > 2*1024*1024) { alert('Max 2MB'); return; }
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    try {
+        const res = await fetch('/api/upload?type=avatars', { method: 'POST', body: formData });
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('avatarUrlField').value = data.url;
+        } else { alert('Upload failed'); }
+    } catch(e) { alert('Upload error'); }
+}
+</script>
+</body></html>

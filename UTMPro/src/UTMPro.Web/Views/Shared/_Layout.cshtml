@@ -1,0 +1,183 @@
+@{
+    var workspace = ViewBag.Workspace as Workspace;
+    var currentRole = ViewBag.CurrentRole as string ?? "";
+    var slug = workspace?.Slug ?? "";
+    var isApp = !string.IsNullOrEmpty(slug);
+    var currentPath = Context.Request.Path.Value ?? "";
+    var userWorkspaces = ViewBag.UserWorkspaces as List<Workspace>;
+}
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewData["Title"] ?? "UTMPro")</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+        if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
+    </script>
+    <style>
+        .nav-link { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; font-size:14px; text-decoration:none; transition:all 0.15s; }
+        .nav-link:hover { background:rgba(0,0,0,0.05); }
+        .dark .nav-link:hover { background:rgba(255,255,255,0.1); }
+        .nav-link.active { background:rgba(0,0,0,0.06); font-weight:600; }
+        .dark .nav-link.active { background:rgba(255,255,255,0.12); }
+        .nav-section { font-size:11px; padding:0 12px; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em; opacity:0.5; }
+        kbd { display:inline-block; padding:2px 6px; font-size:11px; border:1px solid #d1d5db; border-radius:4px; background:#f9fafb; font-family:monospace; }
+        .dark kbd { border-color:#4b5563; background:#374151; color:#e5e7eb; }
+        /* no custom CSS needed - using Tailwind classes */
+        /* Table responsive */
+        .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors">
+@if (isApp)
+{
+    <!-- ═══ MOBILE OVERLAY ═══ -->
+    <div id="sidebarOverlay" class="hidden fixed inset-0 bg-black/50 z-40 lg:hidden" onclick="closeSidebar()"></div>
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside id="sidebar" class="fixed left-0 top-0 h-screen w-[260px] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <a href="/@slug/links" class="font-bold text-xl">UTMPro</a>
+            <button onclick="closeSidebar()" class="lg:hidden text-gray-400 hover:text-gray-600 text-xl">✕</button>
+        </div>
+
+        <!-- Workspace Switcher -->
+        <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="document.getElementById('wsSwitcher').classList.toggle('hidden')">
+                <div class="w-8 h-8 bg-black dark:bg-white text-white dark:text-black rounded-lg flex items-center justify-center text-sm font-bold shrink-0">@(workspace?.Name?[..1].ToUpper())</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold truncate">@workspace?.Name</p>
+                    <p class="text-xs opacity-50">@workspace?.PlanName Plan</p>
+                </div>
+                <span class="text-xs opacity-40">▼</span>
+            </div>
+            <div id="wsSwitcher" class="hidden mt-2 bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-sm max-h-60 overflow-y-auto">
+                @if (userWorkspaces != null) {
+                    @foreach (var ws in userWorkspaces) {
+                        if (ws.Slug != slug) {
+                        <a href="/@ws.Slug/links" class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600">
+                            <span class="w-6 h-6 bg-gray-300 dark:bg-gray-500 text-white rounded flex items-center justify-center text-xs font-bold shrink-0">@ws.Name[..1].ToUpper()</span>
+                            <span class="truncate">@ws.Name</span>
+                        </a>
+                        }
+                    }
+                }
+                <div class="border-t border-gray-200 dark:border-gray-600 mt-1 pt-1">
+                    <a href="/workspaces/new" class="block px-2 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-blue-600 dark:text-blue-400 font-medium">+ Create workspace</a>
+                    <a href="/workspaces" class="block px-2 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500">📋 All workspaces</a>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-3 overflow-y-auto space-y-3">
+            <div>
+                <p class="nav-section">Short Links</p>
+                <a href="/@slug/links" class="nav-link @(currentPath.EndsWith("/links")?"active":"")">🔗 Links</a>
+                <a href="/@slug/links/domains" class="nav-link @(currentPath.Contains("/links/domains")?"active":"")">🌐 Domains</a>
+            </div>
+            <div>
+                <p class="nav-section">Insights</p>
+                <a href="/@slug/analytics" class="nav-link @(currentPath.Contains("/analytics")?"active":"")">📊 Analytics</a>
+                <a href="/@slug/events" class="nav-link @(currentPath.Contains("/events")?"active":"")">⚡ Events</a>
+                <a href="/@slug/customers" class="nav-link @(currentPath.Contains("/customers")?"active":"")">👥 Customers</a>
+            </div>
+            <div>
+                <p class="nav-section">Program</p>
+                <a href="/@slug/program" class="nav-link @(currentPath.Contains("/program")?"active":"")">🤝 Partners</a>
+            </div>
+            <div>
+                <p class="nav-section">Library</p>
+                <a href="/@slug/links/folders" class="nav-link @(currentPath.Contains("/folders")?"active":"")">📁 Folders</a>
+                <a href="/@slug/links/tags" class="nav-link @(currentPath.Contains("/tags")?"active":"")">🏷️ Tags</a>
+                <a href="/@slug/utm-templates" class="nav-link @(currentPath.Contains("/utm-templates")?"active":"")">📋 UTM Templates</a>
+            </div>
+            <div>
+                <p class="nav-section">Team</p>
+                <a href="/@slug/activity" class="nav-link @(currentPath.Contains("/activity")?"active":"")">📈 Activity</a>
+            </div>
+            <div class="px-2">
+                <p class="nav-section mb-2">Usage</p>
+                <div class="space-y-2 text-xs opacity-70">
+                    <div><div class="flex justify-between"><span>Links</span><span>@workspace?.LinksUsedThisMonth</span></div><div class="h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full mt-1"><div class="h-full bg-black dark:bg-white rounded-full" style="width:@(Math.Min(100,(workspace?.LinksUsedThisMonth??0)*4))%"></div></div></div>
+                    <div><div class="flex justify-between"><span>Events</span><span>@workspace?.EventsUsedThisMonth</span></div><div class="h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full mt-1"><div class="h-full bg-black dark:bg-white rounded-full" style="width:@(Math.Min(100,(workspace?.EventsUsedThisMonth??0)/10))%"></div></div></div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="border-t border-gray-200 dark:border-gray-700 p-3 space-y-0.5">
+            <a href="/@slug/settings" class="nav-link @(currentPath.Contains("/settings")?"active":"")">⚙️ Settings</a>
+            <a href="/account/bio" class="nav-link">🔗 Link-in-Bio</a>
+            <a href="/account/settings" class="nav-link">👤 Account</a>
+            @if (User.IsInRole("SuperAdmin")) {
+            <a href="/admin" class="nav-link text-purple-600 dark:text-purple-400 font-medium">🛡️ Admin Portal</a>
+            }
+            <button onclick="toggleDarkMode()" class="nav-link w-full text-left">🌙 Dark Mode</button>
+            <a href="/auth/logout" class="nav-link text-red-600 dark:text-red-400">🚪 Logout</a>
+        </div>
+    </aside>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="lg:ml-[260px] min-h-screen">
+        <!-- Top bar -->
+        <div class="px-4 sm:px-6 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800 sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <!-- Hamburger (mobile only) -->
+                <button onclick="openSidebar()" class="lg:hidden p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <button onclick="openSearch()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 w-48 md:w-64">
+                    <span>🔍</span><span class="flex-1 text-left truncate">Search...</span><kbd class="hidden md:inline">⌘K</kbd>
+                </button>
+            </div>
+            <div class="flex items-center gap-2 sm:gap-3 text-sm">
+                <a href="/@slug/links/bulk/import" class="hidden sm:inline text-gray-500 hover:text-black dark:hover:text-white" title="Import">📤</a>
+                <a href="/@slug/links/bulk/export" class="hidden sm:inline text-gray-500 hover:text-black dark:hover:text-white" title="Export">📥</a>
+                <button onclick="openSearch()" class="sm:hidden p-1.5 text-gray-500">🔍</button>
+            </div>
+        </div>
+
+        <div class="p-4 sm:p-6">
+            @if(TempData["Success"]!=null){<div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg mb-4 text-sm">@TempData["Success"]</div>}
+            @if(TempData["Error"]!=null){<div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-4 text-sm">@TempData["Error"]</div>}
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- ═══ GLOBAL SEARCH MODAL ═══ -->
+    <div id="searchModal" class="hidden fixed inset-0 z-[100] bg-black/30 flex items-start justify-center pt-[10vh] sm:pt-[15vh] px-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg shadow-2xl border dark:border-gray-700">
+            <div class="flex items-center gap-3 p-4 border-b dark:border-gray-700">
+                <span class="text-gray-400">🔍</span>
+                <input type="text" id="searchInput" class="flex-1 bg-transparent outline-none text-base sm:text-lg" placeholder="Search links, domains..." autofocus oninput="doSearch(this.value)">
+                <button onclick="closeSearch()" class="text-gray-400 text-sm">ESC</button>
+            </div>
+            <div id="searchResults" class="max-h-60 sm:max-h-80 overflow-y-auto p-2">
+                <p class="text-center text-sm text-gray-400 py-8">Start typing to search...</p>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @RenderBody()
+}
+
+<script>
+function toggleDarkMode(){const h=document.documentElement;const d=h.classList.toggle('dark');localStorage.setItem('darkMode',d);}
+function openSidebar(){document.getElementById('sidebar').classList.remove('-translate-x-full');document.getElementById('sidebarOverlay').classList.remove('hidden');}
+function closeSidebar(){document.getElementById('sidebar').classList.add('-translate-x-full');document.getElementById('sidebarOverlay').classList.add('hidden');}
+function openSearch(){document.getElementById('searchModal').classList.remove('hidden');document.getElementById('searchInput').focus();}
+function closeSearch(){document.getElementById('searchModal').classList.add('hidden');document.getElementById('searchInput').value='';}
+async function doSearch(q){const r=document.getElementById('searchResults');if(!q||q.length<2){r.innerHTML='<p class="text-center text-sm text-gray-400 py-8">Start typing...</p>';return;}r.innerHTML=`<a href="/@slug/links?search=${encodeURIComponent(q)}" class="block px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">🔍 Search links for "${q}"</a>`;}
+document.addEventListener('keydown',(e)=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)){if(e.key==='Escape'){closeSearch();document.activeElement.blur();}return;}if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}else if(e.key==='c'&&!e.metaKey){const m=document.getElementById('createModal');if(m){e.preventDefault();m.classList.remove('hidden');if(typeof openCreateModal==='function')openCreateModal();}}else if(e.key==='Escape'){closeSearch();const cm=document.getElementById('createModal');if(cm)cm.classList.add('hidden');}else if(e.key==='?'){e.preventDefault();alert('⌘K Search | C Create | ESC Close | ? Help');}});
+document.getElementById('searchModal')?.addEventListener('click',(e)=>{if(e.target===e.currentTarget)closeSearch();});
+// Close sidebar on window resize to desktop
+window.addEventListener('resize',()=>{if(window.innerWidth>=1024)closeSidebar();});
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

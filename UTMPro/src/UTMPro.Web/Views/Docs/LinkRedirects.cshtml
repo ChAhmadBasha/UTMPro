@@ -1,0 +1,23 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Redirect Modes"; ViewData["Description"] = "Understanding single, weighted, A/B test, and rotator redirect modes"; }
+
+<h1 style="font-size:2rem;font-weight:800;">Redirect Modes</h1>
+<p>UTMPro supports four redirect modes for advanced traffic routing.</p>
+
+<h2>Single Redirect (Default)</h2>
+<p>Every click goes to one destination URL. This is the standard mode for most links.</p>
+
+<h2>Weighted Redirect</h2>
+<p>Split traffic between multiple URLs by percentage. Perfect for:</p>
+<ul><li>Sending 70% traffic to your main page and 30% to a test page</li><li>Distributing paid traffic across multiple landing pages</li><li>Geographic load balancing</li></ul>
+<p><strong>Example:</strong> URL A = 60%, URL B = 30%, URL C = 10%</p>
+
+<h2>A/B Testing</h2>
+<p>Similar to weighted, but designed for controlled experiments. Compare two or more landing pages to see which converts better. You can set an <strong>end date</strong> for the test, after which all traffic goes to the winner.</p>
+
+<h2>Rotator Mode</h2>
+<p>Round-robin through multiple URLs. Each click goes to the next URL in sequence. Useful for:</p>
+<ul><li>Distributing leads evenly across sales reps</li><li>Rotating affiliate offers</li><li>Load-balancing traffic across servers</li></ul>
+
+<h2>Geo & Device Targeting</h2>
+<p>Beyond redirect modes, you can set <strong>targeting rules</strong> that send users to different URLs based on:</p>
+<ul><li><strong>Country/Region:</strong> Show localized landing pages</li><li><strong>Device Type:</strong> Mobile vs. desktop experiences</li><li><strong>Operating System:</strong> iOS App Store vs. Google Play</li></ul>

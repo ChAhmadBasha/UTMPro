@@ -1,0 +1,180 @@
+@{ Layout = null; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Documentation - UTMPro</title><script src="https://cdn.tailwindcss.com"></script>
+<style>pre{background:#1e1e2e;color:#cdd6f4;padding:16px;border-radius:8px;overflow-x:auto;font-size:13px;} .method{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;margin-right:8px;} .get{background:#dbeafe;color:#1d4ed8;} .post{background:#dcfce7;color:#16a34a;} .put{background:#fef3c7;color:#d97706;} .del{background:#fee2e2;color:#dc2626;}</style>
+</head>
+<body class="bg-gray-50">
+<nav class="bg-white border-b"><div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center"><a href="/" class="text-xl font-bold">UTMPro API</a><div class="flex gap-4 text-sm"><a href="/" class="text-gray-500 hover:text-black">Home</a><a href="/login" class="bg-black text-white px-4 py-2 rounded-lg">Get API Key</a></div></div></nav>
+
+<div class="max-w-6xl mx-auto px-6 py-12">
+    <div class="flex gap-8">
+        <!-- Sidebar -->
+        <div class="w-48 shrink-0">
+            <div class="sticky top-8 space-y-1 text-sm">
+                <p class="font-semibold text-xs text-gray-400 uppercase mb-2">Endpoints</p>
+                <a href="#auth" class="block py-1 text-gray-600 hover:text-black">Authentication</a>
+                <a href="#links" class="block py-1 text-gray-600 hover:text-black">Links</a>
+                <a href="#domains" class="block py-1 text-gray-600 hover:text-black">Domains</a>
+                <a href="#tags" class="block py-1 text-gray-600 hover:text-black">Tags</a>
+                <a href="#analytics" class="block py-1 text-gray-600 hover:text-black">Analytics</a>
+                <a href="#events" class="block py-1 text-gray-600 hover:text-black">Events</a>
+                <a href="#partner" class="block py-1 text-gray-600 hover:text-black">Partner API</a>
+                <a href="#workspace" class="block py-1 text-gray-600 hover:text-black">Workspace</a>
+                <a href="#errors" class="block py-1 text-gray-600 hover:text-black">Errors</a>
+                <a href="#ratelimit" class="block py-1 text-gray-600 hover:text-black">Rate Limits</a>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 space-y-12">
+            <div>
+                <h1 class="text-4xl font-bold mb-4">UTMPro REST API v1</h1>
+                <p class="text-gray-500 text-lg">Programmatically manage links, track events, and access analytics.</p>
+                <div class="mt-4 bg-white border rounded-lg p-4 text-sm">
+                    <p class="font-medium">Base URL</p>
+                    <code class="text-blue-600">https://app.utmpro.link/api/v1</code>
+                </div>
+            </div>
+
+            <div id="auth">
+                <h2 class="text-2xl font-bold mb-3">Authentication</h2>
+                <p class="text-gray-600 mb-4">All API requests require a Bearer token. Create API keys in Settings → API Keys.</p>
+                <pre>curl -H "Authorization: Bearer YOUR_API_KEY" \
+     https://app.utmpro.link/api/v1/links</pre>
+            </div>
+
+            <div id="links">
+                <h2 class="text-2xl font-bold mb-4">Links</h2>
+                <div class="space-y-6">
+                    <div class="bg-white border rounded-xl p-5">
+                        <div class="mb-3"><span class="method get">GET</span><code class="text-sm">/api/v1/links</code></div>
+                        <p class="text-sm text-gray-600 mb-3">List all links with pagination and search.</p>
+                        <p class="text-xs font-medium text-gray-400 mb-1">Query Parameters</p>
+                        <div class="text-sm space-y-1"><code>page</code> (int, default 1) · <code>pageSize</code> (int, default 25) · <code>search</code> (string) · <code>workspaceId</code> (long, required)</div>
+                        <pre class="mt-3">// Response
+{
+  "data": [{ "id": 1, "externalId": "lnk_abc123", "slug": "my-link", "domain": "go.utmpro.link", "primaryUrl": "https://example.com", "totalClicks": 150, "createdAt": "2026-06-01T..." }],
+  "pagination": { "page": 1, "pageSize": 25, "total": 42 }
+}</pre>
+                    </div>
+
+                    <div class="bg-white border rounded-xl p-5">
+                        <div class="mb-3"><span class="method post">POST</span><code class="text-sm">/api/v1/links</code></div>
+                        <p class="text-sm text-gray-600 mb-3">Create a new short link.</p>
+                        <pre>// Request Body
+{
+  "primaryUrl": "https://example.com/page",
+  "domainId": 1,
+  "customSlug": "my-link",     // optional
+  "utmSource": "newsletter",   // optional
+  "utmMedium": "email",        // optional
+  "utmCampaign": "june2026",   // optional
+  "destinations": [],          // optional, for weighted URLs
+  "tagIds": [1, 2],           // optional
+  "password": null,            // optional
+  "expiresAt": null            // optional
+}</pre>
+                    </div>
+
+                    <div class="bg-white border rounded-xl p-5">
+                        <div class="mb-3"><span class="method get">GET</span><code class="text-sm">/api/v1/links/{id}</code></div>
+                        <p class="text-sm text-gray-600">Get a single link by ID.</p>
+                    </div>
+                    <div class="bg-white border rounded-xl p-5">
+                        <div class="mb-3"><span class="method put">PUT</span><code class="text-sm">/api/v1/links/{id}</code></div>
+                        <p class="text-sm text-gray-600">Update an existing link.</p>
+                    </div>
+                    <div class="bg-white border rounded-xl p-5">
+                        <div class="mb-3"><span class="method del">DELETE</span><code class="text-sm">/api/v1/links/{id}</code></div>
+                        <p class="text-sm text-gray-600">Archive/delete a link.</p>
+                    </div>
+                    <div class="bg-white border rounded-xl p-5">
+                        <div class="mb-3"><span class="method get">GET</span><code class="text-sm">/api/v1/links/{id}/analytics</code></div>
+                        <p class="text-sm text-gray-600">Get analytics for a specific link. Query: <code>interval</code> (1h, 24h, 7d, 30d, 90d)</p>
+                    </div>
+                    <div class="bg-white border rounded-xl p-5">
+                        <div class="mb-3"><span class="method get">GET</span><code class="text-sm">/api/v1/qr/{linkId}</code></div>
+                        <p class="text-sm text-gray-600">Get QR code data URL for a link.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="domains">
+                <h2 class="text-2xl font-bold mb-4">Domains</h2>
+                <div class="space-y-4">
+                    <div class="bg-white border rounded-xl p-5"><span class="method get">GET</span><code>/api/v1/domains</code><p class="text-sm text-gray-600 mt-2">List workspace domains.</p></div>
+                    <div class="bg-white border rounded-xl p-5"><span class="method post">POST</span><code>/api/v1/domains</code><p class="text-sm text-gray-600 mt-2">Add custom domain. Body: <code>{"domain": "links.example.com"}</code></p></div>
+                </div>
+            </div>
+
+            <div id="tags">
+                <h2 class="text-2xl font-bold mb-4">Tags</h2>
+                <div class="space-y-4">
+                    <div class="bg-white border rounded-xl p-5"><span class="method get">GET</span><code>/api/v1/tags</code><p class="text-sm text-gray-600 mt-2">List workspace tags.</p></div>
+                    <div class="bg-white border rounded-xl p-5"><span class="method post">POST</span><code>/api/v1/tags</code><p class="text-sm text-gray-600 mt-2">Create tag. Body: <code>{"name": "campaign-a", "color": "#22c55e"}</code></p></div>
+                </div>
+            </div>
+
+            <div id="analytics">
+                <h2 class="text-2xl font-bold mb-4">Analytics</h2>
+                <div class="bg-white border rounded-xl p-5"><span class="method get">GET</span><code>/api/v1/analytics</code>
+                    <p class="text-sm text-gray-600 mt-2">Get workspace analytics summary. Returns: clicks, unique clicks, time series, countries, devices, browsers, referrers, top links.</p>
+                    <p class="text-xs text-gray-400 mt-1">Query: <code>workspaceId</code> (required), <code>interval</code> (1h|24h|7d|30d, default 24h)</p>
+                </div>
+            </div>
+
+            <div id="events">
+                <h2 class="text-2xl font-bold mb-4">Events (Conversion Tracking)</h2>
+                <div class="space-y-4">
+                    <div class="bg-white border rounded-xl p-5"><span class="method post">POST</span><code>/api/v1/events/lead</code>
+                        <p class="text-sm text-gray-600 mt-2">Track a lead conversion.</p>
+                        <pre class="mt-2">{ "linkId": "lnk_abc123", "customerEmail": "user@example.com", "eventName": "signup" }</pre>
+                    </div>
+                    <div class="bg-white border rounded-xl p-5"><span class="method post">POST</span><code>/api/v1/events/sale</code>
+                        <p class="text-sm text-gray-600 mt-2">Track a sale with revenue attribution.</p>
+                        <pre class="mt-2">{ "linkId": "lnk_abc123", "amount": 99.00, "currency": "USD", "customerEmail": "user@example.com", "referralCode": "PARTNER123" }</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="partner">
+                <h2 class="text-2xl font-bold mb-4">Partner API</h2>
+                <div class="space-y-4">
+                    <div class="bg-white border rounded-xl p-5"><span class="method post">POST</span><code>/api/v1/partner/sales</code><p class="text-sm text-gray-600 mt-2">Record a partner sale with automatic commission calculation.</p></div>
+                    <div class="bg-white border rounded-xl p-5"><span class="method get">GET</span><code>/api/v1/partner/program</code><p class="text-sm text-gray-600 mt-2">Get partner program info for a workspace.</p></div>
+                </div>
+            </div>
+
+            <div id="workspace">
+                <h2 class="text-2xl font-bold mb-4">Workspace</h2>
+                <div class="bg-white border rounded-xl p-5"><span class="method get">GET</span><code>/api/v1/workspace</code><p class="text-sm text-gray-600 mt-2">Get workspace info including plan, usage, member count.</p></div>
+            </div>
+
+            <div id="errors">
+                <h2 class="text-2xl font-bold mb-4">Error Codes</h2>
+                <div class="bg-white border rounded-xl p-5 text-sm space-y-2">
+                    <div class="flex gap-4"><code class="w-12 font-bold">400</code><span>Bad Request — Invalid parameters</span></div>
+                    <div class="flex gap-4"><code class="w-12 font-bold">401</code><span>Unauthorized — Missing or invalid API key</span></div>
+                    <div class="flex gap-4"><code class="w-12 font-bold">403</code><span>Forbidden — Insufficient permissions/scopes</span></div>
+                    <div class="flex gap-4"><code class="w-12 font-bold">404</code><span>Not Found — Resource doesn't exist</span></div>
+                    <div class="flex gap-4"><code class="w-12 font-bold">429</code><span>Too Many Requests — Rate limit exceeded</span></div>
+                    <div class="flex gap-4"><code class="w-12 font-bold">500</code><span>Internal Server Error</span></div>
+                </div>
+            </div>
+
+            <div id="ratelimit">
+                <h2 class="text-2xl font-bold mb-4">Rate Limits</h2>
+                <div class="bg-white border rounded-xl p-5">
+                    <table class="w-full text-sm"><thead><tr class="text-left border-b"><th class="py-2">Plan</th><th>Requests/min</th><th>Requests/hour</th></tr></thead>
+                    <tbody><tr><td class="py-2">Free</td><td>60</td><td>1,000</td></tr>
+                    <tr><td class="py-2">Pro</td><td>300</td><td>5,000</td></tr>
+                    <tr><td class="py-2">Business</td><td>1,000</td><td>20,000</td></tr>
+                    <tr><td class="py-2">Advanced</td><td>5,000</td><td>100,000</td></tr></tbody></table></div>
+                    <p class="text-xs text-gray-400 mt-3">When rate limited, the response includes a <code>Retry-After</code> header.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="border-t py-8 text-center text-gray-400 text-sm">© 2026 UTMPro. All rights reserved.</footer>
+</body></html>

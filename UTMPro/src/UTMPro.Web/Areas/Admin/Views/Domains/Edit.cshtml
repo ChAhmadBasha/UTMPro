@@ -1,0 +1,25 @@
+@model Domain
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Edit " + Model.DomainName; }
+<div class="flex items-center gap-3 mb-6"><a href="/admin/domains" class="text-gray-400">&larr;</a><h1 class="text-2xl font-bold">Edit: @Model.DomainName</h1></div>
+<div class="bg-white rounded-xl border p-6 max-w-2xl">
+<form method="post" action="/admin/domains/@Model.Id/edit">@Html.AntiForgeryToken()
+    <div class="mb-4"><label class="block text-sm font-medium mb-2">Domain</label><input type="text" value="@Model.DomainName" disabled class="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-500"></div>
+    <div class="mb-4"><label class="block text-sm font-medium mb-2">Description</label><input type="text" name="description" value="@Model.Description" class="w-full px-3 py-2 border rounded-lg"></div>
+    <div class="mb-4"><label class="block text-sm font-medium mb-2">Default Redirect URL</label><input type="url" name="defaultRedirectUrl" value="@Model.DefaultRedirectUrl" class="w-full px-3 py-2 border rounded-lg" placeholder="https://example.com"></div>
+    <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Visibility</label>
+        <select name="visibility" class="w-full px-3 py-2 border rounded-lg">
+            <option value="General" selected="@(Model.Visibility == "General")">General (all users)</option>
+            <option value="PlanBased" selected="@(Model.Visibility == "PlanBased")">Plan-Based</option>
+            <option value="UserSpecific" selected="@(Model.Visibility == "UserSpecific")">User-Specific</option>
+            <option value="WorkspaceOnly" selected="@(Model.Visibility == "WorkspaceOnly")">Workspace-Only</option>
+        </select>
+    </div>
+    <div class="mb-4"><label class="block text-sm font-medium mb-2">Allowed Plan IDs</label><input type="text" name="allowedPlanIds" value="@Model.AllowedPlanIds" class="w-full px-3 py-2 border rounded-lg" placeholder="2,3,4"></div>
+    <div class="mb-4"><label class="flex items-center gap-2"><input type="checkbox" name="isActive" value="true" @(Model.IsActive ? "checked" : "")><span class="text-sm">Active</span></label></div>
+    <div class="flex gap-3">
+        <button type="submit" class="flex-1 bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-800">Save Changes</button>
+        <form method="post" action="/admin/domains/@Model.Id/delete" class="inline"><button type="submit" class="px-6 py-2 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm" onclick="return confirm('Delete?')">Delete</button></form>
+    </div>
+</form>
+</div>

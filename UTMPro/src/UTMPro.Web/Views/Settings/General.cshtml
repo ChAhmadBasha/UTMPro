@@ -1,0 +1,76 @@
+@model Workspace
+@{ ViewData["Title"] = "Settings"; var ws = ViewBag.Workspace as Workspace; }
+
+<h1 class="text-2xl font-bold mb-6">Workspace Settings</h1>
+
+<!-- Settings Nav -->
+<div class="flex gap-2 sm:gap-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-3 overflow-x-auto">
+    <a href="/@ws?.Slug/settings/general" class="text-sm font-medium text-black dark:text-white border-b-2 border-black dark:border-white pb-3 -mb-3 whitespace-nowrap">General</a>
+    <a href="/@ws?.Slug/settings/domains" class="text-sm text-gray-500 hover:text-black dark:hover:text-white pb-3 -mb-3 whitespace-nowrap">Domains</a>
+    <a href="/@ws?.Slug/settings/members" class="text-sm text-gray-500 hover:text-black dark:hover:text-white pb-3 -mb-3 whitespace-nowrap">Members</a>
+    <a href="/@ws?.Slug/settings/billing" class="text-sm text-gray-500 hover:text-black dark:hover:text-white pb-3 -mb-3 whitespace-nowrap">Billing</a>
+    <a href="/@ws?.Slug/settings/webhooks" class="text-sm text-gray-500 hover:text-black dark:hover:text-white pb-3 -mb-3 whitespace-nowrap">Webhooks</a>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6 max-w-2xl">
+    <form method="post" action="/@ws?.Slug/settings/general" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div class="mb-5">
+            <label class="block text-sm font-medium mb-2">Workspace Name</label>
+            <input type="text" name="name" value="@Model?.Name" class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-black">
+        </div>
+
+        <!-- Workspace Logo -->
+        <div class="mb-5">
+            <label class="block text-sm font-medium mb-2">Workspace Logo</label>
+            <div class="flex items-center gap-4">
+                @if (!string.IsNullOrEmpty(Model?.LogoUrl)) {
+                <img src="@Model.LogoUrl" alt="Logo" class="h-14 w-14 object-contain rounded-xl border dark:border-gray-600 bg-white">
+                } else {
+                <div class="h-14 w-14 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center text-xl font-bold">@(Model?.Name?[..1].ToUpper())</div>
+                }
+                <div class="flex-1">
+                    <input type="text" name="logoUrl" id="wsLogoUrl" value="@Model?.LogoUrl" class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-sm" placeholder="Logo URL or upload">
+                    <div class="mt-1">
+                        <label class="inline-flex items-center gap-1 text-xs text-blue-600 cursor-pointer hover:underline">
+                            📤 Upload logo
+                            <input type="file" accept="image/*" class="hidden" onchange="uploadWsImage(this)">
+                        </label>
+                        <span class="text-xs text-gray-400 ml-2">PNG, JPG, SVG · Max 2MB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-5">
+            <label class="block text-sm font-medium mb-2">Default Redirect URL</label>
+            <input type="url" name="defaultRedirectUrl" value="@Model?.DefaultRedirectUrl" class="w-full px-3 py-2.5 border dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-black" placeholder="https://yourdomain.com">
+            <p class="text-xs text-gray-400 mt-1">Used when a link expires or is not found</p>
+        </div>
+
+        <div class="mb-5">
+            <label class="block text-sm font-medium mb-2">Workspace URL</label>
+            <input type="text" value="@Model?.Slug" disabled class="w-full px-3 py-2.5 border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-500">
+        </div>
+
+        <button type="submit" class="bg-black dark:bg-white dark:text-black text-white px-6 py-2.5 rounded-lg font-medium hover:opacity-80">Save Changes</button>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+async function uploadWsImage(input) {
+    if (!input.files[0]) return;
+    if (input.files[0].size > 2 * 1024 * 1024) { alert('Max 2MB'); return; }
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    try {
+        const res = await fetch('/@ws?.Slug/api/upload-image', { method: 'POST', body: formData });
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('wsLogoUrl').value = data.url;
+        } else { alert('Upload failed'); }
+    } catch(e) { alert('Upload error'); }
+}
+</script>
+}

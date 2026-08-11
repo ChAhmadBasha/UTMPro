@@ -1,0 +1,45 @@
+@model Partner
+@{ Layout = null; var sales = ViewBag.Sales as List<PartnerSale>; var payouts = ViewBag.Payouts as List<PartnerPayout>; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Partner Dashboard</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-white border-b"><div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center">
+    <span class="font-bold text-lg">Partner Portal</span>
+    <div class="flex items-center gap-2 sm:gap-4 text-sm flex-wrap">
+        <a href="/partners/dashboard" class="font-medium">Dashboard</a>
+        <a href="/partners/sales" class="text-gray-500 hover:text-black">Sales</a>
+        <a href="/partners/payouts" class="text-gray-500 hover:text-black">Payouts</a>
+        <form method="post" action="/partners/logout" class="inline"><button type="submit" class="text-gray-500 hover:text-black">Logout</button></form>
+    </div>
+</div></nav>
+<div class="max-w-6xl mx-auto px-6 py-8">
+    <h1 class="text-2xl font-bold mb-6">Welcome, @Model.Name 👋</h1>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Total Clicks</p><p class="text-2xl font-bold">@Model.TotalClicks.ToString("N0")</p></div>
+        <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Sales</p><p class="text-2xl font-bold">@Model.TotalSales</p></div>
+        <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Earnings</p><p class="text-2xl font-bold text-green-600">$@Model.TotalCommission.ToString("N2")</p></div>
+        <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Pending</p><p class="text-2xl font-bold">$@Model.PendingBalance.ToString("N2")</p></div>
+    </div>
+
+    <div class="bg-white rounded-xl border p-6 mb-6">
+        <h2 class="font-semibold mb-3">Your Referral Link</h2>
+        <div class="flex gap-2 items-center bg-gray-50 p-3 rounded-lg">
+            <code class="flex-1 text-sm text-blue-600 break-all" id="refLink">@Model.ReferralUrl</code>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('refLink').textContent)" class="px-3 py-1 bg-black text-white rounded text-xs">Copy</button>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Referral code: <code class="bg-gray-100 px-1 rounded">@Model.ReferralCode</code></p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <div class="bg-white rounded-xl border p-6">
+            <h2 class="font-semibold mb-4">Recent Sales</h2>
+            @if(sales?.Count > 0){<div class="space-y-2">@foreach(var s in sales){<div class="flex justify-between p-2 bg-gray-50 rounded text-sm"><div><span class="font-medium">$@s.SaleAmount.ToString("N2")</span><span class="text-gray-400 ml-2">@s.SaleDate.ToString("MMM d")</span></div><span class="px-2 py-0.5 rounded text-xs @(s.Status == "Paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700")">@s.Status</span></div>}</div>}
+            else{<p class="text-gray-400 text-sm">No sales yet. Share your referral link!</p>}
+        </div>
+        <div class="bg-white rounded-xl border p-6">
+            <h2 class="font-semibold mb-4">Recent Payouts</h2>
+            @if(payouts?.Count > 0){<div class="space-y-2">@foreach(var p in payouts){<div class="flex justify-between p-2 bg-gray-50 rounded text-sm"><span class="font-medium">$@p.Amount.ToString("N2")</span><span class="px-2 py-0.5 rounded text-xs @(p.Status == "Paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700")">@p.Status</span></div>}</div>}
+            else{<p class="text-gray-400 text-sm">Payouts will appear here once you reach the threshold.</p>}
+        </div>
+    </div>
+</div>
+</body></html>

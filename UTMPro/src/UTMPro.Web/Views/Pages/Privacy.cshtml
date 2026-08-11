@@ -1,0 +1,4 @@
+@{ Layout = "~/Views/Pages/_PageLayout.cshtml"; ViewData["Title"] = "Privacy Policy"; ViewData["Description"] = "UTMPro privacy policy."; }
+<div class="max-w-3xl mx-auto px-6 py-16">
+    <div class="prose prose-lg max-w-none">@Html.Raw(ViewBag.Content ?? "")</div>
+</div>

@@ -1,0 +1,14 @@
+@model PartnerProgram
+@{ Layout = null; var partner = ViewBag.Partner as Partner; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Welcome!</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+<div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg text-center">
+    <div class="text-4xl mb-4">🎉</div>
+    <h1 class="text-2xl font-bold mb-2">Welcome to @Model.ProgramName!</h1>
+    @if(partner?.ApplicationStatus == "Pending"){<p class="text-gray-500">Your application is pending review. We'll notify you once approved.</p>}
+    else{<p class="text-gray-500 mb-4">You're all set! Here's your referral link:</p>
+    <div class="bg-gray-50 p-4 rounded-lg mb-4"><code class="text-sm break-all text-blue-600">@partner?.ReferralUrl</code></div>
+    <p class="text-xs text-gray-400 mb-4">Referral Code: <code class="bg-gray-100 px-2 py-0.5 rounded">@partner?.ReferralCode</code></p>}
+    <a href="/partners/@Model.Slug/login" class="inline-block bg-black text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800">Go to Dashboard</a>
+</div>
+</body></html>

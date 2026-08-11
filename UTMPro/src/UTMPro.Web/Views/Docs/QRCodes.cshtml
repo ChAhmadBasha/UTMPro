@@ -1,0 +1,11 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "QR Codes"; }
+<h1 style="font-size:2rem;font-weight:800;">QR Codes</h1>
+<p>Every short link automatically gets a QR code. QR codes are generated client-side using JavaScript for instant display.</p>
+<h2>Viewing QR Codes</h2>
+<p>Open any link's detail page to see its QR code. You can also view QR codes in the create link modal's right panel.</p>
+<h2>Customization</h2>
+<p>Customize QR codes with foreground and background colors via the API endpoint: <code>GET /{slug}/qr/{linkId}/data?fgColor=%23000000&bgColor=%23ffffff</code></p>
+<h2>Downloading</h2>
+<p>Right-click the QR code and select "Save Image As" or use the download button in the browser extension.</p>
+<h2>QR Click Tracking</h2>
+<p>Add <code>?qr=1</code> to your short link URL to track QR-specific clicks separately in analytics.</p>

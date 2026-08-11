@@ -1,0 +1,24 @@
+@model List<PartnerFraudEvent>
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Fraud Dashboard"; }
+<h1 class="text-2xl font-bold mb-6">Fraud Events (All Workspaces)</h1>
+<div class="bg-white rounded-xl border overflow-hidden">
+@if(Model.Count==0){<div class="text-center py-12"><p class="text-gray-500">No fraud events 🎉</p></div>}
+else{<table class="w-full"><thead class="bg-gray-50 border-b"><tr>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Partner</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Type</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Severity</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Description</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+    <th class="px-4 py-3"></th>
+</tr></thead><tbody class="divide-y divide-gray-100">
+@foreach(var f in Model){<tr class="hover:bg-gray-50">
+    <td class="px-4 py-3 text-sm text-gray-500">@f.CreatedAt.ToString("MMM d, HH:mm")</td>
+    <td class="px-4 py-3 text-sm font-medium">@f.PartnerName</td>
+    <td class="px-4 py-3 text-sm">@f.FraudType</td>
+    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(f.Severity is "High" or "Critical" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700")">@f.Severity</span></td>
+    <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">@f.Description</td>
+    <td class="px-4 py-3"><span class="text-sm @(f.IsResolved ? "text-green-600" : "text-red-600")">@(f.IsResolved ? "✓ Resolved" : "⚠ Open")</span></td>
+    <td class="px-4 py-3">@if(!f.IsResolved){<form method="post" action="/admin/fraud/@f.Id/resolve" class="flex gap-1">@Html.AntiForgeryToken()<input type="text" name="resolution" placeholder="Resolution" class="px-2 py-1 border rounded text-xs w-28"><button type="submit" class="px-2 py-1 bg-green-600 text-white rounded text-xs">Resolve</button></form>}</td>
+</tr>}</tbody></table>}
+</div>

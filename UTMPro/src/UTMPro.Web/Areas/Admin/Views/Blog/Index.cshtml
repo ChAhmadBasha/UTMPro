@@ -1,0 +1,26 @@
+@model List<BlogPost>
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Blog Posts"; }
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Blog Posts (@ViewBag.TotalCount)</h1>
+    <a href="/admin/blog/create" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">+ New Post</a>
+</div>
+<div class="bg-white rounded-xl border overflow-hidden">
+@if(Model.Count==0){<div class="text-center py-12"><p class="text-gray-500">No blog posts yet</p></div>}
+else{<table class="w-full"><thead class="bg-gray-50 border-b"><tr>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Title</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Author</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+    <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Views</th>
+    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Published</th>
+    <th class="px-4 py-3"></th>
+</tr></thead><tbody class="divide-y divide-gray-100">
+@foreach(var p in Model){<tr class="hover:bg-gray-50">
+    <td class="px-4 py-3"><a href="/admin/blog/@p.Id/edit" class="text-sm font-medium text-blue-600 hover:underline">@p.Title</a><p class="text-xs text-gray-400">/@p.Slug</p></td>
+    <td class="px-4 py-3 text-sm">@p.AuthorName</td>
+    <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(p.Status switch { "Published" => "bg-green-100 text-green-700", "Draft" => "bg-yellow-100 text-yellow-700", _ => "bg-gray-100 text-gray-500" })">@p.Status</span></td>
+    <td class="px-4 py-3 text-sm text-right">@p.ViewCount.ToString("N0")</td>
+    <td class="px-4 py-3 text-sm text-gray-500">@(p.PublishedAt?.ToString("MMM d, yyyy") ?? "-")</td>
+    <td class="px-4 py-3 flex gap-2"><a href="/admin/blog/@p.Id/edit" class="text-xs text-blue-600">Edit</a>
+        <form method="post" action="/admin/blog/@p.Id/delete" class="inline">@Html.AntiForgeryToken()<button type="submit" class="text-xs text-red-500" onclick="return confirm('Delete?')">Delete</button></form></td>
+</tr>}</tbody></table>}
+</div>

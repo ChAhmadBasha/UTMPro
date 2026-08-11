@@ -1,0 +1,169 @@
+@model AdminAnalyticsDetailViewModel
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Analytics"; var days = (int)(ViewBag.Days ?? 30); }
+
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Platform Analytics</h1>
+    <div class="flex items-center gap-2">
+        @foreach (var d in new[]{7,14,30,90,180,365}) {
+        <a href="/admin/analytics?days=@d" class="px-3 py-1.5 rounded-lg text-xs font-medium @(days==d?"bg-black text-white":"bg-gray-100 hover:bg-gray-200 text-gray-700")">@(d<30?$"{d}d":d<365?$"{d/30}mo":"1y")</a>}
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-400 mb-1">Total Clicks</p><p class="text-3xl font-bold text-blue-600">@Model.TotalClicks.ToString("N0")</p><p class="text-xs text-gray-400">Last @days days</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-400 mb-1">Unique Visitors</p><p class="text-3xl font-bold">@Model.UniqueVisitors.ToString("N0")</p><p class="text-xs text-gray-400">Distinct IPs</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-400 mb-1">Countries</p><p class="text-3xl font-bold">@Model.Countries.Count</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-400 mb-1">Avg Daily</p><p class="text-3xl font-bold">@(days>0?(Model.TotalClicks/days).ToString("N0"):"0")</p></div>
+</div>
+
+<!-- Click Trend -->
+<div class="bg-white rounded-xl border p-5 mb-6">
+    <h2 class="font-semibold text-sm mb-3">📈 Click Trend (Last @days Days)</h2>
+    <canvas id="trendChart" height="80"></canvas>
+</div>
+
+<!-- Two columns: Countries + Devices -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <!-- All Countries -->
+    <div class="bg-white rounded-xl border p-5">
+        <h2 class="font-semibold text-sm mb-4">🌍 Traffic by Country (@Model.Countries.Count countries)</h2>
+        <div class="max-h-[400px] overflow-y-auto space-y-1.5">
+            @{ var maxC = Model.Countries.Count > 0 ? Model.Countries[0].Count : 1; }
+            @foreach (var c in Model.Countries) {
+            var pct = Model.TotalClicks > 0 ? (c.Count * 100.0 / Model.TotalClicks) : 0;
+            <div class="flex items-center gap-2 text-sm">
+                <span class="w-7 text-center">@CountryFlag(c.Code ?? "--")</span>
+                <span class="w-28 truncate font-medium">@c.Name</span>
+                <div class="flex-1 h-3 bg-gray-100 rounded-full"><div class="h-full bg-blue-500 rounded-full" style="width:@((int)(c.Count*100.0/maxC))%"></div></div>
+                <span class="w-14 text-right font-semibold text-xs">@c.Count.ToString("N0")</span>
+                <span class="w-10 text-right text-xs text-gray-400">@pct.ToString("F1")%</span>
+            </div>}
+        </div>
+    </div>
+
+    <!-- Devices + Browser + OS -->
+    <div class="space-y-4">
+        <div class="bg-white rounded-xl border p-5">
+            <h2 class="font-semibold text-sm mb-3">📱 Devices</h2>
+            <canvas id="devicePie" height="120"></canvas>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl border p-5">
+                <h2 class="font-semibold text-sm mb-3">🌐 Browsers</h2>
+                <div class="space-y-1.5">@foreach (var b in Model.Browsers.Take(8)) {
+                <div class="flex justify-between text-xs"><span>@b.Name</span><span class="font-medium">@b.Count.ToString("N0")</span></div>}</div>
+            </div>
+            <div class="bg-white rounded-xl border p-5">
+                <h2 class="font-semibold text-sm mb-3">💻 OS</h2>
+                <div class="space-y-1.5">@foreach (var o in Model.OperatingSystems.Take(8)) {
+                <div class="flex justify-between text-xs"><span>@o.Name</span><span class="font-medium">@o.Count.ToString("N0")</span></div>}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Referrers -->
+<div class="bg-white rounded-xl border p-5 mb-6">
+    <h2 class="font-semibold text-sm mb-4">🔗 Referrer Sources</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        @foreach (var ref_ in Model.Referrers.Take(10)) {
+        var refPct = Model.TotalClicks > 0 ? (ref_.Count * 100.0 / Model.TotalClicks) : 0;
+        <div class="bg-gray-50 rounded-lg p-3 text-center">
+            <p class="text-sm font-semibold truncate">@ref_.Name</p>
+            <p class="text-xl font-bold text-blue-600">@ref_.Count.ToString("N0")</p>
+            <p class="text-[10px] text-gray-400">@refPct.ToString("F1")%</p>
+        </div>}
+    </div>
+</div>
+
+<!-- Top Links (full table) -->
+<div class="bg-white rounded-xl border overflow-hidden mb-6">
+    <div class="px-5 py-4 border-b"><h2 class="font-semibold text-sm">🔥 Top 50 Links (Last @days Days)</h2></div>
+    <div class="table-wrap">
+    <table class="w-full min-w-[750px]"><thead class="bg-gray-50 border-b"><tr>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">#</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Short Link</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Destination</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Workspace</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">@days-Day</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">All-Time</th>
+    </tr></thead><tbody class="divide-y">
+    @{ var linkRank = 0; }
+    @foreach (var l in Model.TopLinks) { linkRank++;
+    <tr class="hover:bg-gray-50 text-sm">
+        <td class="px-4 py-2.5"><span class="w-5 h-5 inline-flex items-center justify-center rounded-full text-[10px] font-bold @(linkRank<=3?"bg-yellow-100 text-yellow-700":"bg-gray-100 text-gray-500")">@linkRank</span></td>
+        <td class="px-4 py-2.5 font-medium"><a href="/@l.WorkspaceSlug/links/@l.LinkId" target="_blank" class="text-blue-600 hover:underline">@l.Domain/@l.Slug</a></td>
+        <td class="px-4 py-2.5 text-xs text-gray-500 max-w-[200px] truncate">@(l.PrimaryUrl?.Length > 50 ? l.PrimaryUrl[..50] + "…" : l.PrimaryUrl)</td>
+        <td class="px-4 py-2.5 text-xs">@l.WorkspaceName</td>
+        <td class="px-4 py-2.5 text-right font-bold text-blue-600">@l.Clicks30d.ToString("N0")</td>
+        <td class="px-4 py-2.5 text-right text-gray-400">@l.AllTimeClicks.ToString("N0")</td>
+    </tr>}
+    </tbody></table></div>
+    @if (Model.TopLinks.Count == 0) { <div class="text-center py-8 text-gray-400 text-sm">No click data for this period</div> }
+</div>
+
+<!-- Top Workspaces (full table) -->
+<div class="bg-white rounded-xl border overflow-hidden mb-6">
+    <div class="px-5 py-4 border-b"><h2 class="font-semibold text-sm">🏆 Top 25 Workspaces (Last @days Days)</h2></div>
+    <div class="table-wrap">
+    <table class="w-full min-w-[700px]"><thead class="bg-gray-50 border-b"><tr>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">#</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Workspace</th>
+        <th class="text-left px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Plan</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Links</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Members</th>
+        <th class="text-right px-4 py-2 text-[10px] font-medium text-gray-500 uppercase">Clicks</th>
+        <th class="px-4 py-2"></th>
+    </tr></thead><tbody class="divide-y">
+    @{ var wsRank = 0; }
+    @foreach (var w in Model.TopWorkspaces) { wsRank++;
+    <tr class="hover:bg-gray-50 text-sm">
+        <td class="px-4 py-2.5"><span class="w-5 h-5 inline-flex items-center justify-center rounded-full text-[10px] font-bold @(wsRank<=3?"bg-green-100 text-green-700":"bg-gray-100 text-gray-500")">@wsRank</span></td>
+        <td class="px-4 py-2.5 font-medium"><a href="/admin/workspaces/@w.WorkspaceId" class="text-blue-600 hover:underline">@w.Name</a><span class="text-[10px] text-gray-400 ml-1">/@w.Slug</span></td>
+        <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-gray-100 rounded text-xs">@w.PlanName</span></td>
+        <td class="px-4 py-2.5 text-right">@w.LinkCount</td>
+        <td class="px-4 py-2.5 text-right">@w.MemberCount</td>
+        <td class="px-4 py-2.5 text-right font-bold text-green-600">@w.Clicks30d.ToString("N0")</td>
+        <td class="px-4 py-2.5"><a href="/@w.Slug/links" target="_blank" class="text-xs text-blue-500 hover:underline">Open ↗</a></td>
+    </tr>}
+    </tbody></table></div>
+    @if (Model.TopWorkspaces.Count == 0) { <div class="text-center py-8 text-gray-400 text-sm">No workspace data for this period</div> }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
+
+new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+        labels: [@Html.Raw(string.Join(",", Model.ClicksByDay.Select(d => $"'{d.Date:MMM d}'")))],
+        datasets: [{
+            label: 'Clicks', data: [@string.Join(",", Model.ClicksByDay.Select(d => d.Count))],
+            borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)',
+            fill: true, tension: 0.3, borderWidth: 2, pointRadius: 1.5
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 }, maxRotation: 0, maxTicksLimit: 15 } } } }
+});
+
+new Chart(document.getElementById('devicePie'), {
+    type: 'doughnut',
+    data: {
+        labels: [@Html.Raw(string.Join(",", Model.Devices.Select(d => $"'{d.Name}'")))],
+        datasets: [{ data: [@string.Join(",", Model.Devices.Select(d => d.Count))], backgroundColor: colors, borderWidth: 0 }]
+    },
+    options: { responsive: true, cutout: '55%', plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } } } }
+});
+</script>
+
+@functions {
+    static string CountryFlag(string code)
+    {
+        if (string.IsNullOrEmpty(code) || code.Length != 2 || code == "--") return "🌐";
+        code = code.ToUpper();
+        return string.Concat(code.Select(c => char.ConvertFromUtf32(0x1F1E6 + c - 'A')));
+    }
+}

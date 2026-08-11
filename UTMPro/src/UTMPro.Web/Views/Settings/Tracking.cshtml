@@ -1,0 +1,24 @@
+@{ ViewData["Title"] = "Tracking"; var ws = ViewBag.Workspace as Workspace; }
+<h1 class="text-2xl font-bold mb-6">Tracking Setup</h1>
+<div class="bg-white rounded-xl border p-6 max-w-3xl">
+    <h2 class="font-semibold text-lg mb-4">Conversion Tracking</h2>
+    <p class="text-gray-500 text-sm mb-4">Track leads and sales from your short links by adding this script to your website.</p>
+    <div class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm font-mono overflow-x-auto">
+        <pre>&lt;script&gt;
+  !function(){var e="@ws?.ExternalId";
+  // UTMPro conversion tracking pixel
+  window.utmpro={track:function(t,n){
+    fetch("https://go.utmpro.link/api/track",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ws:e,event:t,data:n})
+    })
+  }};
+}();
+&lt;/script&gt;</pre>
+    </div>
+    <h3 class="font-medium mt-6 mb-2">Track a Lead</h3>
+    <pre class="bg-gray-50 p-3 rounded-lg text-sm"><code>utmpro.track('lead', { email: 'customer@example.com' });</code></pre>
+    <h3 class="font-medium mt-4 mb-2">Track a Sale</h3>
+    <pre class="bg-gray-50 p-3 rounded-lg text-sm"><code>utmpro.track('sale', { amount: 99.00, currency: 'USD' });</code></pre>
+</div>

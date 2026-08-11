@@ -1,0 +1,29 @@
+@model List<ClickEvent>
+@{ ViewData["Title"] = "Events"; var ws = ViewBag.Workspace as Workspace; }
+
+<h1 class="text-2xl font-bold mb-6">Events</h1>
+<div class="bg-white rounded-xl border overflow-hidden">
+    <div class="table-wrap"><table class="w-full min-w-[600px]">
+        <thead class="bg-gray-50 border-b">
+            <tr>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Time</th>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Country</th>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Device</th>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Browser</th>
+                <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Destination</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            @foreach (var e in Model)
+            {
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-500">@e.ClickedAt.ToString("MMM d, HH:mm:ss")</td>
+                    <td class="px-4 py-3 text-sm">@(e.Country ?? "Unknown")</td>
+                    <td class="px-4 py-3 text-sm">@(e.Device ?? "Unknown")</td>
+                    <td class="px-4 py-3 text-sm">@(e.Browser ?? "Unknown")</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">@e.DestinationUrl</td>
+                </tr>
+            }
+        </tbody>
+    </table></div>
+</div>

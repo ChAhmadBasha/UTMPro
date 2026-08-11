@@ -1,0 +1,29 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Create Short Links"; ViewData["Description"] = "Step-by-step guide to creating tracked short links in UTMPro"; }
+
+<h1 style="font-size:2rem;font-weight:800;">Create Short Links</h1>
+<p>Create trackable short links with UTM parameters, custom slugs, and advanced targeting.</p>
+
+<h2>Quick Create</h2>
+<ol><li>Go to your workspace's <strong>Links</strong> page</li><li>Click the <strong>+ Create Link</strong> button</li><li>Paste your <strong>Destination URL</strong></li><li>Choose a <strong>Domain</strong> (default or custom)</li><li>Optionally set a <strong>Custom Slug</strong> (or leave blank for auto-generated)</li><li>Click <strong>Create</strong></li></ol>
+
+<h2>Available Fields</h2>
+<table><tr><th>Field</th><th>Required</th><th>Description</th></tr>
+<tr><td>Destination URL</td><td>✅</td><td>The long URL to redirect to</td></tr>
+<tr><td>Domain</td><td>✅</td><td>Choose from your workspace domains</td></tr>
+<tr><td>Custom Slug</td><td>❌</td><td>Custom short path (e.g., <code>summer-sale</code>)</td></tr>
+<tr><td>Folder</td><td>❌</td><td>Organize links into folders</td></tr>
+<tr><td>Tags</td><td>❌</td><td>Categorize with multiple tags</td></tr>
+<tr><td>UTM Source</td><td>❌</td><td>e.g., <code>facebook</code>, <code>newsletter</code></td></tr>
+<tr><td>UTM Medium</td><td>❌</td><td>e.g., <code>cpc</code>, <code>email</code>, <code>social</code></td></tr>
+<tr><td>UTM Campaign</td><td>❌</td><td>e.g., <code>summer-sale-2026</code></td></tr>
+<tr><td>Password</td><td>❌</td><td>Require password to access</td></tr>
+<tr><td>Expiration</td><td>❌</td><td>Auto-expire on a specific date</td></tr>
+<tr><td>Custom OG Title</td><td>❌</td><td>Override social media preview title</td></tr>
+<tr><td>Custom OG Image</td><td>❌</td><td>Override social media preview image</td></tr>
+</table>
+
+<h2>Auto-Fetch Metadata</h2>
+<p>When you paste a URL, UTMPro automatically fetches the page's title, description, and OG image. This populates the custom preview fields so your links look great when shared on social media.</p>
+
+<h2>Keyboard Shortcut</h2>
+<p>Press <kbd>C</kbd> anywhere in the dashboard to quickly open the create link modal.</p>

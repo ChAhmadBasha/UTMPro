@@ -1,0 +1,54 @@
+@model BillingSummary
+@{ ViewData["Title"] = "Billing"; var ws = ViewBag.Workspace as Workspace; var plans = ViewBag.Plans as List<Plan>; }
+<h1 class="text-2xl font-bold mb-6">Billing & Subscription</h1>
+
+<!-- Current Plan -->
+<div class="bg-white rounded-xl border p-6 mb-6">
+    <div class="flex justify-between items-start">
+        <div>
+            <h2 class="font-semibold text-lg">@Model.CurrentPlan.Name Plan</h2>
+            @if(Model.IsTrialing){<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs ml-2">Trial</span>}
+            @if(Model.IsCanceled){<span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs ml-2">Cancels at period end</span>}
+            <p class="text-gray-500 text-sm mt-1">$@Model.CurrentPlan.Price/month · @Model.CurrentPlan.MaxLinksPerMonth.ToString("N0") links · @Model.CurrentPlan.MaxEventsPerMonth.ToString("N0") events</p>
+            @if(Model.Subscription != null){<p class="text-xs text-gray-400 mt-1">Current period: @Model.Subscription.CurrentPeriodStart.ToString("MMM d") - @Model.Subscription.CurrentPeriodEnd.ToString("MMM d, yyyy")</p>}
+        </div>
+        <div class="flex gap-2">
+            <a href="/@ws?.Slug/settings/billing/upgrade" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">Change Plan</a>
+            @if(Model.StripeCustomerId != null){<a href="/@ws?.Slug/settings/billing/portal" class="border px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Manage Billing</a>}
+        </div>
+    </div>
+</div>
+
+<!-- Usage -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white rounded-xl border p-5">
+        <p class="text-xs text-gray-500 mb-2">Links Used This Month</p>
+        <div class="flex items-end gap-2"><span class="text-2xl font-bold">@Model.LinksUsedThisMonth</span><span class="text-sm text-gray-500">/ @Model.CurrentPlan.MaxLinksPerMonth.ToString("N0")</span></div>
+        <div class="h-2 bg-gray-200 rounded-full mt-2"><div class="h-full bg-black rounded-full" style="width: @(Math.Min(100, Model.LinksUsedThisMonth * 100.0 / Math.Max(1, Model.CurrentPlan.MaxLinksPerMonth)))%"></div></div>
+    </div>
+    <div class="bg-white rounded-xl border p-5">
+        <p class="text-xs text-gray-500 mb-2">Events Used This Month</p>
+        <div class="flex items-end gap-2"><span class="text-2xl font-bold">@Model.EventsUsedThisMonth.ToString("N0")</span><span class="text-sm text-gray-500">/ @Model.CurrentPlan.MaxEventsPerMonth.ToString("N0")</span></div>
+        <div class="h-2 bg-gray-200 rounded-full mt-2"><div class="h-full bg-black rounded-full" style="width: @(Math.Min(100, Model.EventsUsedThisMonth * 100.0 / Math.Max(1, Model.CurrentPlan.MaxEventsPerMonth)))%"></div></div>
+    </div>
+</div>
+
+<!-- Invoices -->
+<div class="bg-white rounded-xl border overflow-hidden">
+    <div class="px-6 py-4 border-b"><h2 class="font-semibold">Invoices</h2></div>
+    @if(Model.Invoices.Count == 0){<div class="text-center py-8"><p class="text-gray-500 text-sm">No invoices yet</p></div>}
+    else{<div class="table-wrap"><table class="w-full min-w-[600px]"><thead class="bg-gray-50"><tr>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500">Date</th>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500">Invoice</th>
+        <th class="text-right px-4 py-3 text-xs font-medium text-gray-500">Amount</th>
+        <th class="text-left px-4 py-3 text-xs font-medium text-gray-500">Status</th>
+        <th class="px-4 py-3"></th>
+    </tr></thead><tbody class="divide-y">
+    @foreach(var inv in Model.Invoices){<tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-sm text-gray-500">@inv.CreatedAt.ToString("MMM d, yyyy")</td>
+        <td class="px-4 py-3 text-sm">@(inv.InvoiceNumber ?? inv.StripeInvoiceId)</td>
+        <td class="px-4 py-3 text-sm text-right font-medium">$@inv.Amount.ToString("N2") @inv.Currency.ToUpper()</td>
+        <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs @(inv.Status == "paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700")">@inv.Status</span></td>
+        <td class="px-4 py-3">@if(!string.IsNullOrEmpty(inv.PdfUrl)){<a href="@inv.PdfUrl" target="_blank" class="text-xs text-blue-600 hover:underline">PDF</a>}</td>
+    </tr>}</tbody></table></div>}
+</div>

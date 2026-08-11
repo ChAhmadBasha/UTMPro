@@ -1,0 +1,65 @@
+@{ Layout = "~/Views/Pages/_PageLayout.cshtml"; ViewData["Title"] = ViewBag.Title ?? "About Us"; ViewData["Description"] = "Learn about UTMPro — the modern link management platform."; }
+
+<div class="max-w-4xl mx-auto px-6 py-16">
+    <!-- Hero -->
+    <div class="text-center mb-16">
+        <h1 class="text-4xl font-bold mb-4">@(ViewBag.Title ?? "About UTMPro")</h1>
+        <p class="text-xl text-gray-500 max-w-2xl mx-auto">The link management platform built for modern teams</p>
+    </div>
+
+    <!-- Content from admin settings -->
+    <div class="prose prose-lg max-w-none mb-16">
+        @Html.Raw(ViewBag.Content ?? "")
+    </div>
+
+    <!-- Mission + Vision -->
+    @if (!string.IsNullOrEmpty(ViewBag.Mission as string) || !string.IsNullOrEmpty(ViewBag.Vision as string)) {
+    <div class="grid grid-cols-2 gap-8 mb-16">
+        @if (!string.IsNullOrEmpty(ViewBag.Mission as string)) {
+        <div class="bg-gray-50 rounded-2xl p-8">
+            <div class="text-3xl mb-3">🎯</div>
+            <h2 class="text-xl font-bold mb-3">Our Mission</h2>
+            <p class="text-gray-600">@ViewBag.Mission</p>
+        </div>}
+        @if (!string.IsNullOrEmpty(ViewBag.Vision as string)) {
+        <div class="bg-gray-50 rounded-2xl p-8">
+            <div class="text-3xl mb-3">🔭</div>
+            <h2 class="text-xl font-bold mb-3">Our Vision</h2>
+            <p class="text-gray-600">@ViewBag.Vision</p>
+        </div>}
+    </div>}
+
+    <!-- Stats -->
+    <div class="grid grid-cols-4 gap-6 mb-16">
+        <div class="text-center p-6 bg-black text-white rounded-2xl"><p class="text-3xl font-bold">10K+</p><p class="text-sm opacity-70 mt-1">Links Created</p></div>
+        <div class="text-center p-6 bg-black text-white rounded-2xl"><p class="text-3xl font-bold">1M+</p><p class="text-sm opacity-70 mt-1">Clicks Tracked</p></div>
+        <div class="text-center p-6 bg-black text-white rounded-2xl"><p class="text-3xl font-bold">500+</p><p class="text-sm opacity-70 mt-1">Workspaces</p></div>
+        <div class="text-center p-6 bg-black text-white rounded-2xl"><p class="text-3xl font-bold">50+</p><p class="text-sm opacity-70 mt-1">Countries</p></div>
+    </div>
+
+    <!-- Team (from JSON settings) -->
+    @{ var teamJson = ViewBag.TeamJson as string ?? "[]";
+       List<dynamic>? team = null;
+       try { team = System.Text.Json.JsonSerializer.Deserialize<List<dynamic>>(teamJson); } catch {} }
+    @if (team?.Count > 0) {
+    <div class="mb-16">
+        <h2 class="text-2xl font-bold text-center mb-8">Our Team</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        @foreach (var member in team) {
+            var name = member.GetProperty("name").GetString();
+            var memberRole = member.GetProperty("role").GetString();
+        <div class="text-center">
+            <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center text-2xl font-bold text-gray-400">@name?[..1]</div>
+            <h3 class="font-semibold">@name</h3>
+            <p class="text-sm text-gray-500">@memberRole</p>
+        </div>}
+        </div>
+    </div>}
+
+    <!-- CTA -->
+    <div class="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-12 text-center">
+        <h2 class="text-3xl font-bold mb-3">Ready to get started?</h2>
+        <p class="text-gray-400 mb-6">Create your free account and start shortening links in seconds.</p>
+        <a href="/register" class="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">Start Free →</a>
+    </div>
+</div>

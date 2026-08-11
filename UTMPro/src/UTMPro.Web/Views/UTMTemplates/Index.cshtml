@@ -1,0 +1,54 @@
+@model List<UTMTemplate>
+@{ ViewData["Title"] = "UTM Templates"; var ws = ViewBag.Workspace as Workspace; }
+<div class="flex items-center justify-between mb-6">
+    <div><h1 class="text-2xl font-bold">UTM Templates</h1><p class="text-gray-500 dark:text-gray-400 text-sm">Save and reuse UTM parameter sets for consistent campaign tracking</p></div>
+    <button onclick="document.getElementById('tmplModal').classList.remove('hidden')" class="bg-black dark:bg-white dark:text-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-80">+ New Template</button>
+</div>
+
+@if(Model.Count == 0){
+<div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-12 text-center">
+    <div class="text-4xl mb-3">📊</div>
+    <p class="text-gray-500 dark:text-gray-400 text-lg mb-2">No UTM templates yet</p>
+    <p class="text-gray-400 text-sm">Create templates to speed up link creation with consistent UTM parameters</p>
+</div>
+} else {
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+@foreach(var t in Model){
+<div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-5 hover:shadow-md transition-shadow">
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold">@t.Name</h3>
+        <div class="flex items-center gap-2">
+            @if(t.IsDefault){<span class="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded text-xs">Default</span>}
+            <form method="post" action="/@ws?.Slug/utm-templates/@t.Id/delete" class="inline">@Html.AntiForgeryToken()<button type="submit" class="text-red-400 hover:text-red-600 text-sm" onclick="return confirm('Delete?')">✕</button></form>
+        </div>
+    </div>
+    <div class="space-y-1 text-sm">
+        @if(!string.IsNullOrEmpty(t.UTMSource)){<div class="flex gap-2"><span class="text-gray-400 w-20">Source</span><span class="font-mono text-xs bg-gray-50 dark:bg-gray-700 px-2 py-0.5 rounded">@t.UTMSource</span></div>}
+        @if(!string.IsNullOrEmpty(t.UTMMedium)){<div class="flex gap-2"><span class="text-gray-400 w-20">Medium</span><span class="font-mono text-xs bg-gray-50 dark:bg-gray-700 px-2 py-0.5 rounded">@t.UTMMedium</span></div>}
+        @if(!string.IsNullOrEmpty(t.UTMCampaign)){<div class="flex gap-2"><span class="text-gray-400 w-20">Campaign</span><span class="font-mono text-xs bg-gray-50 dark:bg-gray-700 px-2 py-0.5 rounded">@t.UTMCampaign</span></div>}
+        @if(!string.IsNullOrEmpty(t.UTMTerm)){<div class="flex gap-2"><span class="text-gray-400 w-20">Term</span><span class="font-mono text-xs bg-gray-50 dark:bg-gray-700 px-2 py-0.5 rounded">@t.UTMTerm</span></div>}
+        @if(!string.IsNullOrEmpty(t.UTMContent)){<div class="flex gap-2"><span class="text-gray-400 w-20">Content</span><span class="font-mono text-xs bg-gray-50 dark:bg-gray-700 px-2 py-0.5 rounded">@t.UTMContent</span></div>}
+    </div>
+</div>}
+</div>}
+
+<!-- Create Template Modal -->
+<div id="tmplModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+<div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md m-4 border dark:border-gray-700">
+    <div class="flex justify-between items-center mb-4"><h2 class="text-lg font-bold">New UTM Template</h2><button onclick="document.getElementById('tmplModal').classList.add('hidden')" class="text-gray-400 text-2xl">&times;</button></div>
+    <form method="post" action="/@ws?.Slug/utm-templates">@Html.AntiForgeryToken()
+        <div class="space-y-3">
+            <div><label class="block text-sm font-medium mb-1">Template Name</label><input type="text" name="name" required class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg dark:bg-gray-700" placeholder="e.g. Google Ads Campaign"></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-xs font-medium mb-1">utm_source</label><input type="text" name="utmSource" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="google"></div>
+                <div><label class="block text-xs font-medium mb-1">utm_medium</label><input type="text" name="utmMedium" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="cpc"></div>
+                <div><label class="block text-xs font-medium mb-1">utm_campaign</label><input type="text" name="utmCampaign" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="summer_2026"></div>
+                <div><label class="block text-xs font-medium mb-1">utm_term</label><input type="text" name="utmTerm" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="keyword"></div>
+            </div>
+            <div><label class="block text-xs font-medium mb-1">utm_content</label><input type="text" name="utmContent" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="banner_ad"></div>
+            <label class="flex items-center gap-2"><input type="checkbox" name="isDefault" value="true"><span class="text-sm">Set as default template</span></label>
+            <button type="submit" class="w-full bg-black dark:bg-white dark:text-black text-white py-2 rounded-lg font-medium hover:opacity-80">Save Template</button>
+        </div>
+    </form>
+</div>
+</div>

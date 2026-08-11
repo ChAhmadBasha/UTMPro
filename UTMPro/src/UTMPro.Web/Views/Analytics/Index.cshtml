@@ -1,0 +1,151 @@
+@{ ViewData["Title"] = "Analytics"; var ws = ViewBag.Workspace as Workspace; var interval = ViewBag.Interval as string ?? "24h"; }
+
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+    <h1 class="text-2xl font-bold">Analytics</h1>
+    <div class="flex flex-wrap gap-2 items-center">
+        <!-- Interval presets -->
+        @foreach (var i in new[] { ("1h","1H"), ("24h","24H"), ("7d","7D"), ("30d","30D"), ("90d","90D") }) {
+        <button onclick="setInterval('@i.Item1')" class="interval-btn px-3 py-1.5 text-sm rounded-lg @(interval==i.Item1?"bg-black dark:bg-white text-white dark:text-black":"bg-white dark:bg-gray-800 border dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700")" data-interval="@i.Item1">@i.Item2</button>
+        }
+        <!-- Custom date range -->
+        <input type="date" id="startDate" class="px-2 py-1.5 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-xs w-32" title="Start date">
+        <input type="date" id="endDate" class="px-2 py-1.5 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-xs w-32" title="End date">
+        <button onclick="loadCustomRange()" class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700">Apply</button>
+    </div>
+</div>
+
+<!-- ═══ FILTER BAR ═══ -->
+<div class="flex flex-wrap gap-2 mb-4" id="filterBar">
+    <select id="filterCountry" class="px-2 py-1.5 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-xs" onchange="applyFilters()">
+        <option value="">All Countries</option>
+    </select>
+    <select id="filterDevice" class="px-2 py-1.5 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-xs" onchange="applyFilters()">
+        <option value="">All Devices</option>
+    </select>
+    <select id="filterBrowser" class="px-2 py-1.5 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-xs" onchange="applyFilters()">
+        <option value="">All Browsers</option>
+    </select>
+    <select id="filterOS" class="px-2 py-1.5 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-xs" onchange="applyFilters()">
+        <option value="">All OS</option>
+    </select>
+    <!-- QR vs Link toggle -->
+    <select id="filterTrigger" class="px-2 py-1.5 border dark:border-gray-600 dark:bg-gray-800 rounded-lg text-xs" onchange="applyFilters()">
+        <option value="">All (Links + QR)</option>
+        <option value="Link">🔗 Link Clicks Only</option>
+        <option value="QRCode">📱 QR Scans Only</option>
+    </select>
+    <button onclick="clearFilters()" class="px-2 py-1.5 text-xs text-gray-500 hover:text-black dark:hover:text-white">✕ Clear</button>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700"><p class="text-xs text-gray-500 dark:text-gray-400">Total Clicks</p><p class="text-2xl font-bold" id="totalClicks">-</p></div>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700"><p class="text-xs text-gray-500 dark:text-gray-400">Unique Clicks</p><p class="text-2xl font-bold" id="uniqueClicks">-</p></div>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700"><p class="text-xs text-gray-500 dark:text-gray-400">Leads</p><p class="text-2xl font-bold" id="totalLeads">-</p></div>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700"><p class="text-xs text-gray-500 dark:text-gray-400">Revenue</p><p class="text-2xl font-bold" id="totalSales">-</p></div>
+</div>
+
+<!-- Chart -->
+<div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl border dark:border-gray-700 mb-6">
+    <canvas id="clicksChart" height="80"></canvas>
+</div>
+
+<!-- Breakdowns -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700"><h3 class="font-semibold mb-4">🗺️ Countries</h3><div id="countriesList" class="space-y-2 text-sm"></div></div>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700"><h3 class="font-semibold mb-4">🔄 Funnel</h3>
+        <div class="space-y-2">
+            <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3 text-center"><span class="text-lg font-bold" id="funnelClicks">0</span><br><span class="text-xs text-gray-500">Clicks</span></div>
+            <div class="text-center text-gray-300">↓</div>
+            <div class="bg-green-50 dark:bg-green-900/30 rounded-lg p-3 text-center mx-6"><span class="text-lg font-bold" id="funnelLeads">0</span><br><span class="text-xs text-gray-500">Leads</span></div>
+            <div class="text-center text-gray-300">↓</div>
+            <div class="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-3 text-center mx-12"><span class="text-lg font-bold" id="funnelSales">$0</span><br><span class="text-xs text-gray-500">Sales</span></div>
+        </div>
+    </div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700"><h3 class="font-semibold mb-4">Devices</h3><canvas id="devicesChart" height="200"></canvas></div>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700"><h3 class="font-semibold mb-4">Browsers</h3><div id="browsersList" class="space-y-2 text-sm"></div></div>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700"><h3 class="font-semibold mb-4">Operating Systems</h3><div id="osList" class="space-y-2 text-sm"></div></div>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700"><h3 class="font-semibold mb-4">Referrers</h3><div id="referrersList" class="space-y-2 text-sm"></div></div>
+</div>
+
+@section Scripts {
+<script>
+let currentInterval = '@interval';
+let chartInstance = null;
+let devicesChartInstance = null;
+
+function setInterval(iv) { currentInterval = iv; document.querySelectorAll('.interval-btn').forEach(b=>{b.classList.remove('bg-black','dark:bg-white','text-white','dark:text-black');b.classList.add('bg-white','dark:bg-gray-800','border','dark:border-gray-700');}); const btn=document.querySelector(`[data-interval="${iv}"]`); if(btn){btn.classList.add('bg-black','dark:bg-white','text-white','dark:text-black');btn.classList.remove('bg-white','dark:bg-gray-800','border','dark:border-gray-700');} loadAnalytics(); }
+function loadCustomRange() { const s=document.getElementById('startDate').value; const e=document.getElementById('endDate').value; if(s&&e) loadAnalytics(s,e); }
+function applyFilters() { loadAnalytics(); }
+function clearFilters() { document.getElementById('filterCountry').value=''; document.getElementById('filterDevice').value=''; document.getElementById('filterBrowser').value=''; document.getElementById('filterOS').value=''; document.getElementById('filterTrigger').value=''; loadAnalytics(); }
+
+async function loadAnalytics(customStart,customEnd) {
+    let url = '/@ws?.Slug/analytics/data?interval=' + currentInterval;
+    if(customStart && customEnd) url += '&startDate='+customStart+'&endDate='+customEnd;
+    const country = document.getElementById('filterCountry').value; if(country) url+='&country='+encodeURIComponent(country);
+    const device = document.getElementById('filterDevice').value; if(device) url+='&device='+encodeURIComponent(device);
+    const browser = document.getElementById('filterBrowser').value; if(browser) url+='&browser='+encodeURIComponent(browser);
+    const os = document.getElementById('filterOS').value; if(os) url+='&os='+encodeURIComponent(os);
+    const trigger = document.getElementById('filterTrigger').value; if(trigger) url+='&trigger='+encodeURIComponent(trigger);
+
+    const res = await fetch(url);
+    if(!res.ok) return;
+    const data = await res.json();
+
+    document.getElementById('totalClicks').textContent = (data.totalClicks??0).toLocaleString();
+    document.getElementById('uniqueClicks').textContent = (data.uniqueClicks??0).toLocaleString();
+    document.getElementById('totalLeads').textContent = (data.totalLeads??0).toLocaleString();
+    document.getElementById('totalSales').textContent = '$'+(data.totalSales??0).toFixed(2);
+    document.getElementById('funnelClicks').textContent = (data.totalClicks??0).toLocaleString();
+    document.getElementById('funnelLeads').textContent = (data.totalLeads??0).toLocaleString();
+    document.getElementById('funnelSales').textContent = '$'+(data.totalSales??0).toFixed(2);
+
+    const isDark = document.documentElement.classList.contains('dark');
+    const lineColor = isDark?'#fff':'#000';
+    const fillColor = isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)';
+
+    if(chartInstance) chartInstance.destroy();
+    if(data.timeSeries?.length) {
+        chartInstance = new Chart(document.getElementById('clicksChart'), {type:'line',data:{labels:data.timeSeries.map(p=>new Date(p.date).toLocaleDateString()),datasets:[{label:'Clicks',data:data.timeSeries.map(p=>p.clicks),borderColor:lineColor,backgroundColor:fillColor,fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:isDark?'#374151':'#f3f4f6'}},x:{grid:{display:false}}}}});
+    }
+
+    const countriesEl = document.getElementById('countriesList'); countriesEl.innerHTML='';
+    const maxC = Math.max(...(data.countries||[]).map(c=>c.clicks),1);
+    (data.countries||[]).forEach(c=>{ countriesEl.innerHTML+=`<div class="flex items-center gap-2"><span class="w-8 text-lg">${getFlagEmoji(c.countryCode)}</span><div class="flex-1"><div class="flex justify-between text-sm mb-0.5"><span>${c.country}</span><span class="font-medium">${c.clicks.toLocaleString()}</span></div><div class="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full"><div class="h-full bg-blue-500 rounded-full" style="width:${(c.clicks/maxC*100).toFixed(0)}%"></div></div></div></div>`; });
+
+    if(devicesChartInstance) devicesChartInstance.destroy();
+    if(data.devices?.length) { devicesChartInstance = new Chart(document.getElementById('devicesChart'),{type:'doughnut',data:{labels:data.devices.map(d=>d.device),datasets:[{data:data.devices.map(d=>d.clicks),backgroundColor:['#000','#6b7280','#d1d5db','#9ca3af']}]},options:{plugins:{legend:{position:'bottom',labels:{color:isDark?'#e5e7eb':'#374151'}}}}}); }
+
+    const bEl=document.getElementById('browsersList'); bEl.innerHTML='';
+    (data.browsers||[]).forEach(b=>{bEl.innerHTML+=`<div class="flex justify-between"><span>${b.browser}</span><span class="font-medium">${b.clicks}</span></div>`;});
+
+    const oEl=document.getElementById('osList'); oEl.innerHTML='';
+    (data.osStats||[]).forEach(o=>{oEl.innerHTML+=`<div class="flex justify-between"><span>${o.os}</span><span class="font-medium">${o.clicks}</span></div>`;});
+
+    const rEl=document.getElementById('referrersList'); rEl.innerHTML='';
+    (data.referrers||[]).forEach(r=>{rEl.innerHTML+=`<div class="flex justify-between"><span class="truncate">${r.referrer}</span><span class="font-medium">${r.clicks}</span></div>`;});
+}
+
+function getFlagEmoji(cc){if(!cc||cc==='XX')return'🌍';return cc.toUpperCase().replace(/./g,c=>String.fromCodePoint(0x1F1E6+c.charCodeAt(0)-65));}
+
+// Load filter dropdowns
+async function loadFilterValues() {
+    const res = await fetch('/@ws?.Slug/analytics/filters?interval=30d');
+    if(!res.ok) return;
+    const data = await res.json();
+    const fCountry=document.getElementById('filterCountry');
+    (data.countries||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;fCountry.appendChild(o);});
+    const fDevice=document.getElementById('filterDevice');
+    (data.devices||[]).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;fDevice.appendChild(o);});
+    const fBrowser=document.getElementById('filterBrowser');
+    (data.browsers||[]).forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;fBrowser.appendChild(o);});
+    const fOS=document.getElementById('filterOS');
+    (data.os||[]).forEach(o=>{const opt=document.createElement('option');opt.value=o;opt.textContent=o;fOS.appendChild(opt);});
+}
+
+loadFilterValues();
+loadAnalytics();
+</script>
+}

@@ -1,0 +1,29 @@
+@model AnalyticsSummary
+@{ Layout = null; var link = ViewBag.Link as Link; }
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stats: @link?.Domain/@link?.Slug - UTMPro</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+<body class="bg-gray-50 min-h-screen">
+<div class="max-w-4xl mx-auto py-12 px-6">
+    <div class="text-center mb-8">
+        <p class="text-sm text-gray-500 mb-1">Public Stats for</p>
+        <h1 class="text-3xl font-bold">@link?.Domain/@link?.Slug</h1>
+        <p class="text-gray-400 text-sm mt-2">Last 30 days · Updated in real-time</p>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <div class="bg-white p-5 rounded-xl border text-center"><p class="text-xs text-gray-500">Total Clicks</p><p class="text-3xl font-bold">@Model.TotalClicks.ToString("N0")</p></div>
+        <div class="bg-white p-5 rounded-xl border text-center"><p class="text-xs text-gray-500">Unique</p><p class="text-3xl font-bold">@Model.UniqueClicks.ToString("N0")</p></div>
+        <div class="bg-white p-5 rounded-xl border text-center"><p class="text-xs text-gray-500">Leads</p><p class="text-3xl font-bold">@Model.TotalLeads</p></div>
+        <div class="bg-white p-5 rounded-xl border text-center"><p class="text-xs text-gray-500">Revenue</p><p class="text-3xl font-bold">$@Model.TotalSales.ToString("N2")</p></div>
+    </div>
+    <div class="bg-white p-6 rounded-xl border mb-6"><canvas id="chart" height="80"></canvas></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <div class="bg-white p-6 rounded-xl border"><h3 class="font-semibold mb-3">Top Countries</h3>@foreach(var c in Model.Countries){<div class="flex justify-between text-sm py-1"><span>@c.Country</span><span class="font-medium">@c.Clicks</span></div>}</div>
+        <div class="bg-white p-6 rounded-xl border"><h3 class="font-semibold mb-3">Devices</h3>@foreach(var d in Model.Devices){<div class="flex justify-between text-sm py-1"><span>@d.Device</span><span class="font-medium">@d.Percentage%</span></div>}</div>
+    </div>
+    <p class="text-center text-xs text-gray-400 mt-8">Powered by <a href="/" class="text-black hover:underline">UTMPro</a></p>
+</div>
+<script>
+const ts = @System.Text.Json.JsonSerializer.Serialize(Model.TimeSeries.Select(t => new { d = t.Date.ToString("MMM d"), c = t.Clicks }));
+new Chart(document.getElementById('chart'), { type:'line', data:{ labels:ts.map(t=>t.d), datasets:[{label:'Clicks',data:ts.map(t=>t.c),borderColor:'#000',backgroundColor:'rgba(0,0,0,0.05)',fill:true,tension:0.3}] }, options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}} });
+</script>
+</body></html>

@@ -1,0 +1,224 @@
+@model Workspace
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = Model.Name;
+    var plans = ViewBag.Plans as List<Plan>;
+    var members = ViewBag.Members as List<WorkspaceMember>;
+    var subscription = ViewBag.Subscription as StripeSubscriptionModel;
+    var invoices = ViewBag.Invoices as List<StripeInvoiceModel>;
+    var links = ViewBag.Links as List<Link>;
+    var linkCount = (int)(ViewBag.LinkCount ?? 0);
+    var linkPage = (int)(ViewBag.LinkPage ?? 1);
+    var linkTotalPages = (int)(ViewBag.LinkTotalPages ?? 1);
+}
+<div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+        <a href="/admin/workspaces" class="text-gray-400">&larr;</a>
+        <h1 class="text-2xl font-bold">@Model.Name</h1>
+        <span class="px-2 py-1 rounded text-xs bg-gray-100 font-medium">@Model.PlanName</span>
+        @if (!Model.IsActive) { <span class="px-2 py-1 rounded text-xs bg-red-100 text-red-700">Suspended</span> }
+    </div>
+    <a href="/@Model.Slug/links" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+        🔗 Open Workspace <span class="text-xs opacity-70">↗</span>
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl">
+    <!-- Workspace Info -->
+    <div class="bg-white rounded-xl border p-6">
+        <h2 class="font-semibold mb-4">Workspace Details</h2>
+        <div class="space-y-2 text-sm">
+            <div><span class="text-gray-500">Slug:</span> <code class="bg-gray-100 px-1 rounded">@Model.Slug</code></div>
+            <div><span class="text-gray-500">Owner:</span> @Model.OwnerName</div>
+            <div><span class="text-gray-500">Email:</span> @Model.OwnerEmail</div>
+            <div><span class="text-gray-500">Links Used:</span> @Model.LinksUsedThisMonth this month</div>
+            <div><span class="text-gray-500">Events Used:</span> @Model.EventsUsedThisMonth this month</div>
+            <div><span class="text-gray-500">Members:</span> @Model.MemberCount</div>
+            <div><span class="text-gray-500">Total Links:</span> <strong>@linkCount</strong></div>
+            <div><span class="text-gray-500">Created:</span> @Model.CreatedAt.ToString("MMM d, yyyy")</div>
+            @if (Model.PlanEndDate.HasValue) {
+            <div><span class="text-gray-500">Trial Ends:</span>
+                @if (Model.PlanEndDate > DateTime.UtcNow) {
+                    <span class="text-green-600 font-medium">@Model.PlanEndDate.Value.ToString("MMM d, yyyy") (@((Model.PlanEndDate.Value - DateTime.UtcNow).Days)d left)</span>
+                } else {
+                    <span class="text-red-600">Expired @Model.PlanEndDate.Value.ToString("MMM d, yyyy")</span>
+                }
+            </div>}
+        </div>
+        <div class="mt-4 space-y-2">
+            @if (Model.IsActive) {
+            <form method="post" action="/admin/workspaces/@Model.Id/suspend">@Html.AntiForgeryToken()
+                <button type="submit" class="w-full py-2 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm" onclick="return confirm('Suspend this workspace?')">Suspend Workspace</button>
+            </form>
+            } else {
+            <form method="post" action="/admin/workspaces/@Model.Id/reactivate">@Html.AntiForgeryToken()
+                <button type="submit" class="w-full py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">Reactivate Workspace</button>
+            </form>
+            }
+        </div>
+    </div>
+
+    <!-- Subscription Management -->
+    <div class="bg-white rounded-xl border p-6">
+        <h2 class="font-semibold mb-4">📋 Subscription Management</h2>
+        @if (subscription != null) {
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm">
+            <p class="font-medium">Active: @subscription.PlanName ($@subscription.PlanPrice/mo)</p>
+            <p class="text-xs text-gray-500 mt-1">Stripe: @subscription.StripeSubscriptionId</p>
+            <p class="text-xs text-gray-500">Status: @subscription.Status · Period: @subscription.CurrentPeriodStart.ToString("MMM d") - @subscription.CurrentPeriodEnd.ToString("MMM d, yyyy")</p>
+            @if (subscription.CancelAtPeriodEnd) { <p class="text-xs text-red-600 mt-1">⚠ Cancels at period end</p> }
+        </div>
+        <form method="post" action="/admin/workspaces/@Model.Id/cancel-subscription" class="mb-3">@Html.AntiForgeryToken()
+            <button type="submit" class="w-full py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700" onclick="return confirm('Cancel Stripe subscription and downgrade to Free?')">Cancel Stripe Subscription</button>
+        </form>
+        } else {
+        <p class="text-sm text-gray-500 mb-4">No active Stripe subscription. Plan is managed manually.</p>
+        }
+
+        <h3 class="text-sm font-medium mt-4 mb-2">Change Plan (Manual Override)</h3>
+        <form method="post" action="/admin/workspaces/@Model.Id/assign-plan" class="mb-3">@Html.AntiForgeryToken()
+            <select name="planId" class="w-full px-3 py-2 border rounded-lg mb-2 text-sm">
+                @if (plans != null) { foreach (var p in plans) { <option value="@p.Id" selected="@(p.Id == Model.PlanId)">@p.Name ($@p.Price/mo)</option> } }
+            </select>
+            <input type="text" name="notes" placeholder="Notes (optional)" class="w-full px-3 py-2 border rounded-lg mb-2 text-sm">
+            <button type="submit" class="w-full py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800">Assign Plan</button>
+        </form>
+
+        <h3 class="text-sm font-medium mt-4 mb-2">Force Upgrade (No Payment)</h3>
+        <form method="post" action="/admin/workspaces/@Model.Id/force-upgrade">@Html.AntiForgeryToken()
+            <select name="planId" class="w-full px-3 py-2 border rounded-lg mb-2 text-sm">
+                @if (plans != null) { foreach (var p in plans.Where(x => x.Price > 0)) { <option value="@p.Id">@p.Name ($@p.Price/mo)</option> } }
+            </select>
+            <select name="durationMonths" class="w-full px-3 py-2 border rounded-lg mb-2 text-sm">
+                <option value="1">1 month</option><option value="3">3 months</option><option value="6">6 months</option><option value="12" selected>12 months</option><option value="24">24 months</option>
+            </select>
+            <input type="text" name="notes" placeholder="Reason (e.g. beta tester)" class="w-full px-3 py-2 border rounded-lg mb-2 text-sm">
+            <button type="submit" class="w-full py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">Force Upgrade (Free)</button>
+        </form>
+    </div>
+
+    <!-- Invoices -->
+    <div class="bg-white rounded-xl border p-6">
+        <h2 class="font-semibold mb-4">💳 Invoices</h2>
+        @if (invoices?.Count > 0) {
+        <div class="space-y-2 text-sm">
+            @foreach (var inv in invoices) {
+            <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                <div>
+                    <span class="font-medium">$@inv.Amount.ToString("N2")</span>
+                    <span class="text-gray-400 ml-1 text-xs">@inv.CreatedAt.ToString("MMM d, yyyy")</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-xs @(inv.Status == "paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700")">@inv.Status</span>
+            </div>
+            }
+        </div>
+        } else {
+        <p class="text-gray-400 text-sm">No invoices</p>
+        }
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- LINKS TABLE (Admin can see all workspace links) -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="bg-white rounded-xl border mt-6 max-w-6xl overflow-hidden">
+    <div class="px-6 py-4 border-b flex items-center justify-between">
+        <h2 class="font-semibold">🔗 Links (@linkCount)</h2>
+        <a href="/@Model.Slug/links" target="_blank" class="text-xs text-blue-600 hover:underline">Open full links page ↗</a>
+    </div>
+    @if (links != null && links.Count > 0) {
+    <div class="table-wrap">
+    <table class="w-full min-w-[700px]">
+        <thead class="bg-gray-50 border-b"><tr>
+            <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Link</th>
+            <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Destination</th>
+            <th class="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Clicks</th>
+            <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Created</th>
+            <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-100">
+        @foreach (var link in links) {
+        <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3">
+                <a href="/@Model.Slug/links/@link.Id" target="_blank" class="text-sm font-medium text-blue-600 hover:underline">@link.Domain/@link.Slug</a>
+                @if (!string.IsNullOrEmpty(link.FolderName)) { <span class="ml-1 px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">📁 @link.FolderName</span> }
+                @if (link.TagNames.Count > 0) { <span class="ml-1 text-[10px] text-gray-400">@string.Join(", ", link.TagNames.Take(2))</span> }
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-500 max-w-[250px] truncate" title="@link.PrimaryUrl">@(link.PrimaryUrl?.Length > 50 ? link.PrimaryUrl[..50] + "…" : link.PrimaryUrl)</td>
+            <td class="px-4 py-3 text-sm text-right font-medium">@link.TotalClicks.ToString("N0")</td>
+            <td class="px-4 py-3 text-xs text-gray-500">@link.CreatedAt.ToString("MMM d, yyyy")</td>
+            <td class="px-4 py-3">
+                @if (link.IsArchived) { <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs">Archived</span> }
+                else if (!link.IsActive) { <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">Disabled</span> }
+                else if (link.ExpiresAt.HasValue && link.ExpiresAt < DateTime.UtcNow) { <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">Expired</span> }
+                else { <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">Active</span> }
+                @if (link.HasPassword) { <span class="ml-1 text-xs">🔒</span> }
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+    <!-- Pagination -->
+    @if (linkTotalPages > 1) {
+    <div class="px-6 py-3 border-t flex justify-between items-center text-sm">
+        <span class="text-gray-500">Page @linkPage of @linkTotalPages</span>
+        <div class="flex gap-2">
+            @if (linkPage > 1) { <a href="/admin/workspaces/@Model.Id?linkPage=@(linkPage-1)" class="px-3 py-1 border rounded hover:bg-gray-50">← Prev</a> }
+            @if (linkPage < linkTotalPages) { <a href="/admin/workspaces/@Model.Id?linkPage=@(linkPage+1)" class="px-3 py-1 border rounded hover:bg-gray-50">Next →</a> }
+        </div>
+    </div>
+    }
+    } else {
+    <div class="text-center py-8"><p class="text-gray-400 text-sm">No links in this workspace yet.</p></div>
+    }
+</div>
+
+<!-- Members Management -->
+<div class="bg-white rounded-xl border p-6 mt-6 max-w-6xl">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-semibold">👥 Members (@(members?.Count ?? 0))</h2>
+    </div>
+
+    <!-- Add Member -->
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <h3 class="text-sm font-medium mb-2">Add Member by Email</h3>
+        <form method="post" action="/admin/workspaces/@Model.Id/members/add" class="flex gap-2">@Html.AntiForgeryToken()
+            <input type="email" name="email" required placeholder="user@example.com" class="flex-1 px-3 py-2 border rounded-lg text-sm">
+            <select name="role" class="px-3 py-2 border rounded-lg text-sm"><option>Member</option><option>Admin</option><option>Viewer</option></select>
+            <button type="submit" class="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800">Add</button>
+        </form>
+    </div>
+
+    @if (members != null && members.Count > 0) {
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b"><tr>
+            <th class="text-left px-4 py-2 text-xs font-medium text-gray-500 uppercase">Member</th>
+            <th class="text-left px-4 py-2 text-xs font-medium text-gray-500 uppercase">Role</th>
+            <th class="text-left px-4 py-2 text-xs font-medium text-gray-500 uppercase">Joined</th>
+            <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Actions</th>
+        </tr></thead>
+        <tbody class="divide-y">
+        @foreach (var m in members) {
+        <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3"><span class="font-medium">@m.UserName</span><br><span class="text-xs text-gray-400">@m.UserEmail</span></td>
+            <td class="px-4 py-3">
+                <form method="post" action="/admin/workspaces/@Model.Id/members/@m.UserId/role" class="flex gap-1 items-center">@Html.AntiForgeryToken()
+                    <select name="role" class="px-2 py-1 border rounded text-xs">
+                        @foreach (var r in new[] { "Owner", "Admin", "Member", "Viewer" }) {
+                        <option value="@r" selected="@(m.Role == r)">@r</option> }
+                    </select>
+                    <button type="submit" class="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Save</button>
+                </form>
+            </td>
+            <td class="px-4 py-3 text-gray-500">@(m.JoinedAt?.ToString("MMM d, yyyy") ?? "Pending")</td>
+            <td class="px-4 py-3">
+                @if (m.Role != "Owner") {
+                <form method="post" action="/admin/workspaces/@Model.Id/members/@m.UserId/remove" class="inline">@Html.AntiForgeryToken()
+                    <button type="submit" class="text-xs text-red-500 hover:underline" onclick="return confirm('Remove this member?')">Remove</button>
+                </form> }
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    }
+</div>

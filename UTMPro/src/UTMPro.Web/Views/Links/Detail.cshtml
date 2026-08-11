@@ -1,0 +1,286 @@
+@model Link
+@{ ViewData["Title"] = $"{Model.Domain}/{Model.Slug}"; var ws = ViewBag.Workspace as Workspace; var role = ViewBag.CurrentRole as string ?? ""; var canEdit = role is "Owner" or "Admin" or "Member"; var canAdmin = role is "Owner" or "Admin"; }
+
+<div class="max-w-5xl px-2 sm:px-0">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+            <a href="/@ws?.Slug/links" class="text-gray-400 hover:text-gray-600">&larr;</a>
+            <h1 class="text-2xl font-bold">@Model.Domain/@Model.Slug</h1>
+            @if(Model.HasPassword){<span>🔒</span>}
+            @if(!Model.IsActive){<span class="px-2 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded text-xs">Disabled</span>}
+            <span class="px-2 py-0.5 rounded text-xs @(Model.RedirectMode switch{"Weighted"=>"bg-purple-100 text-purple-700","ABTest"=>"bg-blue-100 text-blue-700",_=>"bg-gray-100 text-gray-500"})">@Model.RedirectMode</span>
+        </div>
+        <div class="flex gap-2">
+            @if(canEdit){
+            <button onclick="document.getElementById('editModal').classList.remove('hidden')" class="bg-black dark:bg-white dark:text-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-80">✏️ Edit Link</button>
+            }
+            @if(canEdit){
+            <form method="post" action="/@ws?.Slug/links/@Model.Id/toggle" class="inline">@Html.AntiForgeryToken()
+                <button type="submit" class="px-4 py-2 border rounded-lg text-sm @(Model.IsActive ? "text-red-600 border-red-200 hover:bg-red-50" : "text-green-600 border-green-200 hover:bg-green-50")">@(Model.IsActive ? "Disable" : "Enable")</button>
+            </form>}
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700"><p class="text-xs text-gray-500">Total Clicks</p><p class="text-2xl font-bold">@Model.TotalClicks.ToString("N0")</p></div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700"><p class="text-xs text-gray-500">Leads</p><p class="text-2xl font-bold">@Model.TotalLeads</p></div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700"><p class="text-xs text-gray-500">Sales</p><p class="text-2xl font-bold">@Model.TotalSales</p></div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700"><p class="text-xs text-gray-500">Last Click</p><p class="text-lg font-semibold">@(Model.LastClickAt?.ToString("MMM d, HH:mm") ?? "Never")</p></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Link Info -->
+        <div class="col-span-2 space-y-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6">
+                <h2 class="font-semibold mb-4">Link Details</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+                    <div><span class="text-gray-500">Short URL</span><br><a href="https://@Model.Domain/@Model.Slug" target="_blank" class="text-blue-600 hover:underline">https://@Model.Domain/@Model.Slug</a></div>
+                    <div><span class="text-gray-500">External ID</span><br><code class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">@Model.ExternalId</code></div>
+                    <div><span class="text-gray-500">Created</span><br>@Model.CreatedAt.ToString("MMM d, yyyy HH:mm")</div>
+                    <div><span class="text-gray-500">Mode</span><br>@Model.RedirectMode</div>
+                    @if(!string.IsNullOrEmpty(Model.UTMSource)){<div><span class="text-gray-500">utm_source</span><br><code class="text-xs">@Model.UTMSource</code></div>}
+                    @if(!string.IsNullOrEmpty(Model.UTMCampaign)){<div><span class="text-gray-500">utm_campaign</span><br><code class="text-xs">@Model.UTMCampaign</code></div>}
+                    @if(!string.IsNullOrEmpty(Model.Comments)){<div class="col-span-2"><span class="text-gray-500">Comments</span><br>@Model.Comments</div>}
+                </div>
+            </div>
+
+            <!-- Destinations -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6">
+                <h2 class="font-semibold mb-3">Destinations (@Model.Destinations.Count)</h2>
+                @foreach(var d in Model.Destinations){
+                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg mb-2">
+                    <div class="flex-1 min-w-0"><p class="text-sm truncate break-all">@d.Url</p>
+                    @if(d.Label != null){<span class="text-xs text-blue-600">@d.Label</span>}</div>
+                    <div class="flex gap-3 text-xs text-gray-500 ml-3">
+                        <span>W:@d.Weight</span><span>@d.ClickCount clicks</span>
+                        @if(d.IsAdminUrl){<span class="text-orange-500">Admin</span>}
+                    </div>
+                </div>}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-5">
+                <h3 class="font-semibold mb-3">QR Code</h3>
+                <div id="qrcode" class="flex justify-center mb-3"></div>
+                <!-- QR Customization -->
+                <div class="flex gap-2 justify-center items-center mb-2">
+                    <label class="text-xs text-gray-500">FG:</label>
+                    <input type="color" id="qrFg" value="#000000" onchange="regenerateQR()" class="w-7 h-7 border rounded cursor-pointer">
+                    <label class="text-xs text-gray-500 ml-2">BG:</label>
+                    <input type="color" id="qrBg" value="#ffffff" onchange="regenerateQR()" class="w-7 h-7 border rounded cursor-pointer">
+                </div>
+                <div class="flex justify-center gap-2">
+                    <button onclick="copyUrl()" class="text-xs bg-gray-100 dark:bg-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200">📋 Copy</button>
+                    <button onclick="downloadQR()" class="text-xs bg-gray-100 dark:bg-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200">💾 Download</button>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-5 text-sm space-y-2">
+                <div class="flex justify-between"><span class="text-gray-500">Folder</span><span>@(Model.FolderName ?? "None")</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Tags</span><span>@(Model.TagNames.Count > 0 ? string.Join(", ", Model.TagNames) : "None")</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Password</span><span>@(Model.HasPassword ? "Yes 🔒" : "No")</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Expires</span><span>@(Model.ExpiresAt?.ToString("MMM d, yyyy") ?? "Never")</span></div>
+                @if(!string.IsNullOrEmpty(Model.CustomTitle)){<div><span class="text-gray-500">OG Title</span><br><span class="text-xs">@Model.CustomTitle</span></div>}
+            </div>
+            <!-- Public stats link -->
+            <a href="/stats/@Model.ExternalId" target="_blank" class="block bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-4 text-center text-sm text-gray-500 hover:text-black dark:hover:text-white hover:border-gray-400 transition-colors">📊 View Public Stats</a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ EDIT LINK MODAL ═══ -->
+<div id="editModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-8 overflow-y-auto">
+<div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl mx-2 sm:m-4 mb-8 shadow-2xl border dark:border-gray-700">
+    <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
+        <h2 class="text-lg font-bold">Edit Link: @Model.Domain/@Model.Slug</h2>
+        <button onclick="document.getElementById('editModal').classList.add('hidden')" class="text-gray-400 text-2xl">&times;</button>
+    </div>
+    <form id="editForm" class="p-5 max-h-[75vh] overflow-y-auto">
+        <!-- Destinations (editable!) -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Destination URLs</label>
+            <div id="editDestinations" class="space-y-2">
+                @foreach(var d in Model.Destinations.Where(x => !x.IsAdminUrl)){
+                <div class="flex gap-2 items-center edit-dest-row">
+                    <input type="url" class="edit-dest-url flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" value="@d.Url">
+                    <input type="number" class="edit-dest-weight w-16 px-2 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" value="@d.Weight" min="1">
+                    <input type="text" class="edit-dest-label w-20 px-2 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" value="@d.Label" placeholder="Label">
+                    <button type="button" onclick="this.parentElement.remove()" class="text-red-500">✕</button>
+                </div>}
+            </div>
+            <button type="button" onclick="addEditDest()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add destination</button>
+        </div>
+
+        <!-- Folder -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Folder</label>
+            <select id="editFolder" class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-700 rounded-lg text-sm">
+                <option value="">No folder</option>
+                @if (ViewBag.Folders != null) { foreach (Folder f in ViewBag.Folders) {
+                <option value="@f.Id" selected="@(Model.FolderId == f.Id)">@f.Name</option>
+                } }
+            </select>
+        </div>
+
+        <!-- Comments -->
+        <div class="mb-4"><label class="block text-sm font-medium mb-2">Comments</label>
+            <textarea id="editComments" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" rows="2">@Model.Comments</textarea>
+        </div>
+
+        <!-- UTM -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div><label class="block text-xs font-medium mb-1">utm_source</label><input type="text" id="editUtmSource" value="@Model.UTMSource" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700"></div>
+            <div><label class="block text-xs font-medium mb-1">utm_medium</label><input type="text" id="editUtmMedium" value="@Model.UTMMedium" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700"></div>
+            <div><label class="block text-xs font-medium mb-1">utm_campaign</label><input type="text" id="editUtmCampaign" value="@Model.UTMCampaign" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700"></div>
+            <div><label class="block text-xs font-medium mb-1">utm_term</label><input type="text" id="editUtmTerm" value="@Model.UTMTerm" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700"></div>
+        </div>
+
+        <!-- Password (checkbox + field) -->
+        <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <label class="flex items-center gap-2 mb-2">
+                <input type="checkbox" id="editHasPassword" onchange="document.getElementById('editPasswordField').classList.toggle('hidden', !this.checked)" @(Model.HasPassword ? "checked" : "")>
+                <span class="text-sm font-medium">🔒 Password Protection</span>
+            </label>
+            <div id="editPasswordField" class="@(Model.HasPassword ? "" : "hidden")">
+                <input type="password" id="editPassword" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="@(Model.HasPassword ? "Leave empty to keep current" : "Enter password")">
+            </div>
+        </div>
+
+        <!-- Expiration -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div><label class="block text-xs font-medium mb-1">Expiration Date</label><input type="datetime-local" id="editExpiresAt" value="@(Model.ExpiresAt?.ToString("yyyy-MM-ddTHH:mm"))" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700"></div>
+            <div><label class="block text-xs font-medium mb-1">Expiration URL</label><input type="url" id="editExpirationUrl" value="@Model.ExpirationUrl" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="Redirect when expired"></div>
+        </div>
+
+        <!-- Social Preview + Image Upload -->
+        <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <h4 class="text-sm font-medium mb-2">🖼️ Social Preview (OG Tags)</h4>
+            <div class="space-y-2">
+                <div><label class="block text-xs font-medium mb-1">Title</label><input type="text" id="editCustomTitle" value="@Model.CustomTitle" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="Custom OG title"></div>
+                <div><label class="block text-xs font-medium mb-1">Description</label><textarea id="editCustomDesc" class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" rows="2" placeholder="Custom OG description">@Model.CustomDescription</textarea></div>
+                <div>
+                    <label class="block text-xs font-medium mb-1">Preview Image</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="editCustomImage" value="@Model.CustomImageUrl" class="flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="Image URL or upload">
+                        <label class="px-3 py-2 bg-gray-200 dark:bg-gray-600 rounded-lg text-sm cursor-pointer hover:bg-gray-300">
+                            📤 Upload
+                            <input type="file" accept="image/*" class="hidden" onchange="uploadEditImage(this)">
+                        </label>
+                    </div>
+                    @if(!string.IsNullOrEmpty(Model.CustomImageUrl)){<img src="@Model.CustomImageUrl" class="mt-2 h-20 rounded-lg object-cover" alt="Preview">}
+                </div>
+            </div>
+        </div>
+
+        <div id="editResult" class="hidden mb-3 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-4 py-2 rounded-lg text-sm"></div>
+        <div id="editError" class="hidden mb-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg text-sm"></div>
+
+        <button type="submit" class="w-full bg-black dark:bg-white dark:text-black text-white py-2.5 rounded-lg font-medium hover:opacity-80">Save Changes</button>
+    </form>
+</div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+    // QR Code with customizable colors
+    let qrCanvas;
+    function regenerateQR() {
+        const fg = document.getElementById('qrFg').value;
+        const bg = document.getElementById('qrBg').value;
+        const container = document.getElementById('qrcode');
+        container.innerHTML = '';
+        qrCanvas = document.createElement('canvas');
+        try {
+            QRCode.toCanvas(qrCanvas, 'https://@Model.Domain/@Model.Slug', {
+                width: 180, margin: 2,
+                color: { dark: fg, light: bg }
+            });
+        } catch(e) {}
+        container.appendChild(qrCanvas);
+    }
+    regenerateQR();
+
+    function copyUrl() { navigator.clipboard.writeText('https://@Model.Domain/@Model.Slug'); }
+    function downloadQR() {
+        if (!qrCanvas) return;
+        const link = document.createElement('a');
+        link.download = 'qr-@(Model.Slug).png';
+        link.href = qrCanvas.toDataURL('image/png');
+        link.click();
+    }
+
+    function addEditDest() {
+        const c = document.getElementById('editDestinations');
+        const r = document.createElement('div'); r.className = 'flex gap-2 items-center edit-dest-row';
+        r.innerHTML = '<input type="url" class="edit-dest-url flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="https://..." required><input type="number" class="edit-dest-weight w-16 px-2 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" value="100" min="1"><input type="text" class="edit-dest-label w-20 px-2 py-2 border dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700" placeholder="Label"><button type="button" onclick="this.parentElement.remove()" class="text-red-500">✕</button>';
+        c.appendChild(r);
+    }
+
+    // Image upload
+    async function uploadEditImage(input) {
+        if (!input.files[0]) return;
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+        try {
+            const res = await fetch('/@ws?.Slug/api/upload-image', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.url) document.getElementById('editCustomImage').value = data.url;
+        } catch (e) { alert('Upload failed'); }
+    }
+
+    // Save edit
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Gather destinations
+        const dests = [];
+        let si = 0;
+        document.querySelectorAll('.edit-dest-row').forEach(r => {
+            const url = r.querySelector('.edit-dest-url')?.value;
+            if (url) dests.push({ url, weight: parseInt(r.querySelector('.edit-dest-weight')?.value || '100'), isAdminUrl: false, label: r.querySelector('.edit-dest-label')?.value || null, sortOrder: si++ });
+        });
+
+        const body = {
+            primaryUrl: dests.length > 0 ? dests[0].url : '@Model.PrimaryUrl',
+            domainId: @Model.DomainId,
+            folderId: document.getElementById('editFolder').value ? parseInt(document.getElementById('editFolder').value) : null,
+            comments: document.getElementById('editComments').value || null,
+            utmSource: document.getElementById('editUtmSource').value || null,
+            utmMedium: document.getElementById('editUtmMedium').value || null,
+            utmCampaign: document.getElementById('editUtmCampaign').value || null,
+            utmTerm: document.getElementById('editUtmTerm').value || null,
+            expiresAt: document.getElementById('editExpiresAt').value || null,
+            expirationUrl: document.getElementById('editExpirationUrl').value || null,
+            customTitle: document.getElementById('editCustomTitle').value || null,
+            customDescription: document.getElementById('editCustomDesc').value || null,
+            customImageUrl: document.getElementById('editCustomImage').value || null,
+            password: document.getElementById('editHasPassword').checked ? (document.getElementById('editPassword').value || null) : null,
+            destinations: dests,
+            tagIds: [],
+            targetingRules: []
+        };
+
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            const res = await fetch('/@ws?.Slug/links/@Model.Id', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token }, body: JSON.stringify(body) });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('editResult').textContent = '✅ Link updated successfully';
+                document.getElementById('editResult').classList.remove('hidden');
+                document.getElementById('editError').classList.add('hidden');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                document.getElementById('editError').textContent = data.error || 'Update failed';
+                document.getElementById('editError').classList.remove('hidden');
+            }
+        } catch (err) {
+            document.getElementById('editError').textContent = 'Error: ' + err.message;
+            document.getElementById('editError').classList.remove('hidden');
+        }
+    });
+</script>
+}

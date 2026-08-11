@@ -1,0 +1,13 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "SSO / SAML"; ViewData["Description"] = "Enterprise single sign-on with SAML 2.0"; }
+
+<h1 style="font-size:2rem;font-weight:800;">SSO / SAML 2.0</h1>
+<p>Configure enterprise-grade single sign-on for your workspace using SAML 2.0.</p>
+
+<h2>Supported Identity Providers</h2>
+<ul><li>Okta</li><li>Azure Active Directory</li><li>Google Workspace</li><li>OneLogin</li><li>Auth0</li><li>Any SAML 2.0 compatible IdP</li></ul>
+
+<h2>Configuration</h2>
+<ol><li>Go to <strong>Settings → Security → SAML SSO</strong></li><li>Enter your IdP's <strong>Entity ID</strong>, <strong>SSO URL</strong>, and <strong>Certificate</strong></li><li>Configure attribute mapping (email, name, role)</li><li>Enable <strong>auto-provisioning</strong> to automatically create user accounts</li><li>Optionally <strong>enforce SAML</strong> to require SSO for all workspace members</li></ol>
+
+<h2>SCIM Provisioning</h2>
+<p>UTMPro also supports SCIM 2.0 for automatic user provisioning and deprovisioning. Connect your IdP's SCIM integration to <code>/scim/v2/Users</code>.</p>

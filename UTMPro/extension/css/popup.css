@@ -1,0 +1,174 @@
+/* ═══ UTMPro Extension Popup ═══ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 380px;
+  min-height: 200px;
+  max-height: 600px;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: #111827;
+  background: #f9fafb;
+}
+
+.hidden { display: none !important; }
+
+/* ─── Header ─── */
+.header { text-align: center; padding: 24px 20px 8px; }
+.logo { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+.logo-small { font-size: 16px; font-weight: 800; }
+.subtitle { color: #6b7280; font-size: 12px; margin-top: 4px; }
+
+/* ─── Topbar ─── */
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 16px; background: #fff; border-bottom: 1px solid #e5e7eb;
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-actions { display: flex; gap: 4px; }
+.icon-btn {
+  width: 32px; height: 32px; border: none; background: #f3f4f6;
+  border-radius: 8px; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-btn:hover { background: #e5e7eb; }
+
+/* ─── Page Info ─── */
+.page-info {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; background: #fff; border-bottom: 1px solid #f3f4f6;
+}
+.page-favicon { font-size: 20px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #f3f4f6; border-radius: 8px; }
+.page-details { flex: 1; min-width: 0; }
+.page-title { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-url { font-size: 11px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ─── Cards ─── */
+.card {
+  background: #fff; margin: 12px; padding: 16px;
+  border-radius: 12px; border: 1px solid #e5e7eb;
+}
+
+/* ─── Fields ─── */
+.field { margin-bottom: 10px; }
+.field label { display: block; font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+.field input, .field select {
+  width: 100%; padding: 8px 10px; border: 1px solid #d1d5db;
+  border-radius: 8px; font-size: 13px; background: #fff;
+  transition: border-color 0.15s;
+}
+.field input:focus, .field select:focus { outline: none; border-color: #000; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+.field .hint { font-size: 10px; color: #9ca3af; margin-top: 3px; }
+
+.field-row { display: flex; gap: 8px; }
+.flex-1 { flex: 1; }
+
+/* ─── UTM Section ─── */
+.utm-section { margin-bottom: 10px; }
+.utm-toggle {
+  font-size: 12px; font-weight: 500; color: #6b7280;
+  cursor: pointer; padding: 6px 0; list-style: none;
+}
+.utm-toggle:hover { color: #111; }
+.utm-toggle::marker { content: ''; }
+.utm-toggle::before { content: '▸ '; }
+details[open] .utm-toggle::before { content: '▾ '; }
+.utm-fields { padding: 10px 0 0; }
+
+/* ─── Buttons ─── */
+.btn-primary {
+  width: 100%; padding: 10px; border: none;
+  background: #000; color: #fff; font-size: 13px;
+  font-weight: 600; border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #1f1f1f; }
+.btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+
+.btn-secondary {
+  padding: 6px 12px; border: 1px solid #d1d5db; background: #fff;
+  border-radius: 8px; font-size: 12px; cursor: pointer;
+}
+.btn-secondary:hover { background: #f3f4f6; }
+
+.btn-copy {
+  padding: 6px 12px; border: none; background: #000; color: #fff;
+  border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.btn-copy:hover { background: #333; }
+
+.btn-small { font-size: 11px; padding: 4px 10px; border: 1px solid #d1d5db; background: #fff; border-radius: 6px; cursor: pointer; margin-top: 8px; }
+
+.link-btn { font-size: 11px; color: #6b7280; background: none; border: none; cursor: pointer; }
+.link-btn:hover { color: #000; }
+
+/* ─── Result Card ─── */
+.result-card { border-color: #bbf7d0; background: #f0fdf4; }
+.result-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.result-icon { font-size: 16px; }
+.result-title { font-weight: 700; font-size: 14px; color: #166534; }
+.result-url {
+  background: #fff; border: 1px solid #d1d5db; border-radius: 8px;
+  padding: 10px 12px; font-family: monospace; font-size: 13px;
+  color: #1d4ed8; word-break: break-all; margin-bottom: 10px; cursor: pointer;
+}
+.result-url:hover { background: #f0f9ff; }
+.result-actions { display: flex; gap: 6px; }
+.copy-feedback { font-size: 11px; color: #16a34a; text-align: center; margin-top: 8px; font-weight: 500; }
+
+/* ─── QR ─── */
+.qr-container { text-align: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
+.qr-container canvas { border-radius: 8px; }
+
+/* ─── Error ─── */
+.error-card { border-color: #fecaca; background: #fef2f2; display: flex; align-items: center; gap: 8px; }
+.error-icon { font-size: 16px; }
+.error-text { color: #991b1b; font-size: 12px; }
+
+/* ─── Recent Links ─── */
+.section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 16px; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase;
+}
+.recent-list { padding: 0 12px 12px; }
+.recent-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; background: #fff; border: 1px solid #f3f4f6;
+  border-radius: 10px; margin-bottom: 6px; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.recent-item:hover { border-color: #d1d5db; }
+.recent-icon { font-size: 16px; }
+.recent-details { flex: 1; min-width: 0; }
+.recent-short { font-weight: 600; font-size: 12px; color: #1d4ed8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-dest { font-size: 10px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-clicks { font-size: 11px; font-weight: 700; color: #6b7280; white-space: nowrap; }
+
+/* ─── Stats Bar ─── */
+.stats-bar {
+  display: flex; border-top: 1px solid #e5e7eb; background: #fff;
+  position: sticky; bottom: 0;
+}
+.stat { flex: 1; text-align: center; padding: 10px; }
+.stat-value { font-size: 16px; font-weight: 800; display: block; }
+.stat-label { font-size: 10px; color: #9ca3af; }
+
+/* ─── Spinner ─── */
+.spinner {
+  width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Utils ─── */
+.text-sm { font-size: 12px; }
+.text-muted { color: #9ca3af; }
+.text-center { text-align: center; }
+.mb-3 { margin-bottom: 12px; }
+.py-3 { padding-top: 12px; padding-bottom: 12px; }
+.footer-link { text-align: center; padding: 12px; }
+.footer-link a { font-size: 11px; color: #6b7280; text-decoration: none; }
+.footer-link a:hover { color: #000; text-decoration: underline; }

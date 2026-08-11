@@ -1,0 +1,13 @@
+@model PartnerProgram
+@{ ViewData["Title"] = "Program Analytics"; }
+<h1 class="text-2xl font-bold mb-6">Program Analytics</h1>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Total Partners</p><p class="text-3xl font-bold">@Model.TotalPartners</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Total Revenue</p><p class="text-3xl font-bold">$@Model.TotalRevenue.ToString("N2")</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Total Payouts</p><p class="text-3xl font-bold">$@Model.TotalPayouts.ToString("N2")</p></div>
+    <div class="bg-white p-5 rounded-xl border"><p class="text-xs text-gray-500 mb-1">Net Profit</p><p class="text-3xl font-bold text-green-600">$@((Model.TotalRevenue - Model.TotalPayouts).ToString("N2"))</p></div>
+</div>
+<div class="bg-white rounded-xl border p-6">
+    <h2 class="font-semibold mb-4">Revenue Over Time</h2>
+    <p class="text-gray-500 text-sm">Detailed program analytics dashboard coming soon.</p>
+</div>

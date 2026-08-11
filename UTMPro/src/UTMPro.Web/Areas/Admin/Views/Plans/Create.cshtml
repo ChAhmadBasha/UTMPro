@@ -1,0 +1,73 @@
+@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Create Plan"; }
+<div class="flex items-center gap-3 mb-6"><a href="/admin/plans" class="text-gray-400">&larr;</a><h1 class="text-2xl font-bold">Create Plan</h1></div>
+<form method="post" action="/admin/plans/create" class="max-w-4xl">@Html.AntiForgeryToken()
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl border p-6 space-y-4">
+            <h2 class="font-semibold">Basic Info</h2>
+            <div><label class="block text-sm font-medium mb-1">Plan Name</label><input type="text" name="Name" required class="w-full px-3 py-2 border rounded-lg"></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-sm font-medium mb-1">Price ($)</label><input type="number" name="Price" value="0" step="0.01" class="w-full px-3 py-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium mb-1">Billing Cycle</label><select name="BillingCycle" class="w-full px-3 py-2 border rounded-lg"><option>Monthly</option><option>Yearly</option></select></div>
+            </div>
+            <div><label class="block text-sm font-medium mb-1">Sort Order</label><input type="number" name="SortOrder" value="0" class="w-full px-3 py-2 border rounded-lg"></div>
+            <label class="flex items-center gap-2"><input type="checkbox" name="IsActive" value="true" checked><span class="text-sm">Active</span></label>
+            <label class="flex items-center gap-2"><input type="checkbox" name="IsDefault" value="true"><span class="text-sm">Default Plan for new workspaces</span></label>
+        </div>
+        <div class="bg-white rounded-xl border p-6 space-y-4">
+            <h2 class="font-semibold">Limits</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-xs font-medium mb-1">Links/Month</label><input type="number" name="MaxLinksPerMonth" value="25" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Events/Month</label><input type="number" name="MaxEventsPerMonth" value="1000" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Analytics Days</label><input type="number" name="AnalyticsRetentionDays" value="30" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Max Domains</label><input type="number" name="MaxDomains" value="1" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Max Members</label><input type="number" name="MaxMembers" value="1" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Max Folders</label><input type="number" name="MaxFolders" value="5" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Tags/Link</label><input type="number" name="MaxTagsPerLink" value="3" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Destinations/Link</label><input type="number" name="MaxDestinationsPerLink" value="1" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discount & Trial Section -->
+    <div class="bg-white rounded-xl border p-6 mt-6">
+        <h2 class="font-semibold mb-4 flex items-center gap-2">🏷️ Discount & Sale Offer</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Discount %</label>
+                <input type="number" name="DiscountPercent" value="0" min="0" max="100" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">0 = no discount, 100 = completely free</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Discount Badge</label>
+                <input type="text" name="DiscountBadge" placeholder="e.g. FREE FOR 3 MONTHS" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">Short badge text shown on pricing card</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Trial Days</label>
+                <input type="number" name="TrialDays" value="0" min="0" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">0 = no trial. After trial, downgrades to fallback plan.</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Discount Label (long text)</label>
+                <input type="text" name="DiscountLabel" placeholder="e.g. 🎉 Limited Time: 100% OFF for 3 months!" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">Promotional text shown below pricing</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Fallback Plan ID (after trial ends)</label>
+                <input type="number" name="FallbackPlanId" placeholder="e.g. 1 for Free plan" class="w-full px-3 py-2 border rounded-lg">
+                <p class="text-xs text-gray-400 mt-1">Plan to downgrade to when trial expires</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border p-6 mt-6">
+        <h2 class="font-semibold mb-4">Features</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            @foreach(var (name, field) in new[]{("Password Protection","HasPasswordProtection"),("Link Expiration","HasLinkExpiration"),("Geo Targeting","HasGeoTargeting"),("Device Targeting","HasDeviceTargeting"),("Link Cloaking","HasLinkCloaking"),("A/B Testing","HasABTesting"),("Customer Insights","HasCustomerInsights"),("Webhooks","HasEventWebhooks"),("API Access","HasAPIAccess"),("Weighted URLs","HasWeightedURLs")}) {
+            <label class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg"><input type="checkbox" name="@field" value="true"><span class="text-sm">@name</span></label>}
+        </div>
+    </div>
+    <div class="mt-6"><button type="submit" class="bg-black text-white px-8 py-2.5 rounded-lg font-medium hover:bg-gray-800">Create Plan</button></div>
+</form>

@@ -1,0 +1,21 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "Domain Verification"; ViewData["Description"] = "Step-by-step DNS setup guide for custom domains"; }
+
+<h1 style="font-size:2rem;font-weight:800;">Domain Verification</h1>
+<p>Verify your custom domain to start using it for branded short links.</p>
+
+<h2>Step 1: Add Your Domain</h2>
+<ol><li>Go to <strong>Settings → Domains</strong></li><li>Click <strong>Add Domain</strong></li><li>Enter your domain (e.g., <code>link.yourcompany.com</code>)</li></ol>
+
+<h2>Step 2: Configure DNS</h2>
+<p>Add the following DNS record at your domain registrar:</p>
+<table><tr><th>Type</th><th>Host</th><th>Value</th><th>TTL</th></tr>
+<tr><td>A</td><td>link</td><td><em>(shown in UTMPro)</em></td><td>3600</td></tr></table>
+<p>Or use a CNAME record if preferred:</p>
+<table><tr><th>Type</th><th>Host</th><th>Value</th><th>TTL</th></tr>
+<tr><td>CNAME</td><td>link</td><td><code>go.utmpro.link</code></td><td>3600</td></tr></table>
+
+<h2>Step 3: Wait for Verification</h2>
+<p>UTMPro checks DNS records automatically every hour. Once verified, a green ✅ badge appears next to your domain. DNS propagation typically takes 15 minutes to 48 hours.</p>
+
+<h2>Troubleshooting</h2>
+<ul><li>Make sure there are no conflicting A or CNAME records</li><li>Check that your DNS provider supports the record type you're using</li><li>If using Cloudflare, turn <strong>off</strong> the orange proxy cloud (use DNS only)</li></ul>

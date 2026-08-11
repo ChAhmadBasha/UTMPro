@@ -1,0 +1,176 @@
+@{
+    Layout = null;
+    var plans = ViewBag.Plans as List<Plan>;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - UTMPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .sale-pulse { animation: salePulse 2s ease-in-out infinite; }
+        @@keyframes salePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .strikethrough { text-decoration: line-through; }
+        .gradient-badge { background: linear-gradient(135deg, #10b981, #059669); }
+    </style>
+</head>
+<body class="bg-white">
+    <nav class="border-b">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold">UTMPro</a>
+            <div class="flex items-center gap-4">
+                <a href="/login" class="text-sm text-gray-600 hover:text-black">Sign in</a>
+                <a href="/register" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">Get Started Free</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sale Banner -->
+    @if (plans?.Any(p => p.HasDiscount) == true) {
+    <div class="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 text-center">
+        <p class="text-sm font-medium">
+            🎉 <strong>Limited Time Offer:</strong> Get the Business plan completely FREE for 3 months — no credit card required!
+            <a href="/register" class="ml-2 underline font-bold hover:text-green-100">Claim Now →</a>
+        </p>
+    </div>
+    }
+
+    <section class="max-w-6xl mx-auto py-16 px-6 text-center">
+        <h1 class="text-4xl font-bold mb-4">Simple, transparent pricing</h1>
+        <p class="text-gray-500 mb-12">Start free. Upgrade as you grow.</p>
+
+        @if (plans != null && plans.Count > 0) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-@(Math.Min(4, plans.Count)) gap-6">
+            @foreach (var p in plans) {
+                var isDefault = p.IsDefault;
+                var hasDiscount = p.HasDiscount;
+            <div class="relative border rounded-2xl p-6 text-left transition-all hover:shadow-lg @(isDefault ? "border-black ring-2 ring-black" : "hover:border-gray-400")">
+                <!-- Discount Badge -->
+                @if (hasDiscount && !string.IsNullOrEmpty(p.DiscountBadge)) {
+                <div class="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <span class="sale-pulse gradient-badge text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg whitespace-nowrap">
+                        @p.DiscountBadge
+                    </span>
+                </div>
+                }
+
+                @if (isDefault && !hasDiscount) {
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span class="bg-black text-white px-3 py-1 rounded-full text-xs font-bold">MOST POPULAR</span>
+                </div>
+                }
+
+                <h3 class="font-bold text-lg mt-1">@p.Name</h3>
+
+                <!-- Price Display -->
+                <div class="mt-3">
+                    @if (hasDiscount) {
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-gray-300 strikethrough">$@p.Price</span>
+                            <span class="text-3xl font-bold text-green-600">$@p.DiscountedPrice</span>
+                            <span class="text-sm text-gray-500 font-normal">/mo</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(p.DiscountLabel)) {
+                        <p class="text-xs text-green-600 font-semibold mt-1">@p.DiscountLabel</p>
+                        }
+                        @if (p.TrialDays > 0) {
+                        <p class="text-xs text-gray-400 mt-0.5">Then $@p.Price/mo after @(p.TrialDays / 30) months</p>
+                        }
+                    } else if (p.Price == 0) {
+                        <p class="text-3xl font-bold">$0<span class="text-sm text-gray-500 font-normal">/mo</span></p>
+                        <p class="text-xs text-gray-400 mt-1">Free forever</p>
+                    } else {
+                        <p class="text-3xl font-bold">$@p.Price<span class="text-sm text-gray-500 font-normal">/mo</span></p>
+                    }
+                </div>
+
+                <p class="text-sm text-gray-500 mt-2">@p.MaxLinksPerMonth.ToString("N0") links/month</p>
+
+                <ul class="mt-4 space-y-2">
+                    <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>@p.MaxDomains domain@(p.MaxDomains > 1 ? "s" : "")</li>
+                    <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>@(p.AnalyticsRetentionDays >= 365 ? $"{p.AnalyticsRetentionDays/365}-year" : $"{p.AnalyticsRetentionDays}-day") analytics</li>
+                    <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>@p.MaxMembers member@(p.MaxMembers > 1 ? "s" : "")</li>
+                    @if (p.HasPasswordProtection) { <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>Password protection</li> }
+                    @if (p.HasLinkExpiration) { <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>Link expiration</li> }
+                    @if (p.HasABTesting) { <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>A/B Testing</li> }
+                    @if (p.HasAPIAccess) { <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>API access</li> }
+                    @if (p.HasGeoTargeting) { <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>Geo targeting</li> }
+                    @if (p.HasCustomerInsights) { <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>Customer insights</li> }
+                    @if (p.HasEventWebhooks) { <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>Webhooks</li> }
+                </ul>
+
+                <a href="/register" class="block mt-6 text-center py-2.5 rounded-lg text-sm font-medium transition-all @(isDefault ? "bg-black text-white hover:bg-gray-800" : hasDiscount ? "bg-green-600 text-white hover:bg-green-700" : "border border-gray-300 text-gray-700 hover:bg-gray-50")">
+                    @if (hasDiscount && p.TrialDays > 0) {
+                        @:Start Free Trial
+                    } else if (p.Price == 0) {
+                        @:Get Started Free
+                    } else {
+                        @:Get Started
+                    }
+                </a>
+            </div>
+            }
+        </div>
+        } else {
+        <!-- Static fallback if no plans loaded -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach (var (name, price, links, features) in new[] {
+                ("Free", "$0", "25 links/mo", new[] { "1 domain", "30-day analytics", "1 member" }),
+                ("Pro", "$30", "1K links/mo", new[] { "3 domains", "1-year analytics", "5 members", "Password protection", "Link expiration" }),
+                ("Business", "$90", "10K links/mo", new[] { "10 domains", "3-year analytics", "15 members", "A/B Testing", "API access" }),
+                ("Advanced", "$300", "50K links/mo", new[] { "50 domains", "5-year analytics", "50 members", "Everything in Business", "Priority support" })
+            }) {
+            <div class="border rounded-2xl p-6 text-left @(name == "Business" ? "border-black ring-2 ring-black" : "")">
+                <h3 class="font-bold text-lg">@name</h3>
+                <p class="text-3xl font-bold mt-2">@price<span class="text-sm text-gray-500 font-normal">/mo</span></p>
+                <p class="text-sm text-gray-500 mt-1">@links</p>
+                <ul class="mt-4 space-y-2">
+                    @foreach (var f in features) { <li class="text-sm text-gray-600 flex items-center gap-2"><span class="text-green-500">✓</span>@f</li> }
+                </ul>
+                <a href="/register" class="block mt-6 text-center py-2 rounded-lg text-sm font-medium @(name == "Business" ? "bg-black text-white" : "border border-gray-300 text-gray-700 hover:bg-gray-50")">Get Started</a>
+            </div>
+            }
+        </div>
+        }
+
+        <!-- Trust signals -->
+        <div class="mt-16 text-center">
+            <p class="text-sm text-gray-400 mb-4">No credit card required · Free plan available · Cancel anytime</p>
+            <div class="flex justify-center gap-8 text-gray-400 text-sm">
+                <span>🔒 SSL Encrypted</span>
+                <span>📊 Real-time Analytics</span>
+                <span>🌍 Global CDN</span>
+                <span>💬 Support Included</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="max-w-3xl mx-auto py-16 px-6">
+        <h2 class="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+        <div class="space-y-4">
+            <div class="border rounded-xl p-5">
+                <h3 class="font-semibold">What happens after the free trial?</h3>
+                <p class="text-sm text-gray-500 mt-2">After your 3-month free trial of the Business plan, your workspace will automatically switch to the Free plan. You won't lose any data — you'll just have the Free plan limits. You can upgrade anytime.</p>
+            </div>
+            <div class="border rounded-xl p-5">
+                <h3 class="font-semibold">Do I need a credit card to start?</h3>
+                <p class="text-sm text-gray-500 mt-2">No! The free trial doesn't require a credit card. Just sign up and start using UTMPro immediately.</p>
+            </div>
+            <div class="border rounded-xl p-5">
+                <h3 class="font-semibold">Can I change my plan later?</h3>
+                <p class="text-sm text-gray-500 mt-2">Absolutely. You can upgrade or downgrade your plan at any time from your workspace settings.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t py-8 text-center text-sm text-gray-400">
+        <p>&copy; @DateTime.UtcNow.Year UTMPro. All rights reserved.</p>
+    </footer>
+</body>
+</html>

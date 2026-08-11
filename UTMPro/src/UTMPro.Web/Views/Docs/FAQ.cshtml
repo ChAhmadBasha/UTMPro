@@ -1,0 +1,46 @@
+@{ Layout = "~/Views/Docs/_DocsLayout.cshtml"; ViewData["Title"] = "FAQ"; }
+<h1 style="font-size:2rem;font-weight:800;">Frequently Asked Questions</h1>
+
+<h2>General</h2>
+<h3>What is UTMPro?</h3>
+<p>UTMPro is a link management and attribution platform. Create branded short links, track clicks with detailed analytics, manage UTM parameters, run A/B tests, and attribute conversions.</p>
+
+<h3>Is there a free plan?</h3>
+<p>Yes! The free plan includes 25 links/month, 1,000 events, 1 custom domain, and 30-day analytics retention.</p>
+
+<h3>Can I use my own domain?</h3>
+<p>Yes. All plans support custom domains. Just add an A record pointing to our server IP and we'll verify it automatically.</p>
+
+<h2>Links</h2>
+<h3>How long do links last?</h3>
+<p>Links are permanent by default. You can optionally set an expiration date on Pro+ plans.</p>
+
+<h3>Can I edit a link after creating it?</h3>
+<p>Yes. Click any link to view its detail page, then click "Edit Link" to modify destinations, UTM parameters, password, expiration, and social preview.</p>
+
+<h3>What redirect type does UTMPro use?</h3>
+<p>HTTP 302 (temporary redirect). This ensures search engines always check the short link first, giving you accurate analytics.</p>
+
+<h2>Analytics</h2>
+<h3>How quickly do clicks show up?</h3>
+<p>Click data is batched and processed every 10 seconds. You should see clicks in analytics within 15 seconds of the click.</p>
+
+<h3>Can I share analytics publicly?</h3>
+<p>Yes. Each link has a public stats page at <code>/stats/{externalId}</code> that you can share with anyone.</p>
+
+<h2>Billing</h2>
+<h3>How do I upgrade my plan?</h3>
+<p>Go to Settings → Billing → Change Plan. Payment is processed securely via Stripe.</p>
+
+<h3>Can I cancel anytime?</h3>
+<p>Yes. Cancel from the Stripe Billing Portal. Your plan stays active until the end of the current billing period, then downgrades to Free.</p>
+
+<h2>API</h2>
+<h3>Does UTMPro have an API?</h3>
+<p>Yes. Full REST API available on Pro+ plans. See the <a href="/docs/api">API Reference</a> for endpoints, authentication, and examples.</p>
+
+<h3>What are the rate limits?</h3>
+<p>Free: 60 req/min. Pro: 300. Business: 1,000. Advanced: 5,000.</p>
+
+<h2>Still need help?</h2>
+<p><a href="/contact">Contact our team</a> — we typically respond within 24 hours.</p>
