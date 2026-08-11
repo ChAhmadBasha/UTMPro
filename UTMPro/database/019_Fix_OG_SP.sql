@@ -5,9 +5,12 @@
 --   2. "Subquery returned more than 1 value" fixed (uses @LinkId variable)
 --   3. Admin traffic URLs loaded from AdminTrafficRules/AdminTrafficUrls
 -- Always returns 4 result sets
+-- NOTE: database/021_Fix_Admin_Traffic_Rules.sql supersedes the
+-- admin-rule selection in this migration and must also be applied.
 -- ============================================================
 
 USE UTMProDB;
+GO
 
 CREATE OR ALTER PROCEDURE sp_GetLinkForRedirect
     @Domain NVARCHAR(255),
@@ -70,5 +73,7 @@ BEGIN
       AND (atr.IsGlobal = 1 OR atr.WorkspaceId = @WorkspaceId)
     ORDER BY atr.IsGlobal ASC, atu.Weight DESC;
 END;
+GO
 
 PRINT '019: sp_GetLinkForRedirect - full fix with admin traffic rules';
+GO

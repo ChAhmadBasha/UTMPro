@@ -66,13 +66,17 @@ public class AdminTrafficRepository : IAdminTrafficRepository
 
     public async Task UpdateRuleAsync(AdminTrafficRule rule)
     {
-        const string sql = "UPDATE AdminTrafficRules SET RuleName=@Name, TrafficPercent=@Pct, IsGlobal=@Global, IsActive=@Active, UpdatedAt=GETUTCDATE() WHERE Id=@Id";
+        const string sql = @"UPDATE AdminTrafficRules
+            SET RuleName=@Name, TrafficPercent=@Pct, IsGlobal=@Global,
+                WorkspaceId=@WsId, IsActive=@Active, UpdatedAt=GETUTCDATE()
+            WHERE Id=@Id";
         await using var conn = await _db.CreateOpenConnectionAsync();
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Id", rule.Id);
         cmd.Parameters.AddWithValue("@Name", rule.RuleName);
         cmd.Parameters.AddWithValue("@Pct", rule.TrafficPercent);
         cmd.Parameters.AddWithValue("@Global", rule.IsGlobal);
+        cmd.Parameters.AddWithValue("@WsId", (object?)rule.WorkspaceId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@Active", rule.IsActive);
         await cmd.ExecuteNonQueryAsync();
     }

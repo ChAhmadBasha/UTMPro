@@ -1,21 +1,76 @@
 @model AdminTrafficRule
-@{ Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "Edit " + Model.RuleName; }
-<div class="flex items-center gap-3 mb-6"><a href="/admin/traffic-rules" class="text-gray-400">&larr;</a><h1 class="text-2xl font-bold">Edit: @Model.RuleName</h1></div>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Edit " + Model.RuleName;
+    var workspaces = ViewBag.Workspaces as List<Workspace> ?? new List<Workspace>();
+}
+<div class="flex items-center gap-3 mb-6">
+    <a href="/admin/traffic-rules" class="text-gray-400">&larr;</a>
+    <h1 class="text-2xl font-bold">Edit: @Model.RuleName</h1>
+</div>
 <div class="bg-white rounded-xl border p-6 max-w-2xl">
-<form method="post" action="/admin/traffic-rules/@Model.Id">@Html.AntiForgeryToken()
-    <div class="mb-4"><label class="block text-sm font-medium mb-2">Rule Name</label><input type="text" name="ruleName" value="@Model.RuleName" required class="w-full px-3 py-2 border rounded-lg"></div>
-    <div class="mb-4"><label class="block text-sm font-medium mb-2">Traffic %</label><input type="number" name="trafficPercent" value="@Model.TrafficPercent" step="0.01" class="w-full px-3 py-2 border rounded-lg"></div>
+<form method="post" action="/admin/traffic-rules/@Model.Id">
+    @Html.AntiForgeryToken()
+    <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Rule Name</label>
+        <input type="text" name="ruleName" value="@Model.RuleName" maxlength="100" required class="w-full px-3 py-2 border rounded-lg">
+    </div>
+    <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Traffic %</label>
+        <input type="number" name="trafficPercent" value="@Model.TrafficPercent" step="0.01" min="0.01" max="100" required class="w-full px-3 py-2 border rounded-lg">
+        <p class="text-xs text-gray-500 mt-1">Applied to overall eligible traffic before targeting and normal destination selection.</p>
+    </div>
     <div class="mb-4 flex gap-6">
-        <label class="flex items-center gap-2"><input type="checkbox" name="isGlobal" value="true" @(Model.IsGlobal ? "checked" : "")><span class="text-sm">Global</span></label>
-        <label class="flex items-center gap-2"><input type="checkbox" name="isActive" value="true" @(Model.IsActive ? "checked" : "")><span class="text-sm">Active</span></label>
+        <label class="flex items-center gap-2">
+            <input id="isGlobal" type="checkbox" name="isGlobal" value="true" @(Model.IsGlobal ? "checked" : "") onchange="toggleWorkspace()">
+            <span class="text-sm">Global</span>
+        </label>
+        <label class="flex items-center gap-2">
+            <input type="checkbox" name="isActive" value="true" @(Model.IsActive ? "checked" : "")>
+            <span class="text-sm">Active</span>
+        </label>
     </div>
-    <div class="mb-4"><label class="block text-sm font-medium mb-2">URLs</label>
-    <div id="urlRows" class="space-y-2">
-        @foreach (var u in Model.Urls) {
-        <div class="flex gap-2"><input type="url" name="urls" value="@u.Url" class="flex-1 px-3 py-2 border rounded-lg text-sm"><input type="number" name="weights" value="@u.Weight" class="w-20 px-2 py-2 border rounded-lg text-sm"><input type="text" name="labels" value="@u.Label" class="w-32 px-2 py-2 border rounded-lg text-sm"><button type="button" onclick="this.parentElement.remove()" class="text-red-500">✕</button></div>
-        }
+    <div id="workspaceField" class="mb-4">
+        <label class="block text-sm font-medium mb-2">Workspace</label>
+        <select id="workspaceId" name="workspaceId" class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Select a workspace</option>
+            @foreach (var workspace in workspaces)
+            {
+                <option value="@workspace.Id" selected="@(workspace.Id == Model.WorkspaceId)">@workspace.Name (@workspace.Slug)</option>
+            }
+        </select>
     </div>
-    <button type="button" onclick="addUrlRow()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add URL</button></div>
+    <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">URLs</label>
+        <div id="urlRows" class="space-y-2">
+            @foreach (var url in Model.Urls)
+            {
+                <div class="flex gap-2">
+                    <input type="url" name="urls" value="@url.Url" required class="flex-1 px-3 py-2 border rounded-lg text-sm">
+                    <input type="number" name="weights" value="@url.Weight" min="1" max="10000" class="w-20 px-2 py-2 border rounded-lg text-sm">
+                    <input type="text" name="labels" value="@url.Label" maxlength="100" class="w-32 px-2 py-2 border rounded-lg text-sm">
+                    <button type="button" onclick="this.parentElement.remove()" class="text-red-500">&#10005;</button>
+                </div>
+            }
+        </div>
+        <button type="button" onclick="addUrlRow()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add URL</button>
+    </div>
     <button type="submit" class="bg-black text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800">Save Changes</button>
-</form></div>
-<script>function addUrlRow(){const r=document.createElement('div');r.className='flex gap-2';r.innerHTML='<input type="url" name="urls" required class="flex-1 px-3 py-2 border rounded-lg text-sm"><input type="number" name="weights" value="100" class="w-20 px-2 py-2 border rounded-lg text-sm"><input type="text" name="labels" class="w-32 px-2 py-2 border rounded-lg text-sm"><button type="button" onclick="this.parentElement.remove()" class="text-red-500">✕</button>';document.getElementById('urlRows').appendChild(r);}</script>
+</form>
+</div>
+<script>
+function toggleWorkspace() {
+    const isGlobal = document.getElementById('isGlobal').checked;
+    const select = document.getElementById('workspaceId');
+    document.getElementById('workspaceField').classList.toggle('hidden', isGlobal);
+    select.required = !isGlobal;
+    select.disabled = isGlobal;
+}
+function addUrlRow() {
+    const row = document.createElement('div');
+    row.className = 'flex gap-2';
+    row.innerHTML = '<input type="url" name="urls" required class="flex-1 px-3 py-2 border rounded-lg text-sm"><input type="number" name="weights" value="100" min="1" max="10000" class="w-20 px-2 py-2 border rounded-lg text-sm"><input type="text" name="labels" maxlength="100" class="w-32 px-2 py-2 border rounded-lg text-sm"><button type="button" onclick="this.parentElement.remove()" class="text-red-500">&#10005;</button>';
+    document.getElementById('urlRows').appendChild(row);
+}
+toggleWorkspace();
+</script>

@@ -69,19 +69,30 @@ public static class RedirectHandler
                 }
             }
 
-            // Get destination URL
-            string destUrl;
-            if (link.UserDestinations.Count > 0)
-                destUrl = selector.Pick(link.UserDestinations);
-            else
-                destUrl = link.WsDefaultRedirectUrl ?? "https://utmpro.link";
+            // Use the same decision path as a normal 302. Previously this
+            // branch always selected a user URL, which silently bypassed every
+            // AdminTrafficRules rule on links with custom social previews.
+            var selection = SelectDestination(link, selector, geo, userAgentLower, ip)
+                ?? new RedirectSelection(
+                    link.WsDefaultRedirectUrl ?? "https://utmpro.link",
+                    false,
+                    null);
 
             var imageUrl = ResolveAbsoluteUrl(link.CustomImageUrl, ctx);
 
-            await ServeOGPageAsync(ctx, link, destUrl, imageUrl, isBot);
+            await ServeOGPageAsync(ctx, link, selection.Url, imageUrl, isBot);
 
             if (!isBot)
-                EnqueueClick(queue, link, destUrl, ip, ctx, false);
+            {
+                EnqueueClick(
+                    queue,
+                    link,
+                    selection.Url,
+                    ip,
+                    ctx,
+                    selection.IsAdminRedirect,
+                    selection.AdminTrafficUrlId);
+            }
 
             return;
         }
@@ -106,60 +117,22 @@ public static class RedirectHandler
             }
         }
 
-        // Check targeting rules
-        foreach (var rule in link.TargetingRules)
+        var selection = SelectDestination(link, selector, geo, userAgentLower, ip);
+        if (selection == null)
         {
-            string? targetUrl = null;
-
-            if (rule.RuleType == "iOS" && (userAgentLower.Contains("iphone") || userAgentLower.Contains("ipad")))
-                targetUrl = rule.RedirectUrl;
-            else if (rule.RuleType == "Android" && userAgentLower.Contains("android"))
-                targetUrl = rule.RedirectUrl;
-            else if (rule.RuleType == "Geo")
-            {
-                var geoResult = geo.Lookup(ip);
-                if (geoResult.CountryCode == rule.RuleValue)
-                    targetUrl = rule.RedirectUrl;
-            }
-
-            if (!string.IsNullOrEmpty(targetUrl))
-            {
-                Redirect(ctx, targetUrl);
-                EnqueueClick(queue, link, targetUrl, ip, ctx, false);
-                return;
-            }
+            ctx.Response.StatusCode = 404;
+            return;
         }
 
-        // Weighted URL Selection (with admin traffic injection)
-        bool isAdminRedirect = false;
-        string? selectedUrl = null;
-
-        var adminPercent = link.EffectiveAdminPercent;
-        var adminUrls = link.EffectiveAdminUrls;
-        if (adminPercent > 0 && adminUrls.Count > 0)
-        {
-            // Roll 0-9999, threshold = percent * 100 (e.g., 20% → 2000)
-            var roll = Random.Shared.Next(0, 10000);
-            var threshold = (int)(adminPercent * 100);
-            if (roll < threshold)
-            {
-                selectedUrl = selector.Pick(adminUrls);
-                isAdminRedirect = true;
-            }
-        }
-
-        if (selectedUrl == null)
-        {
-            if (link.UserDestinations.Count == 0)
-            {
-                ctx.Response.StatusCode = 404;
-                return;
-            }
-            selectedUrl = selector.Pick(link.UserDestinations);
-        }
-
-        Redirect(ctx, selectedUrl!);
-        EnqueueClick(queue, link, selectedUrl!, ip, ctx, isAdminRedirect);
+        Redirect(ctx, selection.Url);
+        EnqueueClick(
+            queue,
+            link,
+            selection.Url,
+            ip,
+            ctx,
+            selection.IsAdminRedirect,
+            selection.AdminTrafficUrlId);
     }
 
     public static async Task HandlePasswordPageAsync(string slug, HttpContext ctx)
@@ -204,6 +177,68 @@ public static class RedirectHandler
     // HELPERS
     // ═══════════════════════════════════════════════════
 
+    private static RedirectSelection? SelectDestination(
+        LinkCacheModel link,
+        WeightedUrlSelector selector,
+        GeoIpService geo,
+        string userAgentLower,
+        string ip)
+    {
+        // Admin injection is evaluated before targeting/user selection so the
+        // configured percentage applies to overall eligible link traffic.
+        if (link.IsAdminTrafficReady)
+        {
+            // The database stores two decimal places. A 0..9999 roll therefore
+            // gives exact basis-point precision (20.00% => 2,000 outcomes).
+            var roll = Random.Shared.Next(0, 10_000);
+            if (roll < link.EffectiveAdminPercent * 100m)
+            {
+                var adminDestination = selector.PickDestination(link.EffectiveAdminUrls);
+                if (adminDestination != null)
+                {
+                    return new RedirectSelection(
+                        adminDestination.Url,
+                        true,
+                        adminDestination.AdminTrafficUrlId);
+                }
+            }
+        }
+
+        foreach (var rule in link.TargetingRules)
+        {
+            string? targetUrl = null;
+
+            if (rule.RuleType == "iOS"
+                && (userAgentLower.Contains("iphone") || userAgentLower.Contains("ipad")))
+            {
+                targetUrl = rule.RedirectUrl;
+            }
+            else if (rule.RuleType == "Android" && userAgentLower.Contains("android"))
+            {
+                targetUrl = rule.RedirectUrl;
+            }
+            else if (rule.RuleType == "Geo")
+            {
+                var geoResult = geo.Lookup(ip);
+                if (geoResult.CountryCode == rule.RuleValue)
+                    targetUrl = rule.RedirectUrl;
+            }
+
+            if (!string.IsNullOrEmpty(targetUrl))
+                return new RedirectSelection(targetUrl, false, null);
+        }
+
+        var userDestination = selector.PickDestination(link.UserDestinations);
+        return userDestination == null
+            ? null
+            : new RedirectSelection(userDestination.Url, false, null);
+    }
+
+    private sealed record RedirectSelection(
+        string Url,
+        bool IsAdminRedirect,
+        long? AdminTrafficUrlId);
+
     private static void Redirect(HttpContext ctx, string url)
     {
         ctx.Response.Headers["X-Redirect-By"] = "UTMPro";
@@ -212,15 +247,24 @@ public static class RedirectHandler
     }
 
     private static void EnqueueClick(
-        ClickQueueService queue, LinkCacheModel link, string destUrl,
-        string ip, HttpContext ctx, bool isAdminRedirect)
+        ClickQueueService queue,
+        LinkCacheModel link,
+        string destUrl,
+        string ip,
+        HttpContext ctx,
+        bool isAdminRedirect,
+        long? adminTrafficUrlId)
     {
-        _ = Task.Run(() => queue.Enqueue(new ClickQueueItem
+        // ConcurrentQueue.Enqueue is already non-blocking. Capture request
+        // values synchronously instead of accessing HttpContext from Task.Run
+        // after the request may have completed.
+        queue.Enqueue(new ClickQueueItem
         {
             LinkId = link.Id,
             WorkspaceId = link.WorkspaceId,
             DestinationUrl = destUrl,
             IsAdminRedirect = isAdminRedirect,
+            AdminTrafficUrlId = adminTrafficUrlId,
             IPAddress = ip,
             UserAgent = ctx.Request.Headers.UserAgent.ToString(),
             Referer = ctx.Request.Headers.Referer.ToString(),
@@ -231,7 +275,7 @@ public static class RedirectHandler
             UTMCampaign = ctx.Request.Query["utm_campaign"],
             UTMTerm = ctx.Request.Query["utm_term"],
             UTMContent = ctx.Request.Query["utm_content"],
-        }));
+        });
     }
 
     private static string GetClientIp(HttpContext ctx)
@@ -329,7 +373,9 @@ public static class RedirectHandler
 
         ctx.Response.StatusCode = 200;
         ctx.Response.ContentType = "text/html; charset=utf-8";
-        ctx.Response.Headers["Cache-Control"] = "public, max-age=300";
+        // The HTML contains the selected destination. Caching it would pin all
+        // visitors to whichever side of the traffic split was selected first.
+        ctx.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
 
         var sb = new System.Text.StringBuilder(3000);
         sb.Append("<!DOCTYPE html>");

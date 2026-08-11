@@ -20,45 +20,95 @@ public class LinkCacheModel
     public string RedirectMode { get; set; } = "Single";
     public bool ABTestEnabled { get; set; }
     public DateTime? ABTestEndsAt { get; set; }
+
     // Custom OG tags for social media preview
     public string? CustomTitle { get; set; }
     public string? CustomDescription { get; set; }
     public string? CustomImageUrl { get; set; }
-    public bool HasCustomOG => !string.IsNullOrEmpty(CustomTitle) || !string.IsNullOrEmpty(CustomImageUrl);
+    public bool HasCustomOG =>
+        !string.IsNullOrEmpty(CustomTitle) || !string.IsNullOrEmpty(CustomImageUrl);
+
     public List<DestinationModel> UserDestinations { get; set; } = new();
     public List<DestinationModel> AdminDestinations { get; set; } = new();
     public List<TargetingModel> TargetingRules { get; set; } = new();
 
-    // Admin traffic rule (from AdminTrafficRules table — global or workspace-level)
+    // The one AdminTrafficRules row selected by sp_GetLinkForRedirect.
+    // Workspace-scoped rules take precedence over global rules.
+    public long? AdminRuleId { get; set; }
+    public string? AdminRuleName { get; set; }
+    public bool? AdminRuleIsGlobal { get; set; }
     public decimal AdminRuleTrafficPercent { get; set; }
     public List<DestinationModel> AdminRuleUrls { get; set; } = new();
 
-    public decimal EffectiveAdminPercent
-    {
-        get
-        {
-            // Priority 1: Per-link setting
-            if (LinkAdminTrafficEnabled.HasValue)
-                return LinkAdminTrafficEnabled.Value ? (LinkAdminTrafficPercent ?? 0) : 0;
+    public decimal EffectiveAdminPercent => ResolveAdminTraffic().Percent;
 
-            // Priority 2: Per-workspace setting
-            if (WsAdminTrafficEnabled)
-                return WsAdminTrafficPercent;
-
-            // Priority 3: Admin traffic rule (from AdminTrafficRules table)
-            if (AdminRuleTrafficPercent > 0 && AdminRuleUrls.Count > 0)
-                return AdminRuleTrafficPercent;
-
-            return 0;
-        }
-    }
+    public string EffectiveAdminSource => ResolveAdminTraffic().Source;
 
     /// <summary>
-    /// Gets the effective list of admin redirect URLs.
-    /// Priority: per-link AdminDestinations > AdminTrafficRule URLs
+    /// Per-link admin destinations take precedence. The selected admin rule's
+    /// URLs are the fallback destination pool for workspace and global rules.
     /// </summary>
     public List<DestinationModel> EffectiveAdminUrls =>
         AdminDestinations.Count > 0 ? AdminDestinations : AdminRuleUrls;
+
+    public bool IsAdminTrafficReady =>
+        EffectiveAdminPercent > 0 && EffectiveAdminUrls.Count > 0;
+
+    public string? AdminTrafficConfigurationIssue
+    {
+        get
+        {
+            if (EffectiveAdminPercent <= 0)
+                return "The effective traffic percentage is 0 or traffic is disabled.";
+            if (EffectiveAdminUrls.Count == 0)
+                return "No active admin destination URL is available.";
+            return null;
+        }
+    }
+
+    private (decimal Percent, string Source) ResolveAdminTraffic()
+    {
+        // A per-link false is an explicit opt-out and must block every lower
+        // priority setting, including a global admin rule.
+        if (LinkAdminTrafficEnabled == false)
+            return (0, "link-disabled");
+
+        if (LinkAdminTrafficEnabled == true)
+        {
+            if (LinkAdminTrafficPercent.HasValue)
+                return (ClampPercent(LinkAdminTrafficPercent.Value), "link");
+
+            // A link can opt in while inheriting the next configured level.
+            if (WsAdminTrafficEnabled)
+                return (ClampPercent(WsAdminTrafficPercent), "workspace");
+
+            if (AdminRuleId.HasValue)
+                return (ClampPercent(AdminRuleTrafficPercent), RuleSource);
+
+            return (0, "link");
+        }
+
+        // Workspace AdminTrafficEnabled is not nullable and defaults to false.
+        // Therefore false means "no workspace override"; true (including a 0%
+        // value) is the explicit workspace setting.
+        if (WsAdminTrafficEnabled)
+            return (ClampPercent(WsAdminTrafficPercent), "workspace");
+
+        if (AdminRuleId.HasValue)
+            return (ClampPercent(AdminRuleTrafficPercent), RuleSource);
+
+        return (0, "none");
+    }
+
+    private string RuleSource => AdminRuleIsGlobal switch
+    {
+        true => "global-rule",
+        false => "workspace-rule",
+        null => "admin-rule"
+    };
+
+    private static decimal ClampPercent(decimal value) =>
+        Math.Min(100m, Math.Max(0m, value));
 }
 
 public class DestinationModel
@@ -67,6 +117,10 @@ public class DestinationModel
     public string Url { get; set; } = string.Empty;
     public int Weight { get; set; }
     public bool IsAdminUrl { get; set; }
+
+    // Set only for destinations loaded from AdminTrafficUrls. This is carried
+    // through the click queue so the rule URL's ClickCount can be updated.
+    public long? AdminTrafficUrlId { get; set; }
 }
 
 public class TargetingModel
@@ -82,6 +136,7 @@ public class ClickQueueItem
     public long WorkspaceId { get; set; }
     public string? DestinationUrl { get; set; }
     public bool IsAdminRedirect { get; set; }
+    public long? AdminTrafficUrlId { get; set; }
     public string? IPAddress { get; set; }
     public string? UserAgent { get; set; }
     public string? Referer { get; set; }
