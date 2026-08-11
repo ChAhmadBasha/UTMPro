@@ -501,7 +501,7 @@ Configurable per plan:
 
 #### 6.4.2 Domain Verification
 
-- User adds domain, gets DNS instructions (A record → `ServerIP` or CNAME)
+- User adds domain, gets DNS instructions (CNAME → `CustomDomainTarget`)
 - `DomainVerificationService` checks DNS every hour
 - Once verified, domain becomes usable for links
 
@@ -1553,7 +1553,7 @@ UTMPro/
     "AppUrl": "https://app.utmpro.link",
     "AdminUrl": "https://admin.utmpro.link",
     "RedirectEngineUrl": "https://go.utmpro.link",
-    "ServerIP": "76.76.21.21"
+    "CustomDomainTarget": "links.utmpro.link"
   },
   "SMTP": {
     "Host": "smtp.hostinger.com",
@@ -1612,7 +1612,7 @@ UTMPro/
 | `AllowPublicRegistration` | `true` | Allow open registration |
 | `MaxWorkspacesPerUser` | `5` | Max workspaces per user |
 | `AllowUserCustomDomains` | `true` | Allow custom domains |
-| `ServerIP` | `76.76.21.21` | Server IP for DNS instructions |
+| `CustomDomainTarget` | `links.utmpro.link` | CNAME target hostname shown in DNS instructions (never the origin IP) |
 | `GeoLite2DbPath` | `C:\GeoLite2\...` | MaxMind database path |
 | `EnableWelcomeEmail` | `true` | Send welcome email after verification |
 | `SiteUrl` | `https://utmpro.link` | Main site URL |

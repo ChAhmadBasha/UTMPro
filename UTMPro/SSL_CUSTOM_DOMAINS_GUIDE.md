@@ -119,7 +119,8 @@ But this **doesn't work for completely different domains** (e.g., `link.client.c
 If you put Cloudflare in front of your server:
 
 1. Add each custom domain to Cloudflare
-2. Set DNS A record → your server IP
+2. Create a CNAME record pointing to the target hostname shown in the app
+   (e.g. `links.utmpro.link`)
 3. Enable Cloudflare proxy (orange cloud)
 4. Cloudflare handles SSL automatically — no certificate needed on your server
 5. Set SSL mode to "Full" in Cloudflare

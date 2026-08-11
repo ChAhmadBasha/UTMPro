@@ -11,11 +11,12 @@ public class DomainsPageController : BaseWorkspaceController
     private readonly IWorkspaceRepository _wsRepo;
     private readonly IPlanRepository _planRepo;
     private readonly ISystemSettingsRepository _settingsRepo;
+    private readonly IConfiguration _config;
 
     public DomainsPageController(IDomainRepository domainRepo, IWorkspaceRepository wsRepo,
-        IPlanRepository planRepo, ISystemSettingsRepository settingsRepo)
+        IPlanRepository planRepo, ISystemSettingsRepository settingsRepo, IConfiguration config)
     {
-        _domainRepo = domainRepo; _wsRepo = wsRepo; _planRepo = planRepo; _settingsRepo = settingsRepo;
+        _domainRepo = domainRepo; _wsRepo = wsRepo; _planRepo = planRepo; _settingsRepo = settingsRepo; _config = config;
     }
 
     [HttpGet("")]
@@ -26,7 +27,7 @@ public class DomainsPageController : BaseWorkspaceController
         var plan = await _planRepo.GetByIdAsync(CurrentWorkspace.PlanId);
         ViewBag.MaxDomains = plan?.MaxDomains ?? 1;
         ViewBag.CustomDomainCount = await _domainRepo.GetWorkspaceDomainCountAsync(CurrentWorkspace.Id);
-        ViewBag.ServerIP = await _settingsRepo.GetValueAsync("ServerIP") ?? "76.76.21.21";
+        ViewBag.CustomDomainTarget = await GetCustomDomainTargetAsync();
         return View("~/Views/DomainsPage/Index.cshtml", domains);
     }
 
@@ -52,8 +53,8 @@ public class DomainsPageController : BaseWorkspaceController
             return Redirect($"/{workspaceSlug}/links/domains");
         }
 
-        // Get server IP from settings (not hardcoded!)
-        var serverIP = await _settingsRepo.GetValueAsync("ServerIP") ?? "76.76.21.21";
+        // CNAME target hostname from application settings (never an origin IP)
+        var target = await GetCustomDomainTargetAsync();
 
         await _domainRepo.CreateAsync(new Domain
         {
@@ -61,12 +62,26 @@ public class DomainsPageController : BaseWorkspaceController
             DomainName = domain.ToLower().Trim(),
             IsSystemDomain = false,
             IsVerified = false,
-            DNSValue = serverIP,
+            DNSType = "CNAME",
+            DNSValue = target,
             CreatedBy = CurrentUserId
         });
 
-        TempData["Success"] = $"Domain added. Set your DNS A record to point to {serverIP}.";
+        TempData["Success"] = $"Domain added. Create a CNAME record pointing to {target}.";
         return Redirect($"/{workspaceSlug}/links/domains");
+    }
+
+    // Reads the CNAME target hostname from SystemSettings, falling back to
+    // app configuration (App:CustomDomainTarget) and finally a sensible default.
+    // The origin server IP is never surfaced to users.
+    private async Task<string> GetCustomDomainTargetAsync()
+    {
+        var value = await _settingsRepo.GetValueAsync("CustomDomainTarget");
+        if (string.IsNullOrWhiteSpace(value))
+            value = _config["App:CustomDomainTarget"];
+        if (string.IsNullOrWhiteSpace(value))
+            value = "links.utmpro.link";
+        return value.Trim().TrimStart('.').Trim();
     }
 
     [HttpPost("{id}/edit")]

@@ -6,13 +6,13 @@
     <li>Go to <strong>Links → Domains</strong> in your workspace</li>
     <li>Click <strong>+ Add Domain</strong></li>
     <li>Enter your domain (e.g., <code>links.yourbrand.com</code>)</li>
-    <li>Add an A record in your DNS pointing to the server IP shown</li>
+    <li>Create a CNAME record in your DNS pointing to the target hostname shown</li>
     <li>Wait for verification (automatic, checked every 5 minutes)</li>
 </ol>
 <h2>DNS Configuration</h2>
-<pre>Type:  A
+<pre>Type:  CNAME
 Name:  links (or your subdomain)
-Value: [Your Server IP - shown in the add domain dialog]
+Value: [CNAME target hostname - shown in the add domain dialog]
 TTL:   300</pre>
 <h2>Domain Limits by Plan</h2>
 <table><tr><th>Plan</th><th>Custom Domains</th></tr>
