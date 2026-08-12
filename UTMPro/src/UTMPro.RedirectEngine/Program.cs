@@ -103,8 +103,16 @@ async Task<IResult> TrafficDiagnostics(
                 d.Url,
                 d.Weight
             }).ToList(),
+            configured = link.IsAdminTrafficConfigured,
             ready = link.IsAdminTrafficReady,
             issue = link.AdminTrafficConfigurationIssue
+        },
+        warmup = new
+        {
+            minClicks = link.AdminTrafficMinClicks,
+            originalClicks = link.TotalClicks,
+            unlocked = link.HasReachedAdminTrafficThreshold,
+            remaining = Math.Max(0, link.AdminTrafficMinClicks - link.TotalClicks)
         },
         overrides = new
         {

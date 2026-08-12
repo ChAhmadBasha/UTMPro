@@ -18,16 +18,27 @@ public class SystemSettingsRepository : ISystemSettingsRepository
         return result as string;
     }
 
-    public async Task SetValueAsync(string key, string value, long? updatedBy = null)
+    public async Task SetValueAsync(string key, string value, long? updatedBy = null, string? description = null)
     {
         const string sql = @"
-            UPDATE SystemSettings SET SettingValue = @Value, UpdatedAt = GETUTCDATE(), UpdatedBy = @UpdatedBy
-            WHERE SettingKey = @Key";
+            MERGE SystemSettings AS target
+            USING (SELECT @Key AS SettingKey) AS source
+            ON target.SettingKey = source.SettingKey
+            WHEN MATCHED THEN
+                UPDATE SET
+                    SettingValue = @Value,
+                    UpdatedAt = GETUTCDATE(),
+                    UpdatedBy = @UpdatedBy,
+                    Description = COALESCE(@Description, target.Description)
+            WHEN NOT MATCHED THEN
+                INSERT (SettingKey, SettingValue, Description, UpdatedAt, UpdatedBy)
+                VALUES (@Key, @Value, @Description, GETUTCDATE(), @UpdatedBy);";
         await using var conn = await _db.CreateOpenConnectionAsync();
         await using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Key", key);
         cmd.Parameters.AddWithValue("@Value", value);
         cmd.Parameters.AddWithValue("@UpdatedBy", (object?)updatedBy ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Description", (object?)description ?? DBNull.Value);
         await cmd.ExecuteNonQueryAsync();
     }
 

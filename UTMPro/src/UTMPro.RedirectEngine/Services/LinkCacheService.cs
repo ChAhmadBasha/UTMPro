@@ -1,17 +1,22 @@
+using System.Collections.Concurrent;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Memory;
 using UTMPro.Data;
+using UTMPro.Data.Models;
 using UTMPro.RedirectEngine.Models;
 
 namespace UTMPro.RedirectEngine.Services;
 
 public class LinkCacheService
 {
+    private const string MinClicksCacheKey = "setting:AdminTrafficMinClicks";
+
     private readonly IMemoryCache _cache;
     private readonly IDbConnectionFactory _dbFactory;
     private readonly IConfiguration _config;
     private readonly ILogger<LinkCacheService> _logger;
+    private readonly ConcurrentDictionary<long, long> _originalClickHighWater = new();
 
     public LinkCacheService(
         IMemoryCache cache,
@@ -29,23 +34,39 @@ public class LinkCacheService
     {
         var key = $"link:{domain}:{slug}".ToLowerInvariant();
 
-        if (_cache.TryGetValue(key, out LinkCacheModel? cached))
-            return cached;
+        if (!_cache.TryGetValue(key, out LinkCacheModel? link) || link == null)
+        {
+            link = await FetchFromDbAsync(domain, slug);
 
-        var link = await FetchFromDbAsync(domain, slug);
+            if (link != null)
+            {
+                // Cache for shorter time (1 minute) to pick up edits faster
+                var ttl = int.Parse(_config["CacheTTLMinutes"] ?? "1");
+                _cache.Set(key, link, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(ttl),
+                    Size = 1
+                });
+            }
+        }
 
         if (link != null)
         {
-            // Cache for shorter time (1 minute) to pick up edits faster
-            var ttl = int.Parse(_config["CacheTTLMinutes"] ?? "1");
-            _cache.Set(key, link, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(ttl),
-                Size = 1
-            });
+            link.AdminTrafficMinClicks = await GetAdminTrafficMinClicksAsync();
+            ApplyObservedOriginalClicks(link);
         }
 
         return link;
+    }
+
+    /// <summary>
+    /// Counts an original-destination click against the warm-up threshold
+    /// immediately, without waiting for the click batch to flush to SQL.
+    /// </summary>
+    public void RecordOriginalClick(LinkCacheModel link)
+    {
+        var next = link.RecordOriginalClick();
+        RememberOriginalClicks(link.Id, next);
     }
 
     public void Invalidate(string domain, string slug)
@@ -105,6 +126,14 @@ public class LinkCacheService
             LinkAdminTrafficPercent = reader.IsDBNull(reader.GetOrdinal("AdminTrafficPercent")) ? null : reader.GetDecimal(reader.GetOrdinal("AdminTrafficPercent")),
             LinkAdminTrafficEnabled = reader.IsDBNull(reader.GetOrdinal("AdminTrafficEnabled")) ? null : reader.GetBoolean(reader.GetOrdinal("AdminTrafficEnabled")),
         };
+
+        var loadedTotalClicks = false;
+        if (TryGetOrdinal(reader, "TotalClicks", out var totalClicksOrdinal)
+            && !reader.IsDBNull(totalClicksOrdinal))
+        {
+            model.TotalClicks = reader.GetInt64(totalClicksOrdinal);
+            loadedTotalClicks = true;
+        }
 
         // Destinations
         await reader.NextResultAsync();
@@ -195,6 +224,12 @@ public class LinkCacheService
                 model.AdminRuleUrls.Count);
         }
 
+        await reader.DisposeAsync();
+        if (!loadedTotalClicks)
+            model.TotalClicks = await FetchTotalClicksFallbackAsync(model.Id);
+
+        ApplyObservedOriginalClicks(model);
+
         if (model.EffectiveAdminPercent > 0 && model.EffectiveAdminUrls.Count == 0)
         {
             _logger.LogWarning(
@@ -204,6 +239,77 @@ public class LinkCacheService
         }
 
         return model;
+    }
+
+    public async Task<int> GetAdminTrafficMinClicksAsync()
+    {
+        if (_cache.TryGetValue(MinClicksCacheKey, out int cached))
+            return cached;
+
+        var value = SystemSettingKeys.AdminTrafficMinClicksDefault;
+        try
+        {
+            const string sql = "SELECT SettingValue FROM SystemSettings WHERE SettingKey = @Key";
+            await using var conn = await _dbFactory.CreateOpenConnectionAsync();
+            await using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Key", SystemSettingKeys.AdminTrafficMinClicks);
+            var result = await cmd.ExecuteScalarAsync();
+            value = SystemSettingKeys.ParseAdminTrafficMinClicks(result as string);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Could not load {SettingKey}; using default {Default}",
+                SystemSettingKeys.AdminTrafficMinClicks,
+                SystemSettingKeys.AdminTrafficMinClicksDefault);
+        }
+
+        _cache.Set(MinClicksCacheKey, value, new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
+            Size = 1
+        });
+        return value;
+    }
+
+    private void ApplyObservedOriginalClicks(LinkCacheModel link)
+    {
+        _originalClickHighWater.AddOrUpdate(
+            link.Id,
+            link.TotalClicks,
+            (_, existing) =>
+            {
+                if (existing > link.TotalClicks)
+                    link.TotalClicks = existing;
+                return Math.Max(existing, link.TotalClicks);
+            });
+    }
+
+    private void RememberOriginalClicks(long linkId, long clicks)
+    {
+        _originalClickHighWater.AddOrUpdate(
+            linkId,
+            clicks,
+            (_, existing) => Math.Max(existing, clicks));
+    }
+
+    private async Task<long> FetchTotalClicksFallbackAsync(long linkId)
+    {
+        try
+        {
+            const string sql = "SELECT TotalClicks FROM Links WHERE Id = @Id";
+            await using var conn = await _dbFactory.CreateOpenConnectionAsync();
+            await using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", linkId);
+            var result = await cmd.ExecuteScalarAsync();
+            return result is long clicks ? clicks : Convert.ToInt64(result ?? 0L);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not load TotalClicks for link {LinkId}", linkId);
+            return 0;
+        }
     }
 
     private static bool TryGetOrdinal(SqlDataReader reader, string columnName, out int ordinal)

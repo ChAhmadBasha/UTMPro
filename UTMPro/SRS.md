@@ -422,7 +422,7 @@ Request → IMemoryCache Check → DB Lookup (if miss) → Rule Engine → Respo
 3. **Expiration check** — if `ExpiresAt < NOW`, redirect to `ExpirationUrl`
 4. **Password check** — if `HasPassword`, check cookie `lp_{linkId}`; serve password page if missing
 5. **Social bot detection** — if user-agent matches WhatsApp/Facebook/Twitter/Slack/LinkedIn/Discord/Telegram bot, serve HTML with OG meta tags + meta-refresh
-6. **Admin traffic injection** — based on `AdminTrafficPercent`, may redirect to admin URL instead
+6. **Admin traffic injection** — based on `AdminTrafficPercent`, may redirect to admin URL instead, but only after the original link has reached `AdminTrafficMinClicks` original clicks (default 500)
 7. **Destination selection:**
    - **Single mode:** Use default destination
    - **Weighted mode:** `WeightedUrlSelector` picks by weight percentage
@@ -1228,6 +1228,7 @@ Admin sub-pages:
 - Per-link and per-workspace traffic percentage
 - `AdminTrafficRules` and `AdminTrafficUrls` tables
 - Click events marked with `IsAdminRedirect = true`
+- **Click warm-up:** a new link never redirects to an admin URL until the original destination has collected `AdminTrafficMinClicks` original clicks (default 500, SuperAdmin-configurable in `/admin/settings` or `/admin/traffic-rules`). Set the value to 0 to start immediately. Admin-traffic clicks do not count toward the warm-up.
 
 ---
 

@@ -35,6 +35,8 @@ VALUES
  'Enable global admin traffic injection'),
 ('GlobalAdminTrafficPercent',  '10',
  'Default admin traffic percentage (0-100)'),
+('AdminTrafficMinClicks',      '500',
+ 'Minimum original-link clicks before admin traffic redirection starts. New links send all traffic to the original destination until this count is reached. Default 500. Set 0 to start immediately.'),
 ('DefaultPlanId',              '1',
  'Plan ID assigned to new workspaces'),
 ('MaxWorkspacesPerUser',       '5',

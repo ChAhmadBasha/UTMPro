@@ -32,6 +32,8 @@
                 📤 Upload
                 <input type="file" accept="image/*,.ico,.svg" class="hidden" onchange="uploadSettingImage(this, '@s.SettingKey')">
             </label>
+            } else if (s.SettingKey == SystemSettingKeys.AdminTrafficMinClicks) {
+            <input type="number" name="setting_@s.SettingKey" value="@s.SettingValue" min="0" max="@SystemSettingKeys.AdminTrafficMinClicksMax" class="w-full px-3 py-1.5 border rounded-lg text-sm">
             } else if (isLongText) {
             <textarea name="setting_@s.SettingKey" class="w-full px-3 py-1.5 border rounded-lg text-sm font-mono" rows="4">@s.SettingValue</textarea>
             } else {

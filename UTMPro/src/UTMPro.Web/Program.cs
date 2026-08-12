@@ -67,6 +67,7 @@ builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<IWebhookService, WebhookService>();
 builder.Services.AddScoped<IRealTimeEventService, RealTimeEventService>();
 builder.Services.AddScoped<IUrlMetadataService, UrlMetadataService>();
+builder.Services.AddScoped<IRedirectCacheInvalidationService, RedirectCacheInvalidationService>();
 
 // ── Phase 2 Background Services ──
 builder.Services.AddHostedService<MonthlyUsageResetService>();

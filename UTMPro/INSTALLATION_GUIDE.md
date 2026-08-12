@@ -120,6 +120,9 @@ Step 19: database/019_Fix_OG_SP.sql       → Redirect lookup fixes (superseded 
 Step 20: database/020_Auto_SSL.sql        → Automatic SSL support
 Step 21: database/021_Fix_Admin_Traffic_Rules.sql → Admin traffic redirects and counters
 Step 22: database/022_Admin_Traffic_Daily_Report.sql → Daily admin traffic attribution/reporting
+Step 23: database/023_Admin_Traffic_Hide_From_User_Stats.sql → Hide admin redirects from user stats
+Step 24: database/024_CNAME_Custom_Domain_DNS.sql → Custom-domain CNAME instructions
+Step 25: database/025_Admin_Traffic_Min_Clicks.sql → Warm-up clicks before admin traffic
 ```
 
 ### 2.3 Verify Database

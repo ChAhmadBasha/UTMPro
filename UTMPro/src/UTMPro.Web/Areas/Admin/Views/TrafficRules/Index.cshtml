@@ -10,8 +10,29 @@
         <a href="/admin/traffic-rules/create" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">+ New Rule</a>
     </div>
 </div>
+@{
+    var minClicks = ViewBag.AdminTrafficMinClicks as int? ?? SystemSettingKeys.AdminTrafficMinClicksDefault;
+}
 <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
     Workspace rules override global rules. If multiple active rules exist at the same scope, the most recently updated rule is used.
+    New links send 100% of traffic to the original destination until they reach the warm-up click count.
+</div>
+<div class="bg-white rounded-xl border p-4 sm:p-5 mb-4 max-w-3xl">
+    <form method="post" action="/admin/traffic-rules/min-clicks" class="flex flex-col sm:flex-row sm:items-end gap-3">
+        @Html.AntiForgeryToken()
+        <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-900">Warm-up clicks before admin redirect</label>
+            <p class="text-xs text-gray-500 mt-1">
+                A newly created link will not send any traffic to an admin URL until the original destination has this many clicks.
+                Default is 500. Set 0 to start admin traffic immediately.
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <input type="number" name="minClicks" value="@minClicks" min="0" max="@SystemSettingKeys.AdminTrafficMinClicksMax" required
+                   class="w-32 px-3 py-2 border rounded-lg text-sm">
+            <button type="submit" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">Save</button>
+        </div>
+    </form>
 </div>
 <div class="bg-white rounded-xl border overflow-hidden">
 @if (Model.Count == 0)
