@@ -30,20 +30,26 @@ engine/web changes fix these paths.
 3. Run `database/022_Admin_Traffic_Daily_Report.sql` against `UTMProDB`.
 4. Run `database/023_Admin_Traffic_Hide_From_User_Stats.sql` against `UTMProDB`
    so admin-traffic redirects no longer count toward a link's user statistics.
-5. Deploy **UTMPro.RedirectEngine**.
-5. Deploy **UTMPro.Web** (this supplies workspace selection, validation,
-   reporting, test redirects, and cache invalidation after rule changes).
-6. Configure a strong `DiagnosticsApiKey` for the redirect engine using a
+5. Run `database/025_Admin_Traffic_Min_Clicks.sql` against `UTMProDB` so new
+   links wait for the configured original-click warm-up (default 500) before
+   any admin redirect starts.
+6. Deploy **UTMPro.RedirectEngine**.
+7. Deploy **UTMPro.Web** (this supplies workspace selection, validation,
+   reporting, test redirects, the warm-up setting, and cache invalidation after rule changes).
+8. Configure a strong `DiagnosticsApiKey` for the redirect engine using a
    deployment secret or environment variable; do not commit the value.
-7. Configure the same strong `InternalApiKey` secret in both applications. It
+9. Configure the same strong `InternalApiKey` secret in both applications. It
    protects full-cache invalidation after a rule changes. If it is omitted,
    cached links still refresh through the one-minute TTL.
-8. Restart both applications.
+10. Restart both applications.
 
 Run the database migration before deploying the redirect engine when possible.
 The cache reader has a compatibility fallback for migration 019, but rule IDs,
 scope diagnostics, and per-URL click counters require migration 021. Exact
 per-rule daily attribution and the admin traffic report require migration 022.
+The original-click warm-up setting and `TotalClicks` on the redirect lookup
+require migration 025 (the engine still defaults to 500 if the setting row is
+missing).
 
 ## Verify configuration (no random sampling required)
 
@@ -90,6 +96,42 @@ Important precedence:
 
 A workspace rule overrides a global rule. Multiple matching rules are never
 mixed.
+
+## New links wait for a click warm-up
+
+Admin injection does **not** start on a brand-new link. The original destination
+must first collect the SuperAdmin-configured number of original clicks
+(`SystemSettings.AdminTrafficMinClicks`, default **500**). After that threshold:
+
+- The configured admin traffic percentage starts applying.
+- Only original (non-admin) clicks count toward the warm-up.
+- Social-crawler preview fetches do not count.
+
+Set the value in either place:
+
+- `/admin/traffic-rules` — **Warm-up clicks before admin redirect**
+- `/admin/settings` — `AdminTrafficMinClicks`
+
+Set it to `0` to restore the previous “start immediately” behavior. Existing
+links that already have at least that many original clicks are unaffected.
+
+Diagnostics include a `warmup` object:
+
+```json
+{
+  "warmup": {
+    "minClicks": 500,
+    "originalClicks": 12,
+    "unlocked": false,
+    "remaining": 488
+  },
+  "effective": {
+    "configured": true,
+    "ready": false,
+    "issue": "Original link has 12 click(s); admin redirect starts after 500 original click(s)."
+  }
+}
+```
 
 ## Admin traffic does not pollute the original link's stats
 

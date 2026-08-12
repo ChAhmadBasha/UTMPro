@@ -86,6 +86,7 @@ public static class RedirectHandler
             {
                 EnqueueClick(
                     queue,
+                    cache,
                     link,
                     selection.Url,
                     ip,
@@ -127,6 +128,7 @@ public static class RedirectHandler
         Redirect(ctx, selection.Url);
         EnqueueClick(
             queue,
+            cache,
             link,
             selection.Url,
             ip,
@@ -248,6 +250,7 @@ public static class RedirectHandler
 
     private static void EnqueueClick(
         ClickQueueService queue,
+        LinkCacheService cache,
         LinkCacheModel link,
         string destUrl,
         string ip,
@@ -276,6 +279,12 @@ public static class RedirectHandler
             UTMTerm = ctx.Request.Query["utm_term"],
             UTMContent = ctx.Request.Query["utm_content"],
         });
+
+        // Warm-up counts original destination clicks only, in memory, so a
+        // new link can unlock admin traffic as soon as it crosses the
+        // SuperAdmin threshold without waiting for the batch flush or TTL.
+        if (!isAdminRedirect)
+            cache.RecordOriginalClick(link);
     }
 
     private static string GetClientIp(HttpContext ctx)

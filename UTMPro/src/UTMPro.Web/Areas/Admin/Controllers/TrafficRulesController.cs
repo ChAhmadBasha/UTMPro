@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UTMPro.Data.Models;
 using UTMPro.Data.Repositories;
+using UTMPro.Web.Services;
 
 namespace UTMPro.Web.Areas.Admin.Controllers;
 
@@ -11,22 +12,19 @@ public class TrafficRulesController : Controller
 {
     private readonly IAdminTrafficRepository _repo;
     private readonly IWorkspaceRepository _workspaceRepo;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<TrafficRulesController> _logger;
+    private readonly ISystemSettingsRepository _settingsRepo;
+    private readonly IRedirectCacheInvalidationService _cacheInvalidation;
 
     public TrafficRulesController(
         IAdminTrafficRepository repo,
         IWorkspaceRepository workspaceRepo,
-        IHttpClientFactory httpClientFactory,
-        IConfiguration configuration,
-        ILogger<TrafficRulesController> logger)
+        ISystemSettingsRepository settingsRepo,
+        IRedirectCacheInvalidationService cacheInvalidation)
     {
         _repo = repo;
         _workspaceRepo = workspaceRepo;
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
-        _logger = logger;
+        _settingsRepo = settingsRepo;
+        _cacheInvalidation = cacheInvalidation;
     }
 
     private long UserId => long.Parse(User.FindFirst("UserId")!.Value);
@@ -35,7 +33,33 @@ public class TrafficRulesController : Controller
     public async Task<IActionResult> Index()
     {
         var rules = await _repo.GetAllRulesAsync();
+        var raw = await _settingsRepo.GetValueAsync(SystemSettingKeys.AdminTrafficMinClicks);
+        ViewBag.AdminTrafficMinClicks = SystemSettingKeys.ParseAdminTrafficMinClicks(raw);
         return View("~/Areas/Admin/Views/TrafficRules/Index.cshtml", rules);
+    }
+
+    [HttpPost("min-clicks")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateMinClicks(int minClicks)
+    {
+        if (minClicks is < 0 or > SystemSettingKeys.AdminTrafficMinClicksMax)
+        {
+            TempData["Error"] =
+                $"Warm-up clicks must be between 0 and {SystemSettingKeys.AdminTrafficMinClicksMax}.";
+            return Redirect("/admin/traffic-rules");
+        }
+
+        await _settingsRepo.SetValueAsync(
+            SystemSettingKeys.AdminTrafficMinClicks,
+            minClicks.ToString(),
+            UserId,
+            SystemSettingKeys.AdminTrafficMinClicksDescription);
+        await _cacheInvalidation.InvalidateAllAsync();
+
+        TempData["Success"] = minClicks == 0
+            ? "Admin traffic now starts immediately on new links."
+            : $"Admin traffic now starts after {minClicks} original click(s) on each link.";
+        return Redirect("/admin/traffic-rules");
     }
 
     [HttpGet("report")]
@@ -46,7 +70,7 @@ public class TrafficRulesController : Controller
         return View("~/Areas/Admin/Views/TrafficRules/Report.cshtml", report);
     }
 
-    [HttpGet("{id}/test")]
+    [HttpGet("{id:long}/test")]
     public async Task<IActionResult> Test(long id, long? urlId = null)
     {
         var rule = await _repo.GetRuleByIdAsync(id);
@@ -117,13 +141,13 @@ public class TrafficRulesController : Controller
         });
 
         await AddUrlsAsync(ruleId, urls!, weights, labels);
-        await InvalidateRedirectCacheAsync();
+        await _cacheInvalidation.InvalidateAllAsync();
 
         TempData["Success"] = "Traffic rule created";
         return Redirect("/admin/traffic-rules");
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:long}")]
     public async Task<IActionResult> Edit(long id)
     {
         var rule = await _repo.GetRuleByIdAsync(id);
@@ -134,7 +158,7 @@ public class TrafficRulesController : Controller
         return View("~/Areas/Admin/Views/TrafficRules/Edit.cshtml", rule);
     }
 
-    [HttpPost("{id}")]
+    [HttpPost("{id:long}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(
         long id,
@@ -171,7 +195,7 @@ public class TrafficRulesController : Controller
         await _repo.SyncUrlsAsync(
             id,
             BuildUrls(id, urlIds, urls!, weights, labels));
-        await InvalidateRedirectCacheAsync();
+        await _cacheInvalidation.InvalidateAllAsync();
 
         TempData["Success"] = "Traffic rule updated";
         return Redirect("/admin/traffic-rules");
@@ -182,7 +206,7 @@ public class TrafficRulesController : Controller
     public async Task<IActionResult> Toggle(long id)
     {
         await _repo.ToggleRuleAsync(id);
-        await InvalidateRedirectCacheAsync();
+        await _cacheInvalidation.InvalidateAllAsync();
         return Redirect("/admin/traffic-rules");
     }
 
@@ -319,36 +343,5 @@ public class TrafficRulesController : Controller
             planId: null,
             page: 1,
             pageSize: 1000);
-    }
-
-    private async Task InvalidateRedirectCacheAsync()
-    {
-        try
-        {
-            var redirectEngineUrl = _configuration["App:RedirectEngineUrl"]
-                ?? "https://go.utmpro.link";
-            var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(3);
-
-            var internalApiKey = _configuration["InternalApiKey"];
-            if (!string.IsNullOrWhiteSpace(internalApiKey))
-                client.DefaultRequestHeaders.Add("X-Internal-Key", internalApiKey);
-
-            using var response = await client.PostAsync(
-                redirectEngineUrl.TrimEnd('/') + "/cache/invalidate-all",
-                content: null);
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogWarning(
-                    "Redirect cache invalidation returned HTTP {StatusCode}; cached links will refresh by TTL",
-                    (int)response.StatusCode);
-            }
-        }
-        catch (Exception ex)
-        {
-            // The redirect engine also has a short TTL, so an invalidation
-            // outage must not make the admin rule update itself fail.
-            _logger.LogWarning(ex, "Could not invalidate redirect cache after traffic-rule change");
-        }
     }
 }

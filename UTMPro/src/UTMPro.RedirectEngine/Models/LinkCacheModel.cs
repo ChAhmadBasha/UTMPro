@@ -1,3 +1,6 @@
+using System.Threading;
+using UTMPro.Data.Models;
+
 namespace UTMPro.RedirectEngine.Models;
 
 public class LinkCacheModel
@@ -40,6 +43,22 @@ public class LinkCacheModel
     public decimal AdminRuleTrafficPercent { get; set; }
     public List<DestinationModel> AdminRuleUrls { get; set; } = new();
 
+    // Original-destination clicks only. Admin-traffic redirects never count.
+    // Interlocked so concurrent requests can increment the cached model safely.
+    private long _totalClicks;
+
+    public long TotalClicks
+    {
+        get => Interlocked.Read(ref _totalClicks);
+        set => Interlocked.Exchange(ref _totalClicks, value);
+    }
+
+    /// <summary>
+    /// SuperAdmin-configured warm-up. Admin injection stays off until the
+    /// original link records at least this many non-admin clicks.
+    /// </summary>
+    public int AdminTrafficMinClicks { get; set; } = SystemSettingKeys.AdminTrafficMinClicksDefault;
+
     public decimal EffectiveAdminPercent => ResolveAdminTraffic().Percent;
 
     public string EffectiveAdminSource => ResolveAdminTraffic().Source;
@@ -51,8 +70,14 @@ public class LinkCacheModel
     public List<DestinationModel> EffectiveAdminUrls =>
         AdminDestinations.Count > 0 ? AdminDestinations : AdminRuleUrls;
 
-    public bool IsAdminTrafficReady =>
+    public bool HasReachedAdminTrafficThreshold =>
+        TotalClicks >= AdminTrafficMinClicks;
+
+    public bool IsAdminTrafficConfigured =>
         EffectiveAdminPercent > 0 && EffectiveAdminUrls.Count > 0;
+
+    public bool IsAdminTrafficReady =>
+        IsAdminTrafficConfigured && HasReachedAdminTrafficThreshold;
 
     public string? AdminTrafficConfigurationIssue
     {
@@ -62,9 +87,13 @@ public class LinkCacheModel
                 return "The effective traffic percentage is 0 or traffic is disabled.";
             if (EffectiveAdminUrls.Count == 0)
                 return "No active admin destination URL is available.";
+            if (!HasReachedAdminTrafficThreshold)
+                return $"Original link has {TotalClicks} click(s); admin redirect starts after {AdminTrafficMinClicks} original click(s).";
             return null;
         }
     }
+
+    public long RecordOriginalClick() => Interlocked.Increment(ref _totalClicks);
 
     private (decimal Percent, string Source) ResolveAdminTraffic()
     {
